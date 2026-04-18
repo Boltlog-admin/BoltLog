@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Background Check Status</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2c22",
+                        "text-main-light": "#0d1b12",
+                        "text-main-dark": "#e0ece4",
+                        "text-sub-light": "#4c9a66",
+                        "text-sub-dark": "#8abf9e",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.5rem", "lg": "0.75rem", "xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .timeline-connector {
+            position: relative;
+        }
+        .timeline-connector::after {
+            content: '';
+            position: absolute;
+            top: 28px;
+            left: 11px;
+            bottom: -16px;
+            width: 2px;
+            background-color: #cfe7d7;
+            z-index: 0;
+        }
+        .dark .timeline-connector::after {
+            background-color: #2a4032;
+        }
+        .last-item .timeline-connector::after {
+            display: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main-light dark:text-text-main-dark transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full max-w-md mx-auto flex-col group/design-root overflow-x-hidden shadow-xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-transparent dark:border-white/5">
+<button class="text-text-main-light dark:text-text-main-dark flex size-12 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-text-main-light dark:text-text-main-dark text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">
+                Status Check
+            </h2>
+</div>
+<!-- Main Content Scroll Area -->
+<div class="flex-1 overflow-y-auto pb-24">
+<!-- Hero Status Card -->
+<div class="p-4">
+<div class="flex flex-col items-center justify-center rounded-xl bg-surface-light dark:bg-surface-dark shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none p-6 text-center border border-gray-100 dark:border-white/5">
+<div class="relative mb-4">
+<div class="absolute inset-0 bg-primary/20 rounded-full blur-xl"></div>
+<div class="relative bg-primary/10 rounded-full p-4 text-primary">
+<span class="material-symbols-outlined text-5xl">manage_search</span>
+</div>
+</div>
+<p class="text-text-sub-light dark:text-text-sub-dark text-sm font-medium uppercase tracking-wider mb-1">Current Status</p>
+<h1 class="text-text-main-light dark:text-text-main-dark text-2xl font-bold leading-tight mb-2">In Progress</h1>
+<p class="text-text-sub-light dark:text-text-sub-dark text-base font-normal leading-relaxed max-w-[280px]">
+                        We are currently verifying your records. This typically takes 24-48 hours.
+                    </p>
+</div>
+</div>
+<!-- Estimated Time -->
+<div class="px-4 pb-2">
+<div class="flex items-center gap-3 rounded-lg bg-orange-50 dark:bg-orange-900/20 border border-orange-100 dark:border-orange-800/30 p-4">
+<span class="material-symbols-outlined text-orange-500">schedule</span>
+<div>
+<p class="text-text-main-light dark:text-text-main-dark text-sm font-bold">Estimated Completion</p>
+<p class="text-text-sub-light dark:text-text-sub-dark text-sm">October 24, 2023</p>
+</div>
+</div>
+</div>
+<!-- Timeline Section -->
+<div class="p-4">
+<h3 class="text-text-main-light dark:text-text-main-dark text-lg font-bold mb-4 px-1">Progress Tracker</h3>
+<div class="flex flex-col bg-surface-light dark:bg-surface-dark rounded-xl p-5 shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-gray-100 dark:border-white/5">
+<!-- Step 1: Completed -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 mb-6 timeline-connector">
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary text-2xl">check_circle</span>
+</div>
+<div class="flex flex-col pt-0.5">
+<p class="text-text-main-light dark:text-text-main-dark text-base font-bold leading-none mb-1">Document Upload</p>
+<p class="text-text-sub-light dark:text-text-sub-dark text-sm">Completed on Oct 20</p>
+</div>
+</div>
+<!-- Step 2: Completed -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 mb-6 timeline-connector">
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-primary text-2xl">check_circle</span>
+</div>
+<div class="flex flex-col pt-0.5">
+<p class="text-text-main-light dark:text-text-main-dark text-base font-bold leading-none mb-1">Identity Verification</p>
+<p class="text-text-sub-light dark:text-text-sub-dark text-sm">Completed on Oct 21</p>
+</div>
+</div>
+<!-- Step 3: Current -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 mb-6 timeline-connector">
+<div class="relative z-10 flex flex-col items-center">
+<div class="bg-primary rounded-full p-1 animate-pulse">
+<div class="bg-white dark:bg-black w-4 h-4 rounded-full flex items-center justify-center">
+<div class="bg-primary w-2 h-2 rounded-full"></div>
+</div>
+</div>
+</div>
+<div class="flex flex-col pt-0.5">
+<p class="text-text-main-light dark:text-text-main-dark text-base font-bold leading-none mb-1">Background Check</p>
+<p class="text-primary text-sm font-medium">In Progress...</p>
+</div>
+</div>
+<!-- Step 4: Pending -->
+<div class="grid grid-cols-[24px_1fr] gap-x-4 last-item">
+<div class="relative z-10 flex flex-col items-center">
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600 text-2xl">radio_button_unchecked</span>
+</div>
+<div class="flex flex-col pt-0.5">
+<p class="text-gray-400 dark:text-gray-500 text-base font-medium leading-none mb-1">Final Approval</p>
+<p class="text-gray-400 dark:text-gray-600 text-sm">Pending</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Panel / FAQ -->
+<div class="p-4 pt-0">
+<div class="flex flex-col gap-3 rounded-xl border border-gray-200 dark:border-white/10 bg-surface-light dark:bg-surface-dark p-4">
+<div class="flex items-start gap-3">
+<div class="bg-blue-50 dark:bg-blue-900/20 p-2 rounded-full shrink-0">
+<span class="material-symbols-outlined text-blue-600 dark:text-blue-400 text-xl">info</span>
+</div>
+<div class="flex-1">
+<p class="text-text-main-light dark:text-text-main-dark text-base font-bold mb-1">Why does this take time?</p>
+<p class="text-text-sub-light dark:text-text-sub-dark text-sm leading-normal">
+                                We check multiple databases to ensure community safety. High volumes can sometimes cause minor delays.
+                            </p>
+</div>
+</div>
+<div class="h-px bg-gray-100 dark:bg-white/5 my-1"></div>
+<a class="flex items-center justify-between text-text-main-light dark:text-text-main-dark hover:text-primary transition-colors py-1" href="#">
+<span class="text-sm font-semibold">Read FAQ about Background Checks</span>
+<span class="material-symbols-outlined text-sm">arrow_forward_ios</span>
+</a>
+</div>
+</div>
+<div class="h-8"></div>
+</div>
+<!-- Sticky Bottom Action Bar -->
+<div class="fixed bottom-0 w-full max-w-md bg-background-light dark:bg-background-dark border-t border-gray-100 dark:border-white/5 p-4 z-20">
+<div class="flex flex-col gap-3">
+<button class="w-full h-12 flex items-center justify-center rounded-xl bg-primary hover:bg-green-400 active:scale-95 transition-all text-text-main-light font-bold text-base shadow-lg shadow-green-500/20">
+                    Refresh Status
+                </button>
+<button class="w-full h-12 flex items-center justify-center rounded-xl bg-transparent border border-gray-200 dark:border-white/10 text-text-main-light dark:text-text-main-dark font-semibold text-base hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    Contact Support
+                </button>
+</div>
+</div>
+</div>
+</body></html>

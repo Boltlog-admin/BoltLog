@@ -1,0 +1,7 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- Solid blue used for launcher / splash background -->
+    <color name="launcher_blue_background">#2563EB</color>
+    <!-- Keep original launcher background key in case something still references it -->
+    <color name="ic_launcher_background">#2563EB</color>
+</resources>

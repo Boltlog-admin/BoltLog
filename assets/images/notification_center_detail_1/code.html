@@ -1,0 +1,200 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InDrive Clone - Notification Center</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ec5b",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+              "surface-light": "#ffffff",
+              "surface-dark": "#1a2c20",
+              "text-main": "#0d1b12",
+              "text-secondary": "#4c9a66",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "Noto Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+            boxShadow: {
+                'soft': '0 4px 20px -2px rgba(0, 0, 0, 0.05)',
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-white antialiased selection:bg-primary/30">
+<div class="relative mx-auto flex h-screen w-full flex-col overflow-hidden bg-background-light dark:bg-background-dark md:max-w-md md:border-x md:border-gray-200 dark:md:border-gray-800">
+<!-- Top App Bar -->
+<header class="flex-none bg-background-light dark:bg-background-dark pt-2 z-10 sticky top-0">
+<div class="flex items-center justify-between px-4 pb-2 h-14">
+<button class="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-surface-dark transition-colors">
+<span class="material-symbols-outlined text-text-main dark:text-white" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<div class="flex items-center justify-end">
+<button class="text-text-secondary dark:text-primary text-sm font-bold tracking-[0.015em] hover:opacity-80 transition-opacity">
+                        Mark all as read
+                    </button>
+</div>
+</div>
+<div class="px-4 pb-4">
+<h1 class="text-text-main dark:text-white text-[28px] font-bold leading-tight tracking-tight">Notifications</h1>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 px-4 pb-4 overflow-x-auto no-scrollbar snap-x">
+<!-- Active Chip -->
+<button class="snap-start shrink-0 flex h-9 items-center justify-center rounded-full bg-primary px-5 shadow-sm shadow-primary/20 transition-transform active:scale-95">
+<span class="text-text-main text-sm font-bold leading-normal">All</span>
+</button>
+<!-- Inactive Chip: Unread -->
+<button class="snap-start shrink-0 flex h-9 items-center justify-center gap-2 rounded-full bg-[#e7f3eb] dark:bg-surface-dark px-5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95">
+<span class="text-text-main dark:text-gray-300 text-sm font-medium leading-normal">Unread</span>
+<span class="flex h-5 w-5 items-center justify-center rounded-full bg-primary text-[10px] font-bold text-text-main">3</span>
+</button>
+<!-- Inactive Chip: Orders -->
+<button class="snap-start shrink-0 flex h-9 items-center justify-center rounded-full bg-[#e7f3eb] dark:bg-surface-dark px-5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95">
+<span class="text-text-main dark:text-gray-300 text-sm font-medium leading-normal">Orders</span>
+</button>
+<!-- Inactive Chip: Discounts -->
+<button class="snap-start shrink-0 flex h-9 items-center justify-center rounded-full bg-[#e7f3eb] dark:bg-surface-dark px-5 transition-colors hover:bg-gray-200 dark:hover:bg-gray-700 active:scale-95">
+<span class="text-text-main dark:text-gray-300 text-sm font-medium leading-normal">Discounts</span>
+</button>
+</div>
+<!-- Gradient separator for scroll -->
+<div class="h-4 w-full bg-gradient-to-b from-background-light dark:from-background-dark to-transparent absolute bottom-[-16px] left-0 pointer-events-none z-20"></div>
+</header>
+<!-- Notification List -->
+<main class="flex-1 overflow-y-auto no-scrollbar pb-6 scroll-smooth">
+<!-- Section: Today -->
+<div class="sticky top-0 z-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-[2px]">
+<h3 class="px-4 py-3 text-lg font-bold text-text-main dark:text-white">Today</h3>
+</div>
+<!-- Item 1: Unread Ride Update -->
+<div class="mx-3 mb-3 group relative overflow-hidden rounded-2xl bg-primary/10 dark:bg-surface-dark border border-primary/20 dark:border-gray-700 transition-all active:scale-[0.99]">
+<div class="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(19,236,91,0.6)]"></div>
+<div class="flex gap-4 p-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-black/40 text-text-main dark:text-primary shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 24px;">local_taxi</span>
+</div>
+<div class="flex flex-1 flex-col justify-center gap-1">
+<div class="flex justify-between items-start">
+<p class="text-text-main dark:text-white text-base font-bold leading-tight pr-4">Driver Arrived</p>
+<p class="text-text-secondary dark:text-primary/80 text-xs font-semibold whitespace-nowrap pt-0.5">2m</p>
+</div>
+<p class="text-text-main dark:text-gray-300 text-sm font-normal leading-relaxed opacity-90">
+                            Toyota Camry <span class="font-mono bg-white/50 dark:bg-white/10 px-1 rounded text-xs font-bold mx-0.5">ABC-123</span> is waiting for you at the pickup point.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Item 2: Unread Promo -->
+<div class="mx-3 mb-3 group relative overflow-hidden rounded-2xl bg-primary/10 dark:bg-surface-dark border border-primary/20 dark:border-gray-700 transition-all active:scale-[0.99]">
+<div class="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(19,236,91,0.6)]"></div>
+<div class="flex gap-4 p-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-black/40 text-text-main dark:text-primary shadow-sm">
+<span class="material-symbols-outlined" style="font-size: 24px;">local_offer</span>
+</div>
+<div class="flex flex-1 flex-col justify-center gap-1">
+<div class="flex justify-between items-start">
+<p class="text-text-main dark:text-white text-base font-bold leading-tight pr-4">50% Off your next ride!</p>
+<p class="text-text-secondary dark:text-primary/80 text-xs font-semibold whitespace-nowrap pt-0.5">2h</p>
+</div>
+<p class="text-text-main dark:text-gray-300 text-sm font-normal leading-relaxed opacity-90">
+                            Use code <span class="font-bold text-primary dark:text-primary">SAVE50</span> to get a discount on your next courier order. Valid until midnight.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Section: Yesterday -->
+<div class="sticky top-0 z-0 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-[2px]">
+<h3 class="px-4 py-3 text-lg font-bold text-text-main dark:text-white">Yesterday</h3>
+</div>
+<!-- Item 3: Read System Alert -->
+<div class="mx-3 mb-3 group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-transparent dark:border-gray-800 shadow-soft transition-all active:scale-[0.99]">
+<div class="flex gap-4 p-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#e7f3eb] dark:bg-gray-800 text-text-main dark:text-gray-400">
+<span class="material-symbols-outlined" style="font-size: 24px;">verified_user</span>
+</div>
+<div class="flex flex-1 flex-col justify-center gap-1">
+<div class="flex justify-between items-start">
+<p class="text-text-main dark:text-white text-base font-medium leading-tight">Account Verified</p>
+<p class="text-gray-400 dark:text-gray-500 text-xs font-medium whitespace-nowrap pt-0.5">1d</p>
+</div>
+<p class="text-gray-600 dark:text-gray-400 text-sm font-normal leading-relaxed">
+                            Your documents have been approved. You can now access all premium features.
+                        </p>
+</div>
+</div>
+</div>
+<!-- Item 4: Read Receipt -->
+<div class="mx-3 mb-3 group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-transparent dark:border-gray-800 shadow-soft transition-all active:scale-[0.99]">
+<div class="flex gap-4 p-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#e7f3eb] dark:bg-gray-800 text-text-main dark:text-gray-400">
+<span class="material-symbols-outlined" style="font-size: 24px;">receipt_long</span>
+</div>
+<div class="flex flex-1 flex-col justify-center gap-1">
+<div class="flex justify-between items-start">
+<p class="text-text-main dark:text-white text-base font-medium leading-tight">Ride Receipt</p>
+<p class="text-gray-400 dark:text-gray-500 text-xs font-medium whitespace-nowrap pt-0.5">1d</p>
+</div>
+<div class="flex items-center gap-2">
+<p class="text-gray-600 dark:text-gray-400 text-sm font-normal leading-relaxed">
+                                Trip to Downtown Business District
+                            </p>
+</div>
+<p class="text-text-secondary dark:text-primary text-sm font-bold mt-1">$14.50</p>
+</div>
+</div>
+</div>
+<!-- Item 5: Read System -->
+<div class="mx-3 mb-3 group relative overflow-hidden rounded-2xl bg-white dark:bg-surface-dark border border-transparent dark:border-gray-800 shadow-soft transition-all active:scale-[0.99]">
+<div class="flex gap-4 p-4">
+<div class="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-[#e7f3eb] dark:bg-gray-800 text-text-main dark:text-gray-400">
+<span class="material-symbols-outlined" style="font-size: 24px;">info</span>
+</div>
+<div class="flex flex-1 flex-col justify-center gap-1">
+<div class="flex justify-between items-start">
+<p class="text-text-main dark:text-white text-base font-medium leading-tight">New Features Available</p>
+<p class="text-gray-400 dark:text-gray-500 text-xs font-medium whitespace-nowrap pt-0.5">1d</p>
+</div>
+<p class="text-gray-600 dark:text-gray-400 text-sm font-normal leading-relaxed">
+                            Check out the new intercity travel options added to your region.
+                        </p>
+</div>
+</div>
+</div>
+<!-- End of List Indicator -->
+<div class="flex flex-col items-center justify-center py-8 opacity-40 gap-2">
+<span class="material-symbols-outlined text-gray-400 dark:text-gray-600" style="font-size: 32px;">check_circle</span>
+<p class="text-xs font-medium text-gray-500 dark:text-gray-500">You're all caught up</p>
+</div>
+</main>
+</div>
+</body></html>

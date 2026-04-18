@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Rate Your Ride</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2c20",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }.material-symbols-outlined {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.unfilled {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+        body {
+          min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-white antialiased transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl overflow-hidden bg-background-light dark:bg-background-dark">
+<div class="flex items-center justify-between p-5 pt-6 sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+<div class="w-12"></div>
+<h2 class="text-lg font-bold leading-tight tracking-tight text-center">Rate Ride</h2>
+<div class="flex w-12 items-center justify-end">
+<button class="text-slate-500 dark:text-slate-400 text-base font-semibold hover:text-primary transition-colors">Skip</button>
+</div>
+</div>
+<div class="flex-1 overflow-y-auto pb-36 px-5">
+<div class="flex flex-col items-center gap-4 mt-2">
+<div class="relative group">
+<div class="bg-center bg-no-repeat bg-cover rounded-full h-24 w-24 border-4 border-white dark:border-surface-dark shadow-sm" data-alt="Portrait of the driver Alexandru smiling professionally" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA0Pztd1Eg3t_3an5FaFDOFIX8SYAWIsb2X_0KlZ-LZepqeBGnSKFwA7yBaa6WtdBhUohIMGlK0DemPr0WU0BBPikFJVjZn4AYDxTusteeKyQ_3um7407zAGpJG3q1W3oTsZsajhD6gCT6X4LHORhND8si_k1iz6d596UhEO9YTs-U-vAXmkQjrMSBpNZB8cUoG-2NLSoR_qyFlFbQUD1ToWnvv56tcUT9eZMeXa7teuLzCLdv5m95tvji50oeyt74YoGPWYMU2JmA");'>
+</div>
+<div class="absolute bottom-0 right-0 bg-blue-500 text-white p-1 rounded-full border-2 border-white dark:border-surface-dark flex items-center justify-center h-7 w-7">
+<span class="material-symbols-outlined text-[16px]">check</span>
+</div>
+</div>
+<div class="flex flex-col items-center justify-center gap-1">
+<h3 class="text-2xl font-bold tracking-tight">Alexandru</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-full">Toyota Camry • ABC-123</p>
+</div>
+</div>
+<div class="mt-8 mb-4">
+<h2 class="text-center text-xl font-bold">How was your ride?</h2>
+<p class="text-center text-slate-400 text-sm mt-1">Your feedback helps improve our service</p>
+</div>
+<div class="flex justify-center gap-3 mb-8">
+<button class="text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-5xl drop-shadow-sm">star</span>
+</button>
+<button class="text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-5xl drop-shadow-sm">star</span>
+</button>
+<button class="text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-5xl drop-shadow-sm">star</span>
+</button>
+<button class="text-primary hover:scale-110 transition-transform">
+<span class="material-symbols-outlined text-5xl drop-shadow-sm">star</span>
+</button>
+<button class="text-slate-300 dark:text-slate-600 hover:text-primary hover:scale-110 transition-all group">
+<span class="material-symbols-outlined unfilled text-5xl group-hover:fill-[1]">star</span>
+</button>
+</div>
+<div class="flex flex-col gap-3">
+<p class="text-sm font-semibold text-slate-900 dark:text-white ml-1">What went well?</p>
+<div class="flex flex-wrap gap-2.5">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 border border-primary/40 px-4 transition-all">
+<span class="text-slate-900 dark:text-white text-sm font-semibold leading-normal">Clean car</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-primary/20 border border-primary/40 px-4 transition-all">
+<span class="text-slate-900 dark:text-white text-sm font-semibold leading-normal">Friendly driver</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 px-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+<span class="text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal">Safe driving</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 px-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+<span class="text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal">Good music</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-lg bg-white dark:bg-surface-dark border border-slate-200 dark:border-slate-700 px-4 hover:bg-slate-50 dark:hover:bg-white/5 transition-all">
+<span class="text-slate-600 dark:text-slate-300 text-sm font-medium leading-normal">Efficient route</span>
+</button>
+</div>
+</div>
+<div class="mt-6">
+<label class="sr-only" for="comment">Leave a comment</label>
+<textarea class="w-full rounded-xl bg-white dark:bg-surface-dark border-0 ring-1 ring-inset ring-slate-200 dark:ring-slate-700 placeholder:text-slate-400 dark:placeholder:text-slate-500 focus:ring-2 focus:ring-inset focus:ring-primary text-sm leading-6 p-3 resize-none shadow-sm transition-all" id="comment" placeholder="Tell us more (optional)..." rows="3"></textarea>
+</div>
+<div class="mt-8 mb-2">
+<div class="flex items-center justify-between px-1 mb-3">
+<h3 class="text-sm font-semibold text-slate-900 dark:text-white">Tip Driver</h3>
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400 bg-slate-100 dark:bg-white/5 px-2 py-1 rounded">100% goes to driver</span>
+</div>
+<div class="grid grid-cols-4 gap-3">
+<button class="relative flex h-14 w-full flex-col items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-primary active:scale-95 dark:border-slate-700 dark:bg-surface-dark dark:hover:border-primary">
+<span class="text-base font-bold text-slate-900 dark:text-white">$1</span>
+</button>
+<button class="relative flex h-14 w-full flex-col items-center justify-center rounded-xl border border-primary/40 bg-primary/20 shadow-sm transition-all active:scale-95">
+<span class="text-base font-bold text-slate-900 dark:text-white">$2</span>
+<div class="absolute -top-1.5 -right-1.5 rounded-full bg-primary p-0.5 shadow-sm ring-2 ring-white dark:ring-surface-dark">
+<span class="material-symbols-outlined text-[10px] text-black font-bold">check</span>
+</div>
+</button>
+<button class="relative flex h-14 w-full flex-col items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-primary active:scale-95 dark:border-slate-700 dark:bg-surface-dark dark:hover:border-primary">
+<span class="text-base font-bold text-slate-900 dark:text-white">$5</span>
+</button>
+<button class="relative flex h-14 w-full flex-col items-center justify-center rounded-xl border border-slate-200 bg-white shadow-sm transition-all hover:border-primary active:scale-95 dark:border-slate-700 dark:bg-surface-dark dark:hover:border-primary">
+<span class="text-xs font-semibold text-slate-500 dark:text-slate-400">Custom</span>
+</button>
+</div>
+</div>
+</div>
+<div class="absolute bottom-0 left-0 w-full p-5 bg-gradient-to-t from-background-light via-background-light to-transparent dark:from-background-dark dark:via-background-dark pt-8">
+<button class="w-full flex items-center justify-center rounded-xl bg-primary py-4 px-6 text-sm font-bold text-slate-900 shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 active:scale-[0.98] transition-all">
+                Submit Feedback
+            </button>
+</div>
+</div>
+
+</body></html>

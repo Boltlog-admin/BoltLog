@@ -1,0 +1,85 @@
+﻿<!DOCTYPE html>
+<html>
+<head>
+    <title>Firebase Storage Rules Deployment</title>
+    <style>
+        body { font-family: Arial, sans-serif; padding: 20px; background: #f5f5f5; }
+        .container { max-width: 900px; margin: 0 auto; background: white; padding: 30px; border-radius: 8px; }
+        h1 { color: #1E40AF; }
+        .rules-box { background: #1E293B; color: #E2E8F0; padding: 20px; border-radius: 8px; font-family: monospace; white-space: pre-wrap; }
+        .copy-btn { background: #2563EB; color: white; border: none; padding: 12px 24px; border-radius: 6px; cursor: pointer; font-size: 16px; margin: 10px 0; }
+        .copy-btn:hover { background: #1E40AF; }
+        .success { background: #10B981; color: white; padding: 15px; border-radius: 6px; margin: 10px 0; display: none; }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Firebase Storage Rules Deployment</h1>
+        <p><strong>Instructions:</strong></p>
+        <ol>
+            <li>Click "Copy Rules" button below</li>
+            <li>Go to <a href="https://console.firebase.google.com/project/boltlog/storage/boltlog.firebasestorage.app/rules" target="_blank">Firebase Console</a></li>
+            <li>Paste rules and click Publish</li>
+        </ol>
+        <button class="copy-btn" onclick="copyRules()">Copy Rules to Clipboard</button>
+        <div class="success" id="successMsg">Rules copied!</div>
+        <h3>Storage Rules:</h3>
+        <div class="rules-box" id="rulesContent">rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Drivers folder - users can upload to their own folder
+    match /drivers/{userId}/{fileName} {
+      // Allow read: authenticated users can read their own files
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow write: authenticated users can write to their own folder
+      // with validation for file type (images only) and size (max 10MB)
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId
+                   && request.resource.contentType.matches('image/.*')
+                   && request.resource.size &lt; 10 * 1024 * 1024;
+    }
+    
+    // Default: deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+</div>
+    </div>
+    <script>
+        const rulesText = `rules_version = '2';
+
+service firebase.storage {
+  match /b/{bucket}/o {
+    // Drivers folder - users can upload to their own folder
+    match /drivers/{userId}/{fileName} {
+      // Allow read: authenticated users can read their own files
+      allow read: if request.auth != null && request.auth.uid == userId;
+      
+      // Allow write: authenticated users can write to their own folder
+      // with validation for file type (images only) and size (max 10MB)
+      allow write: if request.auth != null 
+                   && request.auth.uid == userId
+                   && request.resource.contentType.matches('image/.*')
+                   && request.resource.size < 10 * 1024 * 1024;
+    }
+    
+    // Default: deny all other access
+    match /{allPaths=**} {
+      allow read, write: if false;
+    }
+  }
+}
+`;
+        function copyRules() {
+            navigator.clipboard.writeText(rulesText).then(() => {
+                document.getElementById('successMsg').style.display = 'block';
+                setTimeout(() => document.getElementById('successMsg').style.display = 'none', 3000);
+            });
+        }
+    </script>
+</body>
+</html>

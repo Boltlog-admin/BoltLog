@@ -1,0 +1,155 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Detailed Report View</title>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2e22",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-slate-900 dark:text-white h-screen flex flex-col overflow-hidden">
+<!-- Top Navigation Bar -->
+<header class="shrink-0 bg-surface-light dark:bg-background-dark border-b border-gray-100 dark:border-white/10 px-4 py-3 flex items-center justify-between z-10">
+<button class="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-slate-900 dark:text-white transition-colors">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight text-center flex-1">Report #88219</h1>
+<button class="flex items-center justify-center p-2 -mr-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 text-slate-900 dark:text-white transition-colors">
+<span class="material-symbols-outlined">more_horiz</span>
+</button>
+</header>
+<!-- Scrollable Main Content -->
+<main class="flex-1 overflow-y-auto pb-24">
+<!-- Status & Meta Info Card -->
+<div class="px-4 pt-6 pb-2">
+<div class="bg-surface-light dark:bg-surface-dark rounded-xl p-4 shadow-sm border border-gray-100 dark:border-white/5 grid grid-cols-2 gap-4">
+<div class="flex flex-col gap-1 border-r border-gray-100 dark:border-white/10">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Status</span>
+<div class="flex items-center gap-1.5 text-emerald-600 dark:text-primary font-bold">
+<span class="relative flex h-2.5 w-2.5">
+<span class="animate-ping absolute inline-flex h-full w-full rounded-full bg-primary opacity-75"></span>
+<span class="relative inline-flex rounded-full h-2.5 w-2.5 bg-primary"></span>
+</span>
+                        In Progress
+                    </div>
+</div>
+<div class="flex flex-col gap-1 pl-2">
+<span class="text-xs font-medium text-slate-500 dark:text-slate-400 uppercase tracking-wider">Date</span>
+<span class="font-semibold text-slate-900 dark:text-white">Oct 24, 2023</span>
+</div>
+</div>
+</div>
+<!-- Issue Details Section -->
+<div class="px-4 py-4">
+<h2 class="text-2xl font-bold leading-tight text-slate-900 dark:text-white mb-2">Driver did not arrive</h2>
+<p class="text-slate-600 dark:text-slate-300 text-base leading-relaxed mb-4">
+                I waited for 15 minutes at the pickup location but the driver never showed up and marked the ride as complete. I tried calling but there was no answer.
+            </p>
+<!-- Attachments -->
+<div class="flex gap-3 overflow-x-auto pb-2 snap-x">
+<div class="snap-start shrink-0 w-32 h-32 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden relative group">
+<div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105" data-alt="Map view showing driver location far from pickup point" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDoO7KtrzHxAeYKK94CNxPD7mp5EPadREDoSCdjX0IsBc3owEi0REIDdCEBOXIjk9ka7Bpv6q8ruO-euoEQxz_5CnI6x5dFfdE8fFR5voSJ_ukpaRNBPlJBirlRcLurS2jGEdlqY2LZpBG4ZFL-HfUyv6rOu01FJ2P2Ex4phZBtNmKH-Y5RjYJEQXICug_HKYZnMFkkJYc7pg_kSzpqY6z-HPuTr0hRwGJJqWPC7H51Xi2R5d_4g_1NmQng2MuVBycuGZyVZ_FFrdw');"></div>
+</div>
+<div class="snap-start shrink-0 w-32 h-32 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden relative group">
+<div class="w-full h-full bg-cover bg-center transition-transform group-hover:scale-105" data-alt="Screenshot of ride cancelled notification" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD4myjw8gGaohdSyZ4v9DWBMhPxWFbXMUEpB5f_dCPqakcbnAEyJ-5uk6Z3EhGLq5yJRB7RWyZz7iebNREAGRzt5krZJy8-tQWK4nRsji3n-SEzPxW1g2e-fYUpre6YzL8HhickXcY8wUpeB8QNTIvVFZ-IBxLhuL12CcSlvNS4p9O6wTBJKtmj6QWd2cC7Uzt2iexUhJczmyva15BfMOi2Iebw1P0EFvybmXbU-Ibgzn2kWni67Tgtk1d4YoPKTEt6Th7mqP0VAzg');"></div>
+</div>
+</div>
+</div>
+<div class="h-2 bg-gray-100 dark:bg-white/5 my-2"></div>
+<!-- Timeline / Activity Log -->
+<div class="px-4 py-6">
+<h3 class="text-lg font-bold mb-6 flex items-center gap-2">
+<span class="material-symbols-outlined text-slate-400">history</span>
+                Activity Log
+            </h3>
+<div class="relative pl-4 border-l-2 border-gray-200 dark:border-white/10 space-y-8">
+<!-- Timeline Item: Initial Report -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-gray-300 dark:bg-gray-600 border-2 border-white dark:border-background-dark"></div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-baseline">
+<span class="font-semibold text-slate-900 dark:text-white">Ticket Created</span>
+<span class="text-xs text-slate-400">Oct 24, 10:05 AM</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Report received and assigned to Support Team.</p>
+</div>
+</div>
+<!-- Timeline Item: Support Reply -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-primary border-2 border-white dark:border-background-dark shadow-[0_0_0_4px_rgba(19,236,91,0.2)]"></div>
+<div class="flex flex-col gap-2">
+<div class="flex justify-between items-baseline">
+<span class="font-semibold text-primary">Support Agent (Sarah)</span>
+<span class="text-xs text-slate-400">Oct 24, 02:00 PM</span>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark p-3 rounded-lg rounded-tl-none border border-gray-100 dark:border-white/10 shadow-sm text-sm text-slate-700 dark:text-slate-200 leading-relaxed">
+                            Hello, I'm sorry to hear about this experience. We are currently investigating the driver's GPS logs and will get back to you shortly regarding a refund.
+                        </div>
+</div>
+</div>
+<!-- Timeline Item: System Update -->
+<div class="relative">
+<div class="absolute -left-[21px] top-1 h-3 w-3 rounded-full bg-gray-300 dark:bg-gray-600 border-2 border-white dark:border-background-dark"></div>
+<div class="flex flex-col gap-1">
+<div class="flex justify-between items-baseline">
+<span class="font-semibold text-slate-900 dark:text-white">Status Updated</span>
+<span class="text-xs text-slate-400">Oct 24, 02:05 PM</span>
+</div>
+<p class="text-sm text-slate-500 dark:text-slate-400">Ticket status changed to <span class="font-medium text-emerald-600 dark:text-primary">In Progress</span>.</p>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Action Bar -->
+<footer class="fixed bottom-0 left-0 w-full bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-white/10 p-3 pb-6 safe-area-bottom z-20">
+<div class="flex items-end gap-2 max-w-2xl mx-auto">
+<button class="shrink-0 p-3 text-slate-400 hover:text-primary transition-colors">
+<span class="material-symbols-outlined">attach_file</span>
+</button>
+<div class="relative flex-1">
+<textarea class="w-full bg-gray-100 dark:bg-background-dark border-0 rounded-2xl px-4 py-3 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-2 focus:ring-primary focus:bg-white dark:focus:bg-black/20 transition-all resize-none max-h-32" oninput="this.style.height = ''; this.style.height = this.scrollHeight + 'px'" placeholder="Type a reply..." rows="1"></textarea>
+</div>
+<button class="shrink-0 h-11 w-11 rounded-full bg-primary hover:bg-emerald-400 text-background-dark flex items-center justify-center shadow-lg shadow-primary/30 transition-all active:scale-95">
+<span class="material-symbols-outlined filled" style="font-variation-settings: 'FILL' 1;">send</span>
+</button>
+</div>
+</footer>
+</body></html>

@@ -1,0 +1,66 @@
+# Miscellaneous
+*.class
+*.log
+*.pyc
+*.swp
+.DS_Store
+.atom/
+.build/
+.buildlog/
+.history
+.svn/
+.swiftpm/
+migrate_working_dir/
+
+# IntelliJ related
+*.iml
+*.ipr
+*.iws
+.idea/
+
+# The .vscode folder contains launch configuration and tasks you configure in
+# VS Code which you may wish to be included in version control, so this line
+# is commented out by default.
+#.vscode/
+
+# Flutter/Dart/Pub related
+**/doc/api/
+**/ios/Flutter/.last_build_id
+.dart_tool/
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+/build/
+/coverage/
+
+# Gradle caches (local only, never commit)
+.gradle/
+.gradle-home/
+
+# Large heap dump files (never commit)
+android/*.hprof
+*.hprof
+
+# Symbolication related
+app.*.symbols
+
+# Obfuscation related
+app.*.map.json
+
+# Android Studio will place build artifacts here
+/android/app/debug
+/android/app/profile
+/android/app/release
+
+# Firebase Functions (dependencies installed in CI / locally)
+functions/node_modules/
+
+# Website (Vite)
+website/node_modules/
+website/dist/
+
+# Receipt DOCX generator (npm install at repo root)
+/node_modules/
+
+# Local receipt / invoice outputs (generated; do not commit)
+boltlog_receipt_*

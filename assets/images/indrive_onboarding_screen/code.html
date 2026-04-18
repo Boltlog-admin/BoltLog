@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InDrive Onboarding</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ec5b",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+              "text-main-light": "#0d1b12",
+              "text-main-dark": "#ffffff",
+              "text-sub-light": "#4c9a66",
+              "text-sub-dark": "#8bad96",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"],
+              "body": ["Noto Sans", "sans-serif"],
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "3xl": "1.5rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>
+        /* Custom scrollbar hiding for clean UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main-light dark:text-text-main-dark antialiased transition-colors duration-200">
+<div class="relative flex h-screen w-full flex-col overflow-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top Bar -->
+<header class="flex items-center justify-between px-6 pt-12 pb-4 z-10">
+<!-- Brand / Logo Area -->
+<div class="flex items-center gap-2 opacity-0">
+<!-- Placeholder to balance the Skip button -->
+<span class="material-symbols-outlined text-2xl">local_taxi</span>
+</div>
+<!-- Skip Button -->
+<button class="group flex items-center justify-center rounded-full bg-transparent px-3 py-1 text-sm font-bold text-text-sub-light dark:text-text-sub-dark transition-colors hover:bg-black/5 dark:hover:bg-white/10">
+<span>Skip</span>
+</button>
+</header>
+<!-- Main Content Area / Carousel Simulation -->
+<main class="flex-1 flex flex-col items-center justify-center px-6 relative w-full">
+<!-- Abstract Background Shapes -->
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-[120%] h-[60%] bg-primary/5 dark:bg-primary/10 blur-3xl rounded-full -z-10"></div>
+<!-- Carousel Slide (Active) -->
+<div class="w-full flex flex-col items-center gap-8 animate-fade-in">
+<!-- Illustration -->
+<div class="relative w-full aspect-square max-w-[320px] mx-auto mb-4">
+<div class="w-full h-full bg-cover bg-center rounded-3xl shadow-sm border border-white/50 dark:border-white/10" data-alt="Two hands holding a smartphone showing a map and handshake icon representing a deal" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBudDqhdU18p3EfzkkX7-kFVT_I-HMLa31Rp5niIqaR63bPctVP4cx3Q9LMzvmAdYlBP8S8xlxwzxnxU6wK_7EbcCkvEvjqWpufOE01JdZSrnDColb5fli8G28jbeCrX7O3r501IKjstbPqfYzE9WqZhleOJ1icFkYQ4HFMDFYS2FhWlpYfxpP429wtm5irSzhamA6ANm185OQYRhDvt1Vk-TuxEM8ZSDS7ozp9iTLALKw0pNmO-vWV-MNoDPyUEZpSBGVvDqnj3Gg');">
+</div>
+<!-- Floating Badge Icon -->
+<div class="absolute -bottom-6 -right-4 bg-primary text-background-dark p-4 rounded-2xl shadow-lg flex items-center justify-center transform rotate-[-6deg]">
+<span class="material-symbols-outlined text-3xl">handshake</span>
+</div>
+</div>
+<!-- Text Content -->
+<div class="text-center space-y-3 mt-4">
+<h1 class="text-3xl font-extrabold tracking-tight leading-tight text-text-main-light dark:text-text-main-dark">
+                        Negotiate your <span class="text-primary selection:bg-primary selection:text-white">price</span>
+</h1>
+<p class="text-text-sub-light dark:text-text-sub-dark text-lg font-medium leading-relaxed max-w-[280px] mx-auto">
+                        You propose the fare. Drivers accept or offer their own.
+                    </p>
+</div>
+</div>
+</main>
+<!-- Footer / Navigation Controls -->
+<footer class="flex flex-col gap-6 px-6 pb-10 w-full z-10">
+<!-- Page Indicators -->
+<div class="flex w-full flex-row items-center justify-center gap-3">
+<div class="h-2.5 w-8 rounded-full bg-primary transition-all duration-300"></div>
+<div class="h-2.5 w-2.5 rounded-full bg-gray-200 dark:bg-white/20"></div>
+<div class="h-2.5 w-2.5 rounded-full bg-gray-200 dark:bg-white/20"></div>
+</div>
+<!-- Action Buttons -->
+<div class="flex flex-col gap-3 w-full mt-2">
+<!-- Primary Button -->
+<button class="relative flex w-full cursor-pointer items-center justify-center overflow-hidden rounded-xl bg-primary h-14 px-5 text-background-dark text-lg font-bold shadow-lg shadow-primary/20 hover:bg-[#0fd650] transition-transform active:scale-[0.98]">
+<span class="mr-2">Next</span>
+<span class="material-symbols-outlined text-xl">arrow_forward</span>
+</button>
+<!-- Secondary Link -->
+<button class="flex w-full cursor-pointer items-center justify-center rounded-xl h-12 px-4 bg-transparent text-text-main-light dark:text-text-main-dark text-sm font-bold opacity-70 hover:opacity-100 transition-opacity">
+<span>Already have an account? <span class="text-primary">Log In</span></span>
+</button>
+</div>
+</footer>
+</div>
+</body></html>

@@ -1,0 +1,275 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Ratings</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a3322",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hide for cleaner look in horizontal lists */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased text-[#0d1b12] dark:text-gray-100">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-20">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm p-4 border-b border-gray-200 dark:border-gray-800 justify-between">
+<div class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 cursor-pointer text-[#0d1b12] dark:text-white">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</div>
+<h2 class="text-[#0d1b12] dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">My Rating</h2>
+</div>
+<!-- Scrollable Content -->
+<main class="flex flex-col gap-6 p-4">
+<!-- Performance Header Card -->
+<div class="flex flex-col gap-6 rounded-2xl bg-surface-light dark:bg-surface-dark p-5 shadow-sm">
+<!-- Top Row: Big Score and Stars -->
+<div class="flex flex-col items-center justify-center border-b border-gray-100 dark:border-gray-700 pb-5">
+<h1 class="text-[#0d1b12] dark:text-white tracking-tight text-[48px] font-extrabold leading-none mb-2">4.9</h1>
+<div class="flex gap-1 mb-2">
+<span class="material-symbols-outlined text-primary fill-1" style="font-variation-settings: 'FILL' 1; font-size: 24px;">star</span>
+<span class="material-symbols-outlined text-primary fill-1" style="font-variation-settings: 'FILL' 1; font-size: 24px;">star</span>
+<span class="material-symbols-outlined text-primary fill-1" style="font-variation-settings: 'FILL' 1; font-size: 24px;">star</span>
+<span class="material-symbols-outlined text-primary fill-1" style="font-variation-settings: 'FILL' 1; font-size: 24px;">star</span>
+<span class="material-symbols-outlined text-primary fill-1" style="font-variation-settings: 'FILL' 1; font-size: 24px;">star</span>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium">Based on 124 reviews</p>
+</div>
+<!-- Bottom Row: Distribution Bars -->
+<div class="grid grid-cols-[20px_1fr_36px] items-center gap-y-3 gap-x-3 w-full">
+<!-- 5 Star -->
+<p class="text-gray-600 dark:text-gray-300 text-xs font-semibold text-center">5</p>
+<div class="flex h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="rounded-full bg-primary" style="width: 80%;"></div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs text-right">80%</p>
+<!-- 4 Star -->
+<p class="text-gray-600 dark:text-gray-300 text-xs font-semibold text-center">4</p>
+<div class="flex h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="rounded-full bg-primary" style="width: 12%;"></div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs text-right">12%</p>
+<!-- 3 Star -->
+<p class="text-gray-600 dark:text-gray-300 text-xs font-semibold text-center">3</p>
+<div class="flex h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="rounded-full bg-primary" style="width: 5%;"></div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs text-right">5%</p>
+<!-- 2 Star -->
+<p class="text-gray-600 dark:text-gray-300 text-xs font-semibold text-center">2</p>
+<div class="flex h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="rounded-full bg-primary" style="width: 1%;"></div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs text-right">1%</p>
+<!-- 1 Star -->
+<p class="text-gray-600 dark:text-gray-300 text-xs font-semibold text-center">1</p>
+<div class="flex h-2 w-full overflow-hidden rounded-full bg-gray-100 dark:bg-gray-700">
+<div class="rounded-full bg-primary" style="width: 2%;"></div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs text-right">2%</p>
+</div>
+</div>
+<!-- Filter Chips -->
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-[#0d1b12] dark:bg-white pl-4 pr-4 transition-colors">
+<p class="text-white dark:text-[#0d1b12] text-sm font-semibold leading-normal">All reviews</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 pl-4 pr-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<p class="text-[#0d1b12] dark:text-gray-300 text-sm font-medium leading-normal">Newest</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 pl-4 pr-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<p class="text-[#0d1b12] dark:text-gray-300 text-sm font-medium leading-normal">Positive</p>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-white dark:bg-surface-dark border border-gray-200 dark:border-gray-700 pl-4 pr-4 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<p class="text-[#0d1b12] dark:text-gray-300 text-sm font-medium leading-normal">Negative</p>
+</button>
+</div>
+<!-- Reviews List -->
+<div class="flex flex-col gap-4">
+<!-- Review 1 -->
+<div class="flex flex-col gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-transparent dark:border-gray-800">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shadow-inner" data-alt="Portrait of a smiling user with glasses" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBlIzS5bKNgNkAoRsVqGF7a-Rp6lztK59qbWWJ1fNIYgSDTZrG4eUa2yQ3oTezyP5Vyxoi2b2pvYICj1nN8Y5eClj4lsP-Gwis0WCumbyG4pAcDK5eIUcXh-LbKubVcyptW2YVcaywj7reXFD3nIyFuKRTe22lE0eTfeUMp1eqhyKfzDDzrtFtYS2vR3ME90C6axRLXwx9oD2utodHI1XdjAetGYN1RKoxiGhe9hpDXp7EtzW9vUb4zYyFAX3Ghb5uiK3H_aQ_l2PE");'></div>
+<div class="flex flex-col">
+<p class="text-[#0d1b12] dark:text-white text-base font-bold leading-tight">Alice M.</p>
+<span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 mt-1 w-fit ring-1 ring-inset ring-green-600/20">Ride</span>
+</div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-normal whitespace-nowrap">Today, 2:30 PM</p>
+</div>
+<div class="flex gap-1 mt-1">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+</div>
+<p class="text-[#0d1b12] dark:text-gray-200 text-sm font-normal leading-relaxed">Great drive, very polite! The car was clean and the route was efficient. Would definitely ride again.</p>
+<div class="flex gap-6 mt-1 text-gray-400 dark:text-gray-500">
+<button class="flex items-center gap-1.5 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_up</span>
+<span class="text-xs font-medium">Helpful (12)</span>
+</button>
+<button class="flex items-center gap-1.5 hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_down</span>
+</button>
+</div>
+</div>
+<!-- Review 2 -->
+<div class="flex flex-col gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-transparent dark:border-gray-800">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shadow-inner" data-alt="Portrait of a young man looking professional" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuB55M84mYfOcjVyqMTM7v3zwPsh_bxdDvNAKSW4rkcGqlK2FggkN-5BKi6NR-Py9uImSKLt_ZsTqN8iuIdRwBUAcR93Yhlvh_v8dppRCOmCZO2yukKxmq3a7YFAR6Ly0M5a0uxLAGg15fd28QoNDO19_5CvPgbDhHC41HJWhIGid43OQuMuNpG7frjqHlUAp10gL-Yw0s9VOS6JLwGXqsBxdRaNgJIk-y3-hyMrSp-ryz1aG9CeDOhkHFyyIeKCe31Pir5ADKXkElM");'></div>
+<div class="flex flex-col">
+<p class="text-[#0d1b12] dark:text-white text-base font-bold leading-tight">Bob D.</p>
+<span class="inline-flex items-center rounded-md bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 text-xs font-medium text-blue-700 dark:text-blue-400 mt-1 w-fit ring-1 ring-inset ring-blue-600/20">Delivery</span>
+</div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-normal whitespace-nowrap">Yesterday</p>
+</div>
+<div class="flex gap-1 mt-1">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+</div>
+<p class="text-[#0d1b12] dark:text-gray-200 text-sm font-normal leading-relaxed">Package arrived in perfect condition. Driver was super communicative about arrival time.</p>
+<div class="flex gap-6 mt-1 text-gray-400 dark:text-gray-500">
+<button class="flex items-center gap-1.5 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_up</span>
+<span class="text-xs font-medium">Helpful (4)</span>
+</button>
+<button class="flex items-center gap-1.5 hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_down</span>
+</button>
+</div>
+</div>
+<!-- Review 3 -->
+<div class="flex flex-col gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-transparent dark:border-gray-800">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shadow-inner" data-alt="Portrait of a serious man with beard" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDWDKic6HCdGRYMI_5IlA1_M6jlMT_RkyJbG60S8v-1ENwfIV4SJVYnH2zTStsseV8VgTkVvVG5Fvgt5YEhr5Xz6CSC9PsBPH9VKpCqpJBr2FLdeZgP16KgHtHdzNAzY5cMeVOgTBR6Bua7g_BEgz0MS3Ka-Hqqk1ZEonCSthpab5MU4QEv_1ZN2nEYt-3z85n0f63o5Z7uEQZK4ubZFWiTp3I7JGMEX35rEQcHwbjz3PcIerPqDq7apm31xKTJ3i_iUOQZdfKDUhc");'></div>
+<div class="flex flex-col">
+<p class="text-[#0d1b12] dark:text-white text-base font-bold leading-tight">Charlie K.</p>
+<span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 mt-1 w-fit ring-1 ring-inset ring-green-600/20">Ride</span>
+</div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-normal whitespace-nowrap">Oct 12</p>
+</div>
+<div class="flex gap-1 mt-1">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+</div>
+<p class="text-[#0d1b12] dark:text-gray-200 text-sm font-normal leading-relaxed">Had trouble finding the pickup spot, but the driver was patient. The car smelled a bit strong of air freshener.</p>
+<div class="flex gap-6 mt-1 text-gray-400 dark:text-gray-500">
+<button class="flex items-center gap-1.5 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_up</span>
+<span class="text-xs font-medium">Helpful (2)</span>
+</button>
+<button class="flex items-center gap-1.5 hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_down</span>
+<span class="text-xs font-medium">Report</span>
+</button>
+</div>
+</div>
+<!-- Review 4 -->
+<div class="flex flex-col gap-3 rounded-xl bg-surface-light dark:bg-surface-dark p-4 shadow-sm border border-transparent dark:border-gray-800">
+<div class="flex items-start justify-between gap-3">
+<div class="flex items-center gap-3">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-12 shadow-inner" data-alt="Abstract gradient placeholder for user without photo" style="background-image: linear-gradient(135deg, #13ec5b 0%, #0d1b12 100%);"></div>
+<div class="flex flex-col">
+<p class="text-[#0d1b12] dark:text-white text-base font-bold leading-tight">Dave R.</p>
+<span class="inline-flex items-center rounded-md bg-green-50 dark:bg-green-900/30 px-2 py-0.5 text-xs font-medium text-green-700 dark:text-green-400 mt-1 w-fit ring-1 ring-inset ring-green-600/20">Ride</span>
+</div>
+</div>
+<p class="text-gray-500 dark:text-gray-400 text-xs font-normal whitespace-nowrap">Sep 28</p>
+</div>
+<div class="flex gap-1 mt-1">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+<span class="material-symbols-outlined text-gray-300 dark:text-gray-600" style="font-variation-settings: 'FILL' 1; font-size: 18px;">star</span>
+</div>
+<p class="text-[#0d1b12] dark:text-gray-200 text-sm font-normal leading-relaxed">Smooth ride, good conversation. Arrived a little late due to traffic but kept me updated.</p>
+<div class="flex gap-6 mt-1 text-gray-400 dark:text-gray-500">
+<button class="flex items-center gap-1.5 hover:text-primary transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_up</span>
+<span class="text-xs font-medium">Helpful</span>
+</button>
+<button class="flex items-center gap-1.5 hover:text-red-400 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 18px;">thumb_down</span>
+</button>
+</div>
+</div>
+</div>
+</main>
+<!-- Bottom Navigation -->
+<nav class="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 px-6 py-2 shadow-[0_-5px_10px_rgba(0,0,0,0.02)]">
+<div class="flex items-center justify-between">
+<a class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-[#0d1b12] dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 24px;">home</span>
+<span class="text-[10px] font-medium">Home</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-[#0d1b12] dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 24px;">account_balance_wallet</span>
+<span class="text-[10px] font-medium">Earnings</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-primary" href="#">
+<span class="material-symbols-outlined fill-1" style="font-variation-settings: 'FILL' 1; font-size: 24px;">star</span>
+<span class="text-[10px] font-bold">Ratings</span>
+</a>
+<a class="flex flex-col items-center gap-1 p-2 text-gray-400 hover:text-[#0d1b12] dark:hover:text-white transition-colors" href="#">
+<span class="material-symbols-outlined" style="font-size: 24px;">person</span>
+<span class="text-[10px] font-medium">Profile</span>
+</a>
+</div>
+</nav>
+<!-- Safe area padding for bottom nav on older phones -->
+<div class="h-6"></div>
+</div>
+</body></html>

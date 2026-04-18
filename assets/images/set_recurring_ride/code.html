@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Set Recurring Ride</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0fb847",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2c20",
+                        "input-bg-light": "#e7f3eb",
+                        "input-bg-dark": "#1e3a29",
+                        "text-main": "#0d1b12",
+                        "text-sub": "#4c9a66",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner UI */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-white antialiased overflow-x-hidden selection:bg-primary selection:text-black">
+<div class="relative flex flex-col min-h-screen w-full max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Header -->
+<header class="sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm px-4 py-3 flex items-center justify-between border-b border-gray-100 dark:border-gray-800">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-text-main dark:text-white">arrow_back_ios_new</span>
+</button>
+<h1 class="text-lg font-bold text-text-main dark:text-white tracking-tight">Recurring Ride</h1>
+<div class="w-10"></div> <!-- Spacer for centering -->
+</header>
+<!-- Main Scrollable Content -->
+<main class="flex-1 flex flex-col px-4 pb-32 pt-4 gap-6">
+<!-- Location Section -->
+<section class="flex flex-col gap-4">
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+<div class="relative flex flex-col gap-4">
+<!-- Visual Connector Line -->
+<div class="absolute left-[1.35rem] top-8 bottom-8 w-0.5 bg-gray-200 dark:bg-gray-700 pointer-events-none z-0"></div>
+<!-- Pickup Input -->
+<div class="relative z-10 group">
+<div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6">
+<span class="w-3 h-3 rounded-full bg-primary ring-4 ring-white dark:ring-surface-dark"></span>
+</div>
+<input class="w-full h-12 pl-12 pr-4 bg-input-bg-light dark:bg-input-bg-dark rounded-xl border-none focus:ring-2 focus:ring-primary text-text-main dark:text-white placeholder:text-text-sub text-base font-medium transition-all" placeholder="Pickup location" type="text" value="Current Location"/>
+</div>
+<!-- Dropoff Input -->
+<div class="relative z-10 group">
+<div class="absolute left-3 top-1/2 -translate-y-1/2 flex items-center justify-center w-6 h-6">
+<span class="w-3 h-3 bg-black dark:bg-white rounded-sm ring-4 ring-white dark:ring-surface-dark"></span>
+</div>
+<input class="w-full h-12 pl-12 pr-4 bg-input-bg-light dark:bg-input-bg-dark rounded-xl border-none focus:ring-2 focus:ring-primary text-text-main dark:text-white placeholder:text-text-sub text-base font-medium transition-all" placeholder="Where to?" type="text"/>
+</div>
+</div>
+</div>
+<!-- Chips: Saved Places -->
+<div class="flex gap-3 overflow-x-auto no-scrollbar pb-1">
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 pl-3 pr-4 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary text-[20px]">home</span>
+<span class="text-sm font-semibold">Home</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 pl-3 pr-4 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary text-[20px]">work</span>
+<span class="text-sm font-semibold">Work</span>
+</button>
+<button class="flex h-9 shrink-0 items-center justify-center gap-x-2 rounded-full bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-700 pl-3 pr-4 active:scale-95 transition-transform">
+<span class="material-symbols-outlined text-primary text-[20px]">fitness_center</span>
+<span class="text-sm font-semibold">Gym</span>
+</button>
+</div>
+</section>
+<!-- Time Selection -->
+<section>
+<h3 class="text-text-main dark:text-white text-lg font-bold mb-3 px-1">Pickup Time</h3>
+<div class="bg-surface-light dark:bg-surface-dark p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-center gap-2">
+<!-- Hours -->
+<div class="flex flex-col items-center gap-1">
+<div class="w-20 h-24 bg-input-bg-light dark:bg-input-bg-dark rounded-xl flex items-center justify-center">
+<span class="text-4xl font-extrabold text-text-main dark:text-white">08</span>
+</div>
+<span class="text-xs text-text-sub uppercase font-bold tracking-wider">Hours</span>
+</div>
+<span class="text-2xl font-bold text-gray-300 dark:text-gray-600 mb-5">:</span>
+<!-- Minutes -->
+<div class="flex flex-col items-center gap-1">
+<div class="w-20 h-24 bg-input-bg-light dark:bg-input-bg-dark rounded-xl flex items-center justify-center border-2 border-primary/50">
+<span class="text-4xl font-extrabold text-text-main dark:text-white">30</span>
+</div>
+<span class="text-xs text-text-sub uppercase font-bold tracking-wider">Mins</span>
+</div>
+<div class="w-2"></div>
+<!-- AM/PM Toggle -->
+<div class="flex flex-col h-24 bg-input-bg-light dark:bg-input-bg-dark rounded-xl p-1 w-16">
+<button class="flex-1 rounded-lg text-sm font-bold text-text-sub hover:bg-white dark:hover:bg-surface-dark hover:text-text-main transition-colors">AM</button>
+<button class="flex-1 rounded-lg bg-white dark:bg-surface-dark shadow-sm text-sm font-bold text-text-main transition-colors">PM</button>
+</div>
+</div>
+</section>
+<!-- Frequency Selection -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h3 class="text-text-main dark:text-white text-lg font-bold">Repeat On</h3>
+<button class="text-sm font-semibold text-primary">Daily</button>
+</div>
+<div class="flex justify-between items-center bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+<!-- Days -->
+<button class="w-10 h-10 rounded-full bg-primary text-black font-bold text-sm shadow-md shadow-primary/30 flex items-center justify-center transition-transform active:scale-90">M</button>
+<button class="w-10 h-10 rounded-full bg-primary text-black font-bold text-sm shadow-md shadow-primary/30 flex items-center justify-center transition-transform active:scale-90">T</button>
+<button class="w-10 h-10 rounded-full bg-primary text-black font-bold text-sm shadow-md shadow-primary/30 flex items-center justify-center transition-transform active:scale-90">W</button>
+<button class="w-10 h-10 rounded-full bg-primary text-black font-bold text-sm shadow-md shadow-primary/30 flex items-center justify-center transition-transform active:scale-90">T</button>
+<button class="w-10 h-10 rounded-full bg-primary text-black font-bold text-sm shadow-md shadow-primary/30 flex items-center justify-center transition-transform active:scale-90">F</button>
+<button class="w-10 h-10 rounded-full bg-input-bg-light dark:bg-input-bg-dark text-text-sub font-medium text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">S</button>
+<button class="w-10 h-10 rounded-full bg-input-bg-light dark:bg-input-bg-dark text-text-sub font-medium text-sm flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">S</button>
+</div>
+</section>
+<!-- Duration -->
+<section>
+<h3 class="text-text-main dark:text-white text-lg font-bold mb-3 px-1">Duration</h3>
+<div class="flex gap-4">
+<div class="flex-1">
+<label class="text-xs text-text-sub font-semibold ml-1 mb-1 block">Start Date</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-sub text-[20px]">calendar_today</span>
+<input class="w-full h-12 pl-10 pr-4 bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 text-text-main dark:text-white font-medium focus:ring-primary focus:border-primary" readonly="" type="text" value="Oct 24"/>
+</div>
+</div>
+<div class="flex-1">
+<label class="text-xs text-text-sub font-semibold ml-1 mb-1 block">End Date</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-text-sub text-[20px]">event</span>
+<input class="w-full h-12 pl-10 pr-4 bg-surface-light dark:bg-surface-dark rounded-xl border border-gray-200 dark:border-gray-700 text-text-main dark:text-white font-medium focus:ring-primary focus:border-primary" readonly="" type="text" value="Nov 24"/>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Fixed Footer -->
+<footer class="fixed bottom-0 w-full max-w-md bg-surface-light dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 p-5 pb-8 shadow-[0_-5px_20px_rgba(0,0,0,0.05)] dark:shadow-[0_-5px_20px_rgba(0,0,0,0.3)] z-20">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<span class="text-xs text-text-sub font-medium">Recommended Offer</span>
+<span class="text-xl font-bold text-text-main dark:text-white">$12 - $15 <span class="text-sm font-normal text-text-sub">/ ride</span></span>
+</div>
+<button class="p-2 rounded-full bg-input-bg-light dark:bg-input-bg-dark text-primary hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">edit</span>
+</button>
+</div>
+<button class="w-full h-14 bg-primary hover:bg-primary-dark active:scale-[0.98] transition-all rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/30">
+<span class="text-text-main font-bold text-lg">Schedule Ride</span>
+<span class="material-symbols-outlined text-text-main font-bold">arrow_forward</span>
+</button>
+</footer>
+</div>
+</body></html>

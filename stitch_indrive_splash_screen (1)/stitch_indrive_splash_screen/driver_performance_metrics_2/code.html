@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Performance Metrics</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-content": "#003811", 
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c2e22",
+                        "text-main-light": "#0d1b12",
+                        "text-main-dark": "#eefdf2",
+                        "text-sub-light": "#4c6655",
+                        "text-sub-dark": "#8fa896",
+                        "border-light": "#e2e8e4",
+                        "border-dark": "#2a3d31",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+        body {
+            min-height: max(884px, 100dvh);
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark min-h-screen text-text-main-light dark:text-text-main-dark font-display antialiased selection:bg-primary selection:text-primary-content">
+<div class="sticky top-0 z-50 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-b border-border-light dark:border-border-dark">
+<div class="flex items-center px-4 h-16 justify-between max-w-md mx-auto">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-text-main-light dark:text-text-main-dark">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight flex-1 text-center pr-10">Performance</h2>
+</div>
+</div>
+<div class="max-w-md mx-auto pb-8">
+<div class="px-4 py-4">
+<div class="bg-gray-200/50 dark:bg-surface-dark p-1 rounded-xl flex gap-1 relative">
+<button class="flex-1 py-1.5 text-sm font-semibold rounded-lg bg-white dark:bg-surface-light shadow-sm text-text-main-light dark:text-text-main-dark transition-all">
+                    Daily
+                </button>
+<button class="flex-1 py-1.5 text-sm font-medium rounded-lg text-text-sub-light dark:text-text-sub-dark hover:bg-white/50 dark:hover:bg-white/5 transition-all">
+                    Weekly
+                </button>
+<button class="flex-1 py-1.5 text-sm font-medium rounded-lg text-text-sub-light dark:text-text-sub-dark hover:bg-white/50 dark:hover:bg-white/5 transition-all">
+                    Monthly
+                </button>
+</div>
+</div>
+<div class="px-4 mb-2">
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-border-light dark:border-border-dark">
+<div class="flex justify-between items-center mb-6">
+<div>
+<h3 class="text-sm font-medium text-text-sub-light dark:text-text-sub-dark">Trips Completed</h3>
+<div class="flex items-baseline gap-2 mt-0.5">
+<span class="text-3xl font-extrabold tracking-tight">42</span>
+<span class="flex items-center text-xs font-bold text-primary bg-primary/10 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px] mr-0.5">trending_up</span>
+                                +12%
+                            </span>
+</div>
+</div>
+<div class="p-2 bg-background-light dark:bg-background-dark rounded-full">
+<span class="material-symbols-outlined text-text-sub-light">bar_chart</span>
+</div>
+</div>
+<div class="relative h-32 w-full mb-2">
+<svg class="w-full h-full overflow-visible" preserveAspectRatio="none" viewBox="0 0 300 100">
+<defs>
+<linearGradient id="chartGradient" x1="0%" x2="0%" y1="0%" y2="100%">
+<stop offset="0%" style="stop-color:#13ec5b;stop-opacity:0.3"></stop>
+<stop offset="100%" style="stop-color:#13ec5b;stop-opacity:0"></stop>
+</linearGradient>
+</defs>
+<line class="stroke-gray-100 dark:stroke-gray-800" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="300" y1="25" y2="25"></line>
+<line class="stroke-gray-100 dark:stroke-gray-800" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="300" y1="50" y2="50"></line>
+<line class="stroke-gray-100 dark:stroke-gray-800" stroke-dasharray="4 4" stroke-width="1" x1="0" x2="300" y1="75" y2="75"></line>
+<path d="M0,70 Q50,60 100,65 T200,30 T300,45 V100 H0 Z" fill="url(#chartGradient)"></path>
+<path class="stroke-primary" d="M0,70 Q50,60 100,65 T200,30 T300,45" fill="none" stroke-linecap="round" stroke-linejoin="round" stroke-width="3"></path>
+<circle class="fill-white dark:fill-surface-dark stroke-primary" cx="100" cy="65" r="3" stroke-width="2"></circle>
+<circle class="fill-white dark:fill-surface-dark stroke-primary" cx="200" cy="30" r="3" stroke-width="2"></circle>
+<circle class="fill-white dark:fill-surface-dark stroke-primary" cx="300" cy="45" r="3" stroke-width="2"></circle>
+</svg>
+</div>
+<div class="flex justify-between text-[10px] text-text-sub-light dark:text-text-sub-dark font-medium uppercase tracking-wider px-1">
+<span>Mon</span>
+<span>Tue</span>
+<span>Wed</span>
+<span>Thu</span>
+<span>Fri</span>
+<span>Sat</span>
+<span>Sun</span>
+</div>
+</div>
+</div>
+<div class="px-4 pt-2 pb-2">
+<h3 class="text-lg font-bold mb-3 px-1">Overview</h3>
+<div class="grid grid-cols-2 gap-3">
+<div class="flex flex-col p-4 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-16 h-16 bg-red-50 dark:bg-red-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+<div class="flex items-center justify-between mb-2 relative z-10">
+<span class="material-symbols-outlined text-text-sub-light dark:text-text-sub-dark text-[20px]">check_circle</span>
+<span class="flex items-center text-[10px] font-bold text-red-500 bg-red-50 dark:bg-red-900/20 px-1.5 py-0.5 rounded-md">
+<span class="material-symbols-outlined text-[12px] mr-0.5">arrow_downward</span>
+                            2%
+                        </span>
+</div>
+<p class="text-2xl font-bold tracking-tight mb-1 relative z-10">88%</p>
+<p class="text-xs font-medium text-text-sub-light dark:text-text-sub-dark relative z-10">Acceptance Rate</p>
+<div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-red-500 w-[88%] rounded-full"></div>
+</div>
+</div>
+<div class="flex flex-col p-4 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm relative overflow-hidden group">
+<div class="absolute top-0 right-0 w-16 h-16 bg-green-50 dark:bg-green-900/10 rounded-bl-full -mr-4 -mt-4 transition-transform group-hover:scale-110"></div>
+<div class="flex items-center justify-between mb-2 relative z-10">
+<span class="material-symbols-outlined text-text-sub-light dark:text-text-sub-dark text-[20px]">task_alt</span>
+<span class="flex items-center text-[10px] font-bold text-green-600 dark:text-primary bg-green-50 dark:bg-green-900/20 px-1.5 py-0.5 rounded-md">
+<span class="material-symbols-outlined text-[12px] mr-0.5">arrow_upward</span>
+                            1%
+                        </span>
+</div>
+<p class="text-2xl font-bold tracking-tight mb-1 relative z-10">95%</p>
+<p class="text-xs font-medium text-text-sub-light dark:text-text-sub-dark relative z-10">Completion Rate</p>
+<div class="w-full h-1 bg-gray-100 dark:bg-gray-800 rounded-full mt-3 overflow-hidden">
+<div class="h-full bg-primary w-[95%] rounded-full"></div>
+</div>
+</div>
+<div class="flex flex-col p-4 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-2">
+<span class="material-symbols-outlined text-orange-500 text-[20px]">distance</span>
+</div>
+<p class="text-2xl font-bold tracking-tight mb-1">380<span class="text-sm font-normal ml-1 text-text-sub-light dark:text-text-sub-dark">km</span></p>
+<p class="text-xs font-medium text-text-sub-light dark:text-text-sub-dark">Distance Driven</p>
+</div>
+<div class="flex flex-col p-4 rounded-xl bg-surface-light dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm relative overflow-hidden">
+<div class="flex items-center justify-between mb-2">
+<span class="material-symbols-outlined text-blue-500 text-[20px]">schedule</span>
+</div>
+<p class="text-2xl font-bold tracking-tight mb-1">24<span class="text-sm font-normal ml-1 text-text-sub-light dark:text-text-sub-dark">h</span></p>
+<p class="text-xs font-medium text-text-sub-light dark:text-text-sub-dark">Hours Online</p>
+</div>
+</div>
+</div>
+<div class="px-4 py-2">
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-border-light dark:border-border-dark">
+<div class="flex justify-between items-center mb-4">
+<div>
+<h3 class="text-sm font-medium text-text-sub-light dark:text-text-sub-dark mb-1">Passenger Rating</h3>
+<div class="flex items-center gap-2">
+<span class="text-3xl font-extrabold tracking-tight">4.9</span>
+<span class="flex text-primary icon-filled">
+<span class="material-symbols-outlined text-[20px]">star</span>
+</span>
+</div>
+</div>
+<div class="text-right">
+<span class="text-xs font-bold bg-green-100 dark:bg-surface-dark border border-green-200 dark:border-primary/20 text-green-700 dark:text-primary px-3 py-1 rounded-full">Excellent</span>
+<p class="text-[10px] text-text-sub-light dark:text-text-sub-dark mt-1">124 reviews</p>
+</div>
+</div>
+<div class="space-y-1.5">
+<div class="flex items-center gap-3">
+<span class="text-[10px] font-bold w-3 text-text-sub-light dark:text-text-sub-dark">5</span>
+<div class="h-1.5 flex-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[80%] rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[10px] font-bold w-3 text-text-sub-light dark:text-text-sub-dark">4</span>
+<div class="h-1.5 flex-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+<div class="h-full bg-primary w-[15%] rounded-full"></div>
+</div>
+</div>
+<div class="flex items-center gap-3">
+<span class="text-[10px] font-bold w-3 text-text-sub-light dark:text-text-sub-dark">3</span>
+<div class="h-1.5 flex-1 bg-gray-100 dark:bg-gray-800 rounded-full overflow-hidden">
+<div class="h-full bg-gray-300 dark:bg-gray-600 w-[3%] rounded-full"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="px-4 pt-4">
+<div class="flex items-center justify-between mb-3 px-1">
+<h3 class="text-lg font-bold">Insights &amp; Tips</h3>
+<button class="text-xs font-bold text-primary hover:underline">View All</button>
+</div>
+<div class="space-y-3">
+<div class="flex gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+<div class="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined icon-filled">lightbulb</span>
+</div>
+<div>
+<h4 class="text-sm font-bold mb-1">Boost Your Acceptance</h4>
+<p class="text-xs text-text-sub-light dark:text-text-sub-dark leading-relaxed">
+                            Your acceptance rate dropped slightly. Try staying in high-demand zones like <span class="font-medium text-text-main-light dark:text-text-main-dark">Downtown</span> during rush hour.
+                        </p>
+</div>
+</div>
+<div class="flex gap-4 p-4 rounded-xl bg-white dark:bg-surface-dark border border-border-light dark:border-border-dark shadow-sm hover:shadow-md transition-shadow cursor-pointer">
+<div class="shrink-0 flex items-center justify-center w-10 h-10 rounded-full bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-primary">
+<span class="material-symbols-outlined icon-filled">verified</span>
+</div>
+<div>
+<h4 class="text-sm font-bold mb-1">Great Completion Rate!</h4>
+<p class="text-xs text-text-sub-light dark:text-text-sub-dark leading-relaxed">
+                            You're in the top 10% of drivers for completing trips this month. Keep it up to unlock priority support.
+                        </p>
+</div>
+</div>
+</div>
+</div>
+<div class="text-center mt-8 mb-4">
+<p class="text-xs text-text-sub-light dark:text-text-sub-dark flex items-center justify-center gap-1">
+<span class="material-symbols-outlined text-[14px]">sync</span>
+                Stats updated 15 mins ago
+            </p>
+</div>
+</div>
+
+</body></html>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!-- Modified to show Boltlog launch image on modern Android (v21+) -->
+<layer-list xmlns:android="http://schemas.android.com/apk/res/android">
+    <!-- Full-screen blue background for launcher / splash -->
+    <item android:drawable="@color/launcher_blue_background" />
+
+    <!-- Launch image from Boltlog Logo folder (image 3) -->
+    <item>
+        <bitmap
+            android:gravity="center"
+            android:src="@drawable/launch_3" />
+    </item>
+</layer-list>

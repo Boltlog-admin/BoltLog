@@ -1,0 +1,42 @@
+# Grants Firebase Auth custom claim { admin: true } for the BoltLog admin website.
+#
+# One-time: add a repository secret using a key from Firebase Console → Project settings →
+# Service accounts → Generate new private key (recommended). Name it FIREBASE_ADMIN_SA_KEY.
+# If you only have GCP_SA_KEY, set FIREBASE_ADMIN_SA_KEY to the same JSON *or* ensure that
+# service account has permission to manage Firebase Auth users (e.g. Firebase Authentication Admin).
+#
+# Run: Actions → "Set Firebase admin custom claim" → Run workflow → keep or edit email.
+name: Set Firebase admin custom claim
+
+on:
+  workflow_dispatch:
+    inputs:
+      admin_email:
+        description: Email (must already exist under Firebase Authentication → Users)
+        required: true
+        default: admin@boltlog.org
+
+jobs:
+  set-claim:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Authenticate to Google Cloud (Firebase Admin SDK)
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_ADMIN_SA_KEY || secrets.GCP_SA_KEY }}
+
+      - name: Set up Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+
+      - name: Install functions dependencies
+        run: npm ci
+        working-directory: functions
+
+      - name: Set admin custom claim
+        run: npm run set-admin-claim -- "${{ inputs.admin_email }}"
+        working-directory: functions

@@ -1,0 +1,914 @@
+<!DOCTYPE html>
+<html lang="en" class="light">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>InDrive Clone Prototype</title>
+    
+    <!-- Libraries -->
+    <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
+    <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+    <script src="https://unpkg.com/history@5/umd/history.development.js"></script>
+    <script src="https://unpkg.com/react-router@6.3.0/umd/react-router.development.js"></script>
+    <script src="https://unpkg.com/react-router-dom@6.3.0/umd/react-router-dom.development.js"></script>
+    <script src="https://unpkg.com/babel-standalone@6/babel.min.js"></script>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+
+    <!-- Fonts & Icons -->
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Noto+Sans:wght@400;500;700&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&display=swap" rel="stylesheet">
+
+    <!-- Tailwind Config -->
+    <script>
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0eb545",
+                        "primary-content": "#052e11",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2c20",
+                        "text-main-light": "#0d1b12",
+                        "text-main-dark": "#f8fcf9",
+                        "text-secondary-light": "#4c9a66",
+                        "text-secondary-dark": "#8abf9e",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+    <style>
+        body { margin: 0; padding: 0; min-height: 100vh; }
+        .no-scrollbar::-webkit-scrollbar { display: none; }
+        .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
+        .material-symbols-outlined { font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+        .icon-filled { font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24; }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark transition-colors duration-200">
+    <div id="root"></div>
+
+    <script type="text/babel">
+        const { useState, useEffect } = React;
+        const { createRoot } = ReactDOM;
+        const { MemoryRouter, Routes, Route, Link, useNavigate, useLocation } = ReactRouterDOM;
+
+        // --- Shared Components ---
+
+        const NavLink = ({ to, icon, label, active }) => {
+            const navigate = useNavigate();
+            return (
+                <button 
+                    onClick={() => navigate(to)}
+                    className={`flex flex-col items-center gap-1 p-2 transition-colors ${active ? 'text-primary' : 'text-gray-400 hover:text-gray-900 dark:hover:text-white'}`}
+                >
+                    <span className={`material-symbols-outlined ${active ? 'icon-filled' : ''}`} style={{fontSize: '24px'}}>{icon}</span>
+                    <span className="text-[10px] font-medium">{label}</span>
+                </button>
+            );
+        };
+
+        const BottomNav = ({ role = 'passenger' }) => {
+            const location = useLocation();
+            const currentPath = location.pathname;
+
+            if (role === 'driver') {
+                return (
+                    <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 px-6 py-2 pb-safe shadow-[0_-5px_10px_rgba(0,0,0,0.02)]">
+                        <div className="flex items-center justify-between max-w-md mx-auto">
+                            <NavLink to="/driver/dashboard" icon="home" label="Home" active={currentPath.includes('dashboard')} />
+                            <NavLink to="/driver/earnings" icon="account_balance_wallet" label="Earnings" active={currentPath.includes('earnings')} />
+                            <NavLink to="/driver/ratings" icon="star" label="Ratings" active={currentPath.includes('ratings')} />
+                            <NavLink to="/driver/profile" icon="person" label="Profile" active={currentPath.includes('profile')} />
+                        </div>
+                    </nav>
+                );
+            }
+
+            return (
+                <nav className="fixed bottom-0 left-0 right-0 z-50 bg-white dark:bg-surface-dark border-t border-gray-100 dark:border-gray-800 px-6 py-2 pb-safe shadow-[0_-5px_10px_rgba(0,0,0,0.02)]">
+                    <div className="flex items-center justify-between max-w-md mx-auto">
+                        <NavLink to="/passenger/home" icon="home" label="Home" active={currentPath.includes('home')} />
+                        <NavLink to="/passenger/rides" icon="directions_car" label="Rides" active={currentPath.includes('rides')} />
+                        <NavLink to="/passenger/wallet" icon="account_balance_wallet" label="Wallet" active={currentPath.includes('wallet')} />
+                        <NavLink to="/passenger/profile" icon="person" label="Profile" active={currentPath.includes('profile')} />
+                    </div>
+                </nav>
+            );
+        };
+
+        const TopBar = ({ title, backTo, rightAction }) => {
+            const navigate = useNavigate();
+            return (
+                <div className="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-white/5">
+                    <button onClick={() => backTo ? navigate(backTo) : navigate(-1)} className="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                        <span className="material-symbols-outlined">arrow_back_ios_new</span>
+                    </button>
+                    <h2 className="text-lg font-bold leading-tight flex-1 text-center">{title}</h2>
+                    <div className="w-10 flex justify-center">{rightAction}</div>
+                </div>
+            );
+        };
+
+        // --- Screens ---
+
+        // 1. Splash
+        const Splash = () => {
+            const navigate = useNavigate();
+            useEffect(() => {
+                const timer = setTimeout(() => navigate('/welcome'), 2500);
+                return () => clearTimeout(timer);
+            }, []);
+
+            return (
+                <div className="relative flex h-screen w-full flex-col items-center justify-between overflow-hidden bg-background-light dark:bg-background-dark transition-colors duration-300">
+                    <div className="flex-1"></div>
+                    <div className="flex flex-col items-center justify-center gap-6 z-10 animate-fade-in-up">
+                        <div className="relative flex items-center justify-center">
+                            <div className="absolute w-32 h-32 bg-primary/20 rounded-full blur-2xl dark:bg-primary/10"></div>
+                            <div className="w-24 h-24 bg-center bg-no-repeat bg-contain z-10" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAvaMxUvP9VDmZKrGoWu9U7w2JnNCi6jqaIYw-Kxh0sA98o9M5PH4paoXMr1_xFYJTBkB83spY6bKk1bmEIv-bMYVQOxG2YYnZzzonBc7BGwgUUybOnHytHss1TdIj5wnFiPQSLotSlXgbElxRK9syCJ0Yox0BI2gRvl6CPfcxbQ4ciJjxrFrDMMrkDUL369FTcDhmNyUTC8U_1PizsDn3Ar08iqWkvNIaVxMIkqpEAAglC89ppbqt5WJbgABOYRJA0paTdDhZXMdQ')"}}></div>
+                        </div>
+                        <div className="text-center space-y-1">
+                            <h1 className="text-[#0d1b12] dark:text-white tracking-tighter text-[40px] font-extrabold leading-tight">inDrive</h1>
+                            <p className="text-[#4c9a66] dark:text-[#6dbb87] text-lg font-medium tracking-wide">Offer Your Price</p>
+                        </div>
+                    </div>
+                    <div className="flex-1 flex flex-col justify-end w-full pb-12 px-12 gap-6 z-10">
+                        <div className="w-full max-w-[200px] mx-auto flex flex-col gap-2">
+                            <div className="h-1.5 w-full rounded-full bg-[#cfe7d7] dark:bg-[#1f3a29] overflow-hidden">
+                                <div className="h-full rounded-full bg-primary w-1/3 animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+                            </div>
+                            <p className="text-[#4c9a66] dark:text-[#6dbb87] text-xs font-medium text-center uppercase tracking-wider">Loading resources...</p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 2. Welcome
+        const Welcome = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark">
+                    <div className="flex items-center justify-between p-4 pt-6 pb-2 z-10">
+                        <h2 className="text-[#0d1b12] dark:text-white text-2xl font-bold leading-tight pl-2">inDrive</h2>
+                        <button className="flex items-center gap-1 bg-white dark:bg-[#1a3324] px-3 py-1.5 rounded-full shadow-sm border border-gray-100 dark:border-gray-800">
+                            <span className="text-[#4c9a66] dark:text-[#13ec5b] text-sm font-bold shrink-0">EN</span>
+                            <span className="material-symbols-outlined text-[#4c9a66] dark:text-[#13ec5b] text-sm">expand_more</span>
+                        </button>
+                    </div>
+                    <main className="flex-1 flex flex-col items-center w-full px-4 pt-2 pb-6 overflow-y-auto">
+                        <div className="w-full px-2 mb-6">
+                            <div className="w-full bg-center bg-no-repeat aspect-[4/3] bg-cover rounded-xl shadow-sm border border-white/50 dark:border-white/5 relative overflow-hidden" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAMSxPlI_YDX2Uw_K1RPHo1VyrwVnMhvW0QvpLIGrYacrdernGDUumJfX2rqnTQb_efOSfOakBC-X1A2U5tP3Kkx6mkPbQ3PKHcGIQDhZPZbMvuDo-fOJ5_RwZk1eqE0qpuOUPbF2gwn3GraObd0RWlE5OODYmZ1FA7lHBN5t1FMgnwTPDYA6qOsV2W_NzAra67rdsQbBA16yKXIe2Hyk6CTDxVF9YbvDVWHx-Rlfv-yhbiPLOOIwJ4tk_Nni-SGDQeqXsjVCd9z_4')"}}></div>
+                        </div>
+                        <div className="w-full text-center space-y-2 mb-6 px-2">
+                            <h1 className="text-[#0d1b12] dark:text-white tracking-tight text-[32px] font-bold leading-[1.15]">City rides. <br/> Your offer.</h1>
+                            <p className="text-[#4b5563] dark:text-gray-400 text-base font-normal">Choose your price for rides and delivery.</p>
+                        </div>
+                        <div className="w-full px-2 mb-8">
+                            <div className="flex h-12 flex-1 items-center justify-center rounded-xl bg-[#e7f3eb] dark:bg-[#1a3324] p-1.5">
+                                <label className="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#13ec5b] has-[:checked]:shadow-sm transition-all duration-200">
+                                    <span className="material-symbols-outlined text-lg mr-2 text-[#4c9a66] has-[:checked]:text-[#0d1b12] dark:text-[#5cb87a] dark:has-[:checked]:text-[#0d1b12]">person</span>
+                                    <span className="truncate text-[#4c9a66] dark:text-[#5cb87a] has-[:checked]:text-[#0d1b12] text-sm font-bold">Passenger</span>
+                                    <input defaultChecked className="invisible w-0 peer" name="role_selector" type="radio" value="Passenger" />
+                                </label>
+                                <label className="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#13ec5b] has-[:checked]:shadow-sm transition-all duration-200">
+                                    <span className="material-symbols-outlined text-lg mr-2 text-[#4c9a66] has-[:checked]:text-[#0d1b12] dark:text-[#5cb87a] dark:has-[:checked]:text-[#0d1b12]">directions_car</span>
+                                    <span className="truncate text-[#4c9a66] dark:text-[#5cb87a] has-[:checked]:text-[#0d1b12] text-sm font-bold">Driver</span>
+                                    <input className="invisible w-0 peer" name="role_selector" type="radio" value="Driver" />
+                                </label>
+                            </div>
+                        </div>
+                        <div className="w-full space-y-4 mt-auto px-2">
+                            <button onClick={() => navigate('/login')} className="w-full rounded-xl bg-primary py-4 px-4 text-center text-base font-bold text-[#102216] shadow-sm hover:bg-primary/90 transition-transform active:scale-[0.98]">
+                                Join Now
+                            </button>
+                            <div className="text-center py-2">
+                                <button onClick={() => navigate('/login')} className="text-sm font-medium text-gray-600 dark:text-gray-400 transition-colors">
+                                    Already have an account? <span className="text-[#0d1b12] dark:text-primary font-bold hover:underline">Log in</span>
+                                </button>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        // 3. Login
+        const Login = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark">
+                    <TopBar title="Log In" backTo="/welcome" />
+                    <div className="flex-1 flex flex-col px-6 pt-4 pb-8 w-full">
+                        <div className="flex flex-col items-center mb-8">
+                            <div className="w-20 h-20 bg-primary/20 rounded-2xl flex items-center justify-center mb-6">
+                                <div className="w-12 h-12 bg-primary rounded-xl flex items-center justify-center transform rotate-3">
+                                    <span className="material-symbols-outlined text-black" style={{fontSize: '32px'}}>local_taxi</span>
+                                </div>
+                            </div>
+                            <h1 className="text-3xl font-bold text-center text-gray-900 dark:text-white mb-2">Welcome Back</h1>
+                            <p className="text-center text-gray-500 dark:text-gray-400 text-sm">Enter your phone number to continue.</p>
+                        </div>
+                        <div className="flex flex-col gap-5">
+                            <div className="flex flex-col gap-2">
+                                <label className="text-sm font-medium text-gray-900 dark:text-gray-200">Phone Number</label>
+                                <div className="flex rounded-xl bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 transition-all">
+                                    <div className="flex items-center px-3 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+                                        <span className="text-slate-600 dark:text-slate-300 font-medium text-sm flex items-center gap-1">
+                                            🇺🇸 +1
+                                        </span>
+                                    </div>
+                                    <input className="flex-1 bg-transparent border-none px-4 py-3.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0" placeholder="(555) 000-0000" type="tel" />
+                                </div>
+                            </div>
+                            <button onClick={() => navigate('/otp')} className="w-full h-14 mt-2 bg-primary hover:bg-green-400 text-black font-semibold rounded-lg text-lg transition-colors shadow-sm flex items-center justify-center gap-2">
+                                <span>Continue</span>
+                                <span className="material-symbols-outlined" style={{fontSize: '20px'}}>arrow_forward</span>
+                            </button>
+                        </div>
+                        <div className="mt-auto pt-8 flex justify-center">
+                            <p className="text-gray-600 dark:text-gray-400 text-sm">
+                                Don't have an account? <Link to="/signup" className="font-semibold text-primary hover:underline">Sign Up</Link>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 4. OTP
+        const OTPVerification = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark">
+                    <TopBar title="" backTo="/login" />
+                    <main className="flex-1 flex flex-col px-6 pt-4">
+                        <div className="mb-2 text-center">
+                            <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Enter confirmation code</h1>
+                        </div>
+                        <div className="mb-10 text-center">
+                            <p className="text-base text-gray-500 dark:text-gray-400 leading-relaxed">
+                                Enter the 4-digit code sent to <br/> <span className="font-semibold text-gray-900 dark:text-gray-200">+1 (555) 000-0000</span> via SMS.
+                            </p>
+                        </div>
+                        <div className="mb-8">
+                            <fieldset className="flex justify-center gap-4">
+                                {[1, 2, 3, 4].map((_, i) => (
+                                    <input key={i} className="w-14 h-16 rounded-xl border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50 text-center text-3xl font-semibold text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all caret-primary" maxLength="1" type="number" />
+                                ))}
+                            </fieldset>
+                        </div>
+                        <div className="flex flex-col items-center gap-3">
+                            <div className="flex items-center gap-2 px-4 py-2 rounded-full bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700">
+                                <span className="material-symbols-outlined text-gray-400 text-[18px]">timer</span>
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300">Resend code in <span className="font-bold">00:24</span></p>
+                            </div>
+                        </div>
+                        <div className="flex-grow"></div>
+                        <div className="mb-6 mt-8">
+                            <button onClick={() => navigate('/passenger/home')} className="w-full bg-primary hover:bg-primary-dark text-black font-bold text-lg py-4 rounded-xl shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+                                Verify
+                            </button>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        // 5. Passenger Home
+        const PassengerHome = () => {
+            const navigate = useNavigate();
+            const [isMenuOpen, setIsMenuOpen] = useState(false);
+
+            return (
+                <div className="relative h-screen w-full flex flex-col bg-background-light dark:bg-background-dark overflow-hidden">
+                    {/* Map Background */}
+                    <div className="absolute inset-0 z-0 bg-cover bg-center" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDSF9nz-JPJZNr-lOoyZaxStsO1U3Mn09UT9lzlcP4tHVF9FW37AaO7mOjm37dUKhI04lUkro8qjTl_lCrgE55jzazUCpHzDc1CYC5XZyAzX3aP0xN0fybZPl0toXar5wniAldx1wHNmW_qZ2rcPeK4m6GGVeffAo1zs1H7_flkIb8r8ghbi_Pyer-t7Fw9dm9HjiOLZHT2Kke07EJfcBSac8ukR0V34dx0yXJE_qxm7lDIKfLvt0dt7OjRogmvZx81fg3-EAXWLP0')"}}>
+                        <div className="absolute inset-0 bg-gradient-to-b from-black/10 to-transparent pointer-events-none"></div>
+                        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 flex flex-col items-center justify-center">
+                            <div className="absolute w-32 h-32 bg-primary/20 rounded-full animate-ping opacity-75"></div>
+                            <div className="h-6 w-6 bg-white rounded-full border-4 border-blue-500 shadow-lg z-10 relative"></div>
+                        </div>
+                    </div>
+
+                    {/* Top Buttons */}
+                    <div className="absolute top-0 left-0 right-0 z-10 flex items-center justify-between gap-3 p-4 pt-12 safe-top pointer-events-none">
+                        <button onClick={() => navigate('/passenger/profile')} className="pointer-events-auto flex items-center justify-center h-12 w-12 shrink-0 rounded-full bg-white dark:bg-background-dark shadow-md hover:scale-105 transition-transform">
+                            <span className="material-symbols-outlined text-[#0d1b12] dark:text-white" style={{fontSize: '28px'}}>menu</span>
+                        </button>
+                        <div className="pointer-events-auto flex gap-3">
+                            <button className="flex items-center justify-center h-12 w-12 shrink-0 rounded-full bg-white dark:bg-background-dark shadow-md hover:scale-105 transition-transform">
+                                <span className="material-symbols-outlined text-[#0d1b12] dark:text-white" style={{fontSize: '24px'}}>security</span>
+                            </button>
+                            <button onClick={() => navigate('/passenger/notifications')} className="relative flex items-center justify-center h-12 w-12 shrink-0 rounded-full bg-white dark:bg-background-dark shadow-md hover:scale-105 transition-transform">
+                                <span className="material-symbols-outlined text-[#0d1b12] dark:text-white" style={{fontSize: '24px'}}>notifications</span>
+                                <span className="absolute top-3 right-3.5 h-2.5 w-2.5 bg-red-500 rounded-full border-2 border-white dark:border-background-dark z-10"></span>
+                            </button>
+                        </div>
+                    </div>
+
+                    {/* Bottom Sheet */}
+                    <div className="absolute bottom-0 left-0 right-0 z-20 bg-background-light dark:bg-background-dark rounded-t-[32px] shadow-2xl flex flex-col pb-safe max-h-[85vh]">
+                        <div className="w-full flex justify-center pt-3 pb-1">
+                            <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-600 rounded-full"></div>
+                        </div>
+                        
+                        {/* Service Types */}
+                        <div className="flex overflow-x-auto gap-3 px-5 py-4 no-scrollbar">
+                            {[
+                                {icon: 'directions_car', label: 'Ride', active: true},
+                                {icon: 'two_wheeler', label: 'Moto', active: false},
+                                {icon: 'local_shipping', label: 'Cargo', active: false},
+                                {icon: 'package_2', label: 'Courier', active: false},
+                                {icon: 'map', label: 'Intercity', active: false},
+                            ].map((item, i) => (
+                                <button key={i} className={`flex flex-col items-center justify-center min-w-[70px] py-2 gap-1 group ${!item.active && 'opacity-60 hover:opacity-100'}`}>
+                                    <div className={`p-2 rounded-xl transition-colors ${item.active ? 'bg-primary/20 text-primary' : 'bg-transparent text-slate-500 dark:text-slate-400 group-hover:bg-gray-100 dark:group-hover:bg-gray-800'}`}>
+                                        <span className="material-symbols-outlined text-[28px]">{item.icon}</span>
+                                    </div>
+                                    <span className="text-xs font-bold text-slate-900 dark:text-white">{item.label}</span>
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Input Form */}
+                        <div className="p-5 flex flex-col gap-4">
+                            <div className="relative flex flex-col gap-3">
+                                <div className="absolute left-[19px] top-[24px] bottom-[24px] w-0.5 border-l-2 border-dashed border-gray-300 dark:border-gray-600 z-0"></div>
+                                {/* Pickup */}
+                                <div className="relative z-10 group">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-blue-500 bg-white dark:bg-surface-dark rounded-full p-0.5">
+                                        <span className="material-symbols-outlined text-[20px] icon-filled">radio_button_checked</span>
+                                    </div>
+                                    <input className="w-full bg-gray-100 dark:bg-[#25362b] border-none rounded-xl py-3.5 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 font-medium focus:ring-2 focus:ring-primary/50 transition-all text-sm" type="text" defaultValue="Current Location" />
+                                </div>
+                                {/* Dropoff */}
+                                <div className="relative z-10 group">
+                                    <div className="absolute left-3 top-1/2 -translate-y-1/2 text-primary bg-white dark:bg-surface-dark rounded-full p-0.5">
+                                        <span className="material-symbols-outlined text-[20px]">location_on</span>
+                                    </div>
+                                    <input className="w-full bg-gray-100 dark:bg-[#25362b] border-none rounded-xl py-3.5 pl-12 pr-4 text-slate-900 dark:text-white placeholder-slate-400 font-medium focus:ring-2 focus:ring-primary/50 transition-all text-sm" placeholder="Where to?" type="text" />
+                                </div>
+                            </div>
+
+                            {/* Offer */}
+                            <div className="flex gap-3 mt-1">
+                                <div className="flex-1 flex flex-col">
+                                    <label className="text-[11px] uppercase font-bold text-slate-500 dark:text-slate-400 mb-1 ml-1 tracking-wider">Your Offer</label>
+                                    <div className="relative flex items-center">
+                                        <div className="absolute left-3 text-slate-400 pointer-events-none font-bold">$</div>
+                                        <input className="w-full bg-white dark:bg-background-dark border-2 border-primary/30 rounded-xl py-3 pl-8 pr-16 text-xl font-bold text-slate-900 dark:text-white focus:border-primary focus:ring-0 transition-colors" type="number" defaultValue="15" />
+                                        <div className="absolute right-3">
+                                            <span className="bg-primary/10 text-primary-dark dark:text-primary text-[10px] font-bold px-2 py-1 rounded">USD</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col w-1/3">
+                                    <label className="text-[11px] uppercase font-bold text-slate-500 dark:text-slate-400 mb-1 ml-1 tracking-wider">Options</label>
+                                    <button className="h-[54px] w-full flex items-center justify-center bg-gray-100 dark:bg-[#25362b] rounded-xl text-slate-600 dark:text-slate-300 hover:bg-gray-200 dark:hover:bg-[#2f4236] transition-colors">
+                                        <span className="material-symbols-outlined text-2xl">tune</span>
+                                        <span className="ml-2 text-sm font-semibold hidden sm:inline">More</span>
+                                    </button>
+                                </div>
+                            </div>
+
+                            <button onClick={() => navigate('/passenger/tracking')} className="w-full bg-primary hover:bg-[#0fd650] active:scale-[0.98] transition-all rounded-xl py-4 flex items-center justify-center shadow-lg shadow-primary/20 mt-2">
+                                <span className="text-slate-900 text-lg font-extrabold tracking-wide">Find a driver</span>
+                            </button>
+                        </div>
+                    </div>
+                    <BottomNav role="passenger" />
+                </div>
+            );
+        };
+
+        // 6. Ride Tracking
+        const RideTracking = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="bg-background-light dark:bg-background-dark font-display text-text-main antialiased overflow-hidden h-screen w-full relative">
+                    {/* Map */}
+                    <div className="absolute inset-0 z-0 h-full w-full bg-cover bg-center" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuDSF9nz-JPJZNr-lOoyZaxStsO1U3Mn09UT9lzlcP4tHVF9FW37AaO7mOjm37dUKhI04lUkro8qjTl_lCrgE55jzazUCpHzDc1CYC5XZyAzX3aP0xN0fybZPl0toXar5wniAldx1wHNmW_qZ2rcPeK4m6GGVeffAo1zs1H7_flkIb8r8ghbi_Pyer-t7Fw9dm9HjiOLZHT2Kke07EJfcBSac8ukR0V34dx0yXJE_qxm7lDIKfLvt0dt7OjRogmvZx81fg3-EAXWLP0')", filter: "brightness(1.1) contrast(0.9)"}}>
+                        <div className="absolute top-1/3 left-1/2 -translate-x-1/2 -translate-y-1/2">
+                            <div className="relative flex items-center justify-center">
+                                <div className="w-16 h-16 bg-primary/20 rounded-full animate-ping absolute"></div>
+                                <div className="w-10 h-10 bg-surface-light rounded-full shadow-lg flex items-center justify-center relative z-10 border-2 border-primary rotate-45">
+                                    <span className="material-symbols-outlined text-primary" style={{fontSize: '24px'}}>directions_car</span>
+                                </div>
+                                <div className="absolute -top-12 bg-surface-light dark:bg-surface-dark px-3 py-1 rounded shadow-md whitespace-nowrap">
+                                    <p className="text-xs font-bold text-text-main dark:text-white">5 min away</p>
+                                    <div className="absolute -bottom-1 left-1/2 -translate-x-1/2 w-2 h-2 bg-surface-light dark:bg-surface-dark rotate-45"></div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    {/* Overlay UI */}
+                    <div className="relative z-10 flex flex-col h-full pointer-events-none">
+                        <div className="pointer-events-auto pt-12 px-4 pb-4 flex items-center justify-between bg-gradient-to-b from-white/80 to-transparent dark:from-black/50">
+                            <button onClick={() => navigate(-1)} className="bg-surface-light dark:bg-surface-dark/90 shadow-md h-10 w-10 rounded-full flex items-center justify-center hover:bg-gray-50 transition-colors">
+                                <span className="material-symbols-outlined text-text-main dark:text-white">arrow_back</span>
+                            </button>
+                            <div className="bg-surface-light dark:bg-surface-dark/90 px-4 py-2 rounded-full shadow-md flex items-center gap-2">
+                                <span className="w-2 h-2 bg-primary rounded-full animate-pulse"></span>
+                                <span className="text-sm font-bold text-text-main dark:text-white">Arriving in 5 min</span>
+                            </div>
+                            <button onClick={() => navigate('/passenger/safety')} className="bg-surface-light dark:bg-surface-dark/90 shadow-md h-10 w-10 rounded-full flex items-center justify-center hover:bg-gray-50 text-blue-600 transition-colors">
+                                <span className="material-symbols-outlined icon-filled">local_police</span>
+                            </button>
+                        </div>
+                        
+                        <div className="flex-1 relative"></div>
+
+                        {/* Bottom Sheet */}
+                        <div className="pointer-events-auto bg-surface-light dark:bg-surface-dark rounded-t-xl shadow-[0_-4px_20px_-2px_rgba(0,0,0,0.1)] pb-6">
+                            <div className="flex justify-center pt-3 pb-1 w-full">
+                                <div className="h-1.5 w-12 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+                            </div>
+                            <div className="px-5 pt-2 pb-4 border-b border-gray-100 dark:border-gray-800">
+                                <div className="flex justify-between items-start">
+                                    <div className="flex-1">
+                                        <h2 className="text-2xl font-bold text-text-main dark:text-white tracking-tight">Toyota Camry</h2>
+                                        <div className="flex items-center gap-2 mt-1">
+                                            <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300 px-2 py-0.5 rounded text-sm font-medium">White</span>
+                                            <span className="bg-gray-100 dark:bg-gray-800 text-text-main dark:text-white px-2 py-0.5 rounded text-sm font-bold border border-gray-200 dark:border-gray-700">ABC-1234</span>
+                                        </div>
+                                    </div>
+                                    <div className="relative">
+                                        <div className="h-14 w-14 rounded-full bg-cover bg-center border-2 border-white dark:border-gray-700 shadow-md" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuCV_3jKxk_-ww7WaghRT0MNwBG67hsTkRrh5_Xr4nT1BXgLTBcGCOCnXUwCXM1dZfkoQTD7gVkhY9piJP11CHp0RsKQDudkfh5lWuhOjVzUzgkxFTrj0llgBcheCwF74gxL5wf6ORaUh_821BaRxLhyrEiP1-horlrkyECir7DOu78RUyNcD-E9GzVQsUquYbqDsDyf7Z_qjC_Q93T8_pKNZnKN7jLGcFbEOvxBEp8JaVZo7MM1sXxJ7r44VGiQqGHfJiYMGumggV0')"}}></div>
+                                        <div className="absolute -bottom-1 -right-1 bg-surface-light dark:bg-surface-dark rounded-full px-1.5 py-0.5 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center gap-0.5">
+                                            <span className="material-symbols-outlined text-yellow-500 icon-filled" style={{fontSize: '10px'}}>star</span>
+                                            <span className="text-[10px] font-bold text-text-main dark:text-white">4.9</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex items-center gap-2 mt-3">
+                                    <p className="text-sm font-medium text-text-secondary dark:text-gray-400">Driver: <span className="text-text-main dark:text-white font-semibold">Alex</span></p>
+                                    <span className="text-gray-300">•</span>
+                                    <p className="text-sm font-medium text-primary">On the way</p>
+                                </div>
+                            </div>
+                            <div className="px-5 py-4 flex items-center justify-between">
+                                <div className="flex flex-col gap-3 flex-1 pr-4">
+                                    <div className="flex items-start gap-3 relative">
+                                        <div className="absolute left-[7px] top-4 bottom-[-14px] w-0.5 bg-gray-200 dark:bg-gray-700 border-l border-dashed border-gray-300 dark:border-gray-600"></div>
+                                        <div className="flex-shrink-0 mt-1">
+                                            <div className="w-4 h-4 rounded-full border-[3px] border-primary bg-surface-light dark:bg-surface-dark"></div>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs text-text-secondary dark:text-gray-400 uppercase font-semibold tracking-wider">Pickup</p>
+                                            <p className="text-sm font-medium text-text-main dark:text-white truncate">Grand Central Terminal</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex items-start gap-3">
+                                        <div className="flex-shrink-0 mt-1">
+                                            <span className="material-symbols-outlined text-red-500" style={{fontSize: '16px'}}>location_on</span>
+                                        </div>
+                                        <div className="flex-1 min-w-0">
+                                            <p className="text-xs text-text-secondary dark:text-gray-400 uppercase font-semibold tracking-wider">Dropoff</p>
+                                            <p className="text-sm font-medium text-text-main dark:text-white truncate">1024 5th Ave, Brooklyn</p>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div className="flex flex-col items-end flex-shrink-0 pl-4 border-l border-gray-100 dark:border-gray-800">
+                                    <span className="text-2xl font-bold text-primary">$15.00</span>
+                                    <span className="text-xs text-text-secondary dark:text-gray-400 font-medium">Cash</span>
+                                </div>
+                            </div>
+                            <div className="px-5 pt-2 grid grid-cols-5 gap-3">
+                                <button className="col-span-1 h-12 rounded bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 flex flex-col items-center justify-center text-red-600 dark:text-red-400 transition-colors group">
+                                    <span className="material-symbols-outlined mb-0 group-hover:scale-110 transition-transform" style={{fontSize: '24px'}}>close</span>
+                                </button>
+                                <button onClick={() => navigate('/passenger/chat')} className="col-span-2 h-12 rounded bg-primary/10 hover:bg-primary/20 dark:bg-primary/20 dark:hover:bg-primary/30 flex items-center justify-center gap-2 text-primary-dark transition-colors group">
+                                    <span className="material-symbols-outlined text-primary group-hover:scale-110 transition-transform icon-filled">chat</span>
+                                    <span className="font-bold text-primary">Message</span>
+                                </button>
+                                <button onClick={() => navigate('/passenger/rate')} className="col-span-2 h-12 rounded bg-primary hover:bg-green-400 flex items-center justify-center gap-2 text-white shadow-md shadow-primary/30 transition-all group active:scale-95">
+                                    <span className="material-symbols-outlined group-hover:rotate-12 transition-transform icon-filled">call</span>
+                                    <span className="font-bold text-black">Call</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        // 7. Driver Dashboard
+        const DriverDashboard = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative flex h-full min-h-screen w-full flex-col overflow-hidden pb-20 bg-background-light dark:bg-background-dark">
+                    <header className="flex items-center justify-between p-4 pb-2 sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+                        <div className="flex items-center gap-3">
+                            <div className="relative">
+                                <div className="bg-center bg-no-repeat bg-cover rounded-full size-10 ring-2 ring-primary/30" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuAOJqcqi6gkK6b-5MDOOw32B4oYQiHx9tlmR_a5La6cDZsIbtutiDJzXJCE_8LoJShgnsgddEy-QX0SXtb_yOitDjChlwu_Cy0VQJRa3Zw_skdqSVi2fIsluSo4ffCiDtWkMq-jeFWSlPAl2qONJ-iJjY800AasWHDrQwP7ZavTC3jQmMVI2aFNsuV1b26GOTgbX3dvEjRuf1kXbauAFrNvxz2FfkwuGhoYD5lGaCsWPpQKFyYqf103dz1hdGxQxTu0aRjK0IxrSUE')"}}></div>
+                                <div className="absolute bottom-0 right-0 size-3 bg-primary rounded-full border-2 border-background-light dark:border-background-dark"></div>
+                            </div>
+                            <div>
+                                <h2 className="text-slate-900 dark:text-white text-lg font-bold leading-tight">Dashboard</h2>
+                            </div>
+                        </div>
+                        <button className="flex items-center justify-center rounded-full size-10 bg-slate-200 dark:bg-surface-dark text-slate-700 dark:text-white hover:bg-slate-300 dark:hover:bg-[#2a4532] transition-colors relative">
+                            <span className="material-symbols-outlined text-[24px]">notifications</span>
+                            <span className="absolute top-2 right-2 size-2 bg-red-500 rounded-full"></span>
+                        </button>
+                    </header>
+                    <div className="px-4 pt-4 pb-2">
+                        <h1 className="text-slate-900 dark:text-white text-[28px] font-bold leading-tight">Good evening, Alex</h1>
+                        <p className="text-slate-500 dark:text-slate-400 text-sm mt-1">Ready to hit the road?</p>
+                    </div>
+                    {/* Mode Selector */}
+                    <div className="px-4 py-4">
+                        <div className="flex h-12 w-full items-center justify-center rounded-xl bg-slate-200 dark:bg-surface-dark p-1">
+                            <label className="flex flex-1 cursor-pointer h-full items-center justify-center rounded-lg px-2 bg-white dark:bg-[#2a4532] shadow-sm transition-all">
+                                <span className="mr-2 material-symbols-outlined text-[20px] text-primary">directions_car</span>
+                                <span className="text-slate-700 dark:text-slate-200 text-sm font-bold truncate">Ride</span>
+                            </label>
+                            <label className="flex flex-1 cursor-pointer h-full items-center justify-center rounded-lg px-2 hover:bg-white/50 transition-all">
+                                <span className="mr-2 material-symbols-outlined text-[20px] text-slate-500 dark:text-[#92c9a4]">local_shipping</span>
+                                <span className="text-slate-700 dark:text-slate-200 text-sm font-bold truncate">Delivery</span>
+                            </label>
+                        </div>
+                    </div>
+                    {/* Status */}
+                    <div className="px-4 pb-6">
+                        <div className="flex flex-row items-center justify-between gap-4 rounded-2xl border border-slate-200 dark:border-[#326744] bg-white dark:bg-surface-dark p-5 shadow-sm">
+                            <div className="flex flex-col gap-1">
+                                <p className="text-slate-900 dark:text-white text-lg font-bold leading-tight flex items-center gap-2">
+                                    <span className="material-symbols-outlined text-primary text-[20px] animate-pulse">wifi</span>
+                                    You are Online
+                                </p>
+                                <p className="text-slate-500 dark:text-[#92c9a4] text-sm font-normal">Finding requests nearby...</p>
+                            </div>
+                            <label className="relative flex h-[32px] w-[56px] cursor-pointer items-center rounded-full border-none bg-primary p-1 justify-end transition-colors duration-300">
+                                <div className="h-[24px] w-[24px] rounded-full bg-white shadow-md transform transition-transform duration-300"></div>
+                            </label>
+                        </div>
+                    </div>
+                    {/* Stats */}
+                    <div className="flex flex-col gap-4 px-4 pb-6">
+                        <div className="flex gap-3 overflow-x-auto no-scrollbar snap-x">
+                            <div onClick={() => navigate('/driver/earnings')} className="flex min-w-[160px] flex-1 flex-col gap-3 rounded-2xl p-5 bg-primary/10 dark:bg-[#1c3022] border border-primary/20 dark:border-primary/10 snap-center cursor-pointer">
+                                <div className="flex items-center gap-2">
+                                    <div className="p-1.5 rounded-full bg-primary/20 text-primary">
+                                        <span className="material-symbols-outlined text-[20px]">attach_money</span>
+                                    </div>
+                                    <p className="text-slate-600 dark:text-slate-300 text-xs font-bold uppercase tracking-wider">Earnings</p>
+                                </div>
+                                <div>
+                                    <p className="text-slate-900 dark:text-white text-3xl font-extrabold leading-tight tracking-tight">$124.50</p>
+                                    <p className="text-slate-500 dark:text-[#92c9a4] text-xs mt-1">+15% vs yesterday</p>
+                                </div>
+                            </div>
+                            <div onClick={() => navigate('/driver/ratings')} className="flex min-w-[120px] flex-col justify-between gap-2 rounded-2xl p-4 bg-white dark:bg-surface-dark border border-slate-200 dark:border-transparent snap-center cursor-pointer">
+                                <div className="text-yellow-400">
+                                    <span className="material-symbols-outlined text-[24px] icon-filled">star</span>
+                                </div>
+                                <div>
+                                    <p className="text-slate-900 dark:text-white text-xl font-bold">4.95</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs">Rating</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Requests */}
+                    <div className="flex items-center justify-between px-4 mb-3">
+                        <h3 className="text-slate-900 dark:text-white text-lg font-bold">New Requests (2)</h3>
+                        <span className="text-primary text-sm font-bold cursor-pointer hover:underline">View Map</span>
+                    </div>
+                    <div className="flex flex-col gap-4 px-4 pb-8">
+                        <div className="group relative flex flex-col gap-4 rounded-2xl bg-white dark:bg-surface-dark p-5 shadow-lg border-l-4 border-primary">
+                            <div className="flex items-start justify-between">
+                                <div className="flex flex-col">
+                                    <div className="flex items-baseline gap-1">
+                                        <span className="text-slate-900 dark:text-white text-2xl font-extrabold">$24.00</span>
+                                        <span className="text-slate-500 dark:text-slate-400 text-sm font-medium">Cash</span>
+                                    </div>
+                                    <span className="text-xs font-medium text-slate-400 uppercase tracking-wide">Ride • 3.2km away</span>
+                                </div>
+                                <div className="flex flex-col items-end">
+                                    <div className="flex items-center justify-center size-8 rounded-full bg-slate-100 dark:bg-[#2a4532] text-slate-600 dark:text-slate-300">
+                                        <span className="text-xs font-bold">2m</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <div className="relative pl-4 border-l-2 border-slate-200 dark:border-[#326744] space-y-4 ml-2">
+                                <div className="relative">
+                                    <div className="absolute -left-[23px] top-1 size-3 rounded-full border-2 border-slate-400 bg-white dark:bg-surface-dark"></div>
+                                    <p className="text-slate-800 dark:text-slate-200 text-sm font-bold truncate">Grand Central Terminal</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs truncate">89 E 42nd St, New York</p>
+                                </div>
+                                <div className="relative">
+                                    <div className="absolute -left-[23px] top-1 size-3 rounded-full bg-primary border-2 border-primary"></div>
+                                    <p className="text-slate-800 dark:text-slate-200 text-sm font-bold truncate">JFK Airport, Terminal 4</p>
+                                    <p className="text-slate-500 dark:text-slate-400 text-xs truncate">Queens, NY 11430</p>
+                                </div>
+                            </div>
+                            <div className="flex gap-3 pt-2">
+                                <button className="flex-1 h-12 rounded-xl bg-slate-100 dark:bg-[#2a4532] text-slate-700 dark:text-slate-200 font-bold text-sm hover:bg-slate-200 dark:hover:bg-[#385c42] transition-colors">
+                                    Decline
+                                </button>
+                                <button onClick={() => navigate('/driver/navigation')} className="flex-[2] h-12 rounded-xl bg-primary text-[#0d3b1b] font-extrabold text-base shadow-[0_0_15px_rgba(19,236,91,0.3)] hover:shadow-[0_0_20px_rgba(19,236,91,0.5)] transition-all flex items-center justify-center gap-2">
+                                    Accept
+                                    <span className="material-symbols-outlined text-[20px]">check</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                    <BottomNav role="driver" />
+                </div>
+            );
+        };
+
+        // --- App Container ---
+        const App = () => {
+            return (
+                <MemoryRouter>
+                    <Routes>
+                        <Route path="/" element={<Splash />} />
+                        <Route path="/welcome" element={<Welcome />} />
+                        <Route path="/login" element={<Login />} />
+                        <Route path="/otp" element={<OTPVerification />} />
+                        <Route path="/passenger/home" element={<PassengerHome />} />
+                        <Route path="/passenger/tracking" element={<RideTracking />} />
+                        <Route path="/passenger/chat" element={<Screen28_ChatScreen />} /> 
+                        <Route path="/passenger/rate" element={<Screen23_RateRide />} />
+                        <Route path="/driver/dashboard" element={<DriverDashboard />} />
+                        <Route path="/driver/navigation" element={<Screen48_DriverNavigation />} />
+                        <Route path="/driver/earnings" element={<Screen1_DriverEarnings />} />
+                        <Route path="/passenger/profile" element={<Screen45_PassengerProfile />} />
+                        <Route path="/passenger/notifications" element={<Screen11_NotificationCenter />} />
+                        <Route path="/driver/ratings" element={<Screen8_DriverRatings />} />
+                    </Routes>
+                </MemoryRouter>
+            );
+        };
+
+        // --- Placeholder for other screens mapped to standard names ---
+        // I will implement a few more key screens from the provided list to ensure navigation works
+        
+        const Screen28_ChatScreen = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="bg-background-light dark:bg-background-dark font-display text-neutral-900 dark:text-neutral-100 h-screen overflow-hidden flex flex-col antialiased">
+                    <header className="bg-surface-light dark:bg-surface-dark border-b border-neutral-200 dark:border-neutral-800 px-4 py-3 flex items-center justify-between shrink-0 z-20 shadow-sm">
+                        <div className="flex items-center gap-3">
+                            <button onClick={() => navigate(-1)} className="flex items-center justify-center size-10 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-900 dark:text-white">
+                                <span className="material-symbols-outlined">arrow_back</span>
+                            </button>
+                            <div className="flex items-center gap-3">
+                                <div className="relative">
+                                    <div className="size-10 rounded-full bg-cover bg-center border border-neutral-200 dark:border-neutral-700" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuD1N6dG1BiPPkexpTlC2qzj6hUsB84fyOBdPSK4mYYfZWl5DmxJCyPKMYBislsCKxh9GmBdCsurlN1_Hje3EQK1CQ7Txoni0JPGQIwXz3-FWfgUM7hzORLDw8pM5pRfVvH6beDS3MYWlqS4UlTR1BYQIVL3lca16LCAzZ6MSkThSCOLL-ZFjLcUbMBXShnWLfFGofS5fsY14CUSidHRR-YStVPv4HcFfiZNwjHI_JWPGFLJ6rO2r9QrZQaAJPYCAHhyC4kYKoaQYdg')"}}></div>
+                                    <div className="absolute bottom-0 right-0 size-2.5 bg-green-500 border-2 border-white dark:border-surface-dark rounded-full"></div>
+                                </div>
+                                <div className="flex flex-col">
+                                    <h1 className="text-base font-bold leading-tight text-neutral-900 dark:text-white">Ahmed</h1>
+                                    <div className="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+                                        <span className="truncate max-w-[120px]">Toyota Camry</span>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </header>
+                    <main className="flex-1 overflow-y-auto p-4 flex flex-col gap-6 bg-background-light dark:bg-background-dark w-full">
+                        <div className="flex justify-center w-full"><span className="px-3 py-1 bg-neutral-200/50 dark:bg-neutral-800/50 rounded-full text-xs font-medium text-neutral-500 dark:text-neutral-400">Today, 4:30 PM</span></div>
+                        <div className="flex items-end gap-2 max-w-[85%] self-start group">
+                            <div className="flex flex-col gap-1">
+                                <div className="bg-white dark:bg-surface-dark border border-neutral-100 dark:border-neutral-700 p-3 rounded-2xl rounded-bl-none shadow-sm">
+                                    <p className="text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed">Hello! I've arrived at the pickup point.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                    <footer className="bg-surface-light dark:bg-surface-dark border-t border-neutral-200 dark:border-neutral-800 shrink-0 pb-safe p-4">
+                        <div className="flex items-center gap-3">
+                            <input className="flex-1 w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-500 rounded-xl px-4 py-3 text-sm border-none" placeholder="Message driver..." type="text"/>
+                            <button className="size-10 flex items-center justify-center rounded-xl bg-primary text-[#0d1b12]"><span className="material-symbols-outlined icon-filled">send</span></button>
+                        </div>
+                    </footer>
+                </div>
+            );
+        };
+
+        const Screen23_RateRide = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto shadow-2xl overflow-hidden bg-background-light dark:bg-background-dark">
+                    <div className="flex items-center justify-between p-5 pt-6 sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+                        <div className="w-12"></div>
+                        <h2 className="text-lg font-bold leading-tight tracking-tight text-center">Rate Ride</h2>
+                        <div className="flex w-12 items-center justify-end">
+                            <button onClick={() => navigate('/passenger/home')} className="text-slate-500 dark:text-slate-400 text-base font-semibold hover:text-primary transition-colors">Skip</button>
+                        </div>
+                    </div>
+                    <div className="flex-1 overflow-y-auto pb-36 px-5 flex flex-col items-center">
+                        <div className="flex flex-col items-center justify-center gap-1 mt-8">
+                            <h3 className="text-2xl font-bold tracking-tight">Alexandru</h3>
+                            <p className="text-slate-500 dark:text-slate-400 text-sm font-medium bg-slate-100 dark:bg-white/5 px-3 py-1 rounded-full">Toyota Camry • ABC-123</p>
+                        </div>
+                        <div className="mt-8 mb-4">
+                            <h2 className="text-center text-xl font-bold">How was your ride?</h2>
+                        </div>
+                        <div className="flex justify-center gap-3 mb-8">
+                            {[1, 2, 3, 4, 5].map(i => (
+                                <button key={i} className="text-primary hover:scale-110 transition-transform">
+                                    <span className="material-symbols-outlined text-5xl drop-shadow-sm icon-filled">star</span>
+                                </button>
+                            ))}
+                        </div>
+                        <button onClick={() => navigate('/passenger/home')} className="w-full flex items-center justify-center rounded-xl bg-primary py-4 px-6 text-sm font-bold text-slate-900 shadow-lg shadow-primary/20 hover:bg-primary/90 mt-auto">Submit Feedback</button>
+                    </div>
+                </div>
+            );
+        };
+
+        const Screen48_DriverNavigation = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="bg-background-dark text-white font-display overflow-hidden h-screen flex flex-col">
+                    <div className="absolute inset-0 z-0">
+                        <div className="w-full h-full bg-cover bg-center opacity-80" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBJy0PuClWWNeyBwON58rmi2SGa97cmySWbtFLGBZsU5ht1ushSh7svjvc1KjXPI9KH8utBrOuHbfa798GsoCwAdn_0-wk_Xtyh88lmRCRObwyS1JEheRDWaTD8x3gvc7zztcxUUDZD92270aqCUuEB6Kl_JmO6nglcZ0FjjJV4sLDBoM6uyzVAD7Q3HnVGikLCbluOet5Br52GYk6YMcTNhJJIHFygMzLJJ6sKGqHTTQzhrwG-EY7O-rwk8VAje7y_ZmO8crtfmuk')", filter: "grayscale(100%) invert(85%) contrast(120%) hue-rotate(100deg)"}}></div>
+                    </div>
+                    <div className="relative z-10 flex-1 flex flex-col p-4 pointer-events-none">
+                        <div className="pointer-events-auto bg-[#193322] border border-[#193322]/50 shadow-xl rounded-xl p-4 flex items-center gap-5 max-w-md w-full mx-auto">
+                            <div className="bg-[#112217] w-16 h-16 rounded-lg flex items-center justify-center shrink-0 border border-[#92c9a4]/20">
+                                <span className="material-symbols-outlined text-primary" style={{fontSize: '40px', fontWeight: 700}}>turn_right</span>
+                            </div>
+                            <div className="flex flex-col">
+                                <h1 className="text-3xl font-extrabold leading-tight text-white">200m</h1>
+                                <p className="text-[#92c9a4] text-lg font-medium leading-tight">Turn right on Main St</p>
+                            </div>
+                        </div>
+                    </div>
+                    <div className="relative z-20 bg-[#112217] rounded-t-3xl shadow-[0_-8px_30px_rgba(0,0,0,0.5)] border-t border-white/5 pb-6">
+                        <div className="w-full flex justify-center pt-3 pb-2 cursor-pointer">
+                            <div className="h-1.5 w-12 rounded-full bg-[#326744]"></div>
+                        </div>
+                        <div className="px-5 pt-2 pb-6 flex flex-col gap-6">
+                            <button onClick={() => navigate('/driver/dashboard')} className="w-full h-16 bg-primary hover:bg-[#10d650] active:scale-[0.98] transition-all rounded-xl flex items-center justify-between px-2 pl-6 shadow-[0_0_20px_rgba(19,236,91,0.2)] group cursor-pointer">
+                                <div className="flex flex-col items-start">
+                                    <span className="text-[#162b1e] font-extrabold text-lg tracking-tight">I've Arrived</span>
+                                    <span className="text-[#162b1e]/70 text-xs font-medium">Swipe to notify passenger</span>
+                                </div>
+                                <div className="bg-[#162b1e]/10 h-12 w-12 rounded-lg flex items-center justify-center group-hover:translate-x-1 transition-transform">
+                                    <span className="material-symbols-outlined text-[#162b1e] text-3xl">arrow_forward</span>
+                                </div>
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            );
+        };
+
+        const Screen1_DriverEarnings = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+                    <header className="sticky top-0 z-50 flex items-center justify-between p-4 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+                        <button onClick={() => navigate(-1)} className="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                            <span className="material-symbols-outlined text-text-main-light dark:text-text-main-dark" style={{fontSize: '24px'}}>arrow_back</span>
+                        </button>
+                        <h2 className="text-lg font-bold leading-tight">Earnings</h2>
+                        <div className="size-10"></div>
+                    </header>
+                    <main className="flex-1 flex flex-col gap-6 px-4 pb-24">
+                        <div className="flex flex-col items-center justify-center py-4">
+                            <span className="text-sm font-medium text-text-secondary-light dark:text-text-secondary-dark">Total Balance • Oct 24</span>
+                            <h1 className="text-5xl font-extrabold tracking-tight mt-2 text-text-main-light dark:text-white">$450.00</h1>
+                        </div>
+                        <div className="grid grid-cols-2 gap-4">
+                            <div className="flex flex-col gap-1 p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <span className="text-xs font-semibold text-text-secondary-light dark:text-gray-400 uppercase">Cash</span>
+                                <p className="text-2xl font-bold text-text-main-light dark:text-white">$120.00</p>
+                            </div>
+                            <div className="flex flex-col gap-1 p-4 rounded-xl bg-white dark:bg-surface-dark border border-gray-100 dark:border-gray-800 shadow-sm">
+                                <span className="text-xs font-semibold text-text-secondary-light dark:text-gray-400 uppercase">Wallet</span>
+                                <p className="text-2xl font-bold text-text-main-light dark:text-white">$330.00</p>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const Screen45_PassengerProfile = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative flex min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-xl bg-background-light dark:bg-background-dark">
+                    <header className="flex items-center p-4 pt-6 justify-between sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+                        <button onClick={() => navigate(-1)} className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                            <span className="material-symbols-outlined">arrow_back</span>
+                        </button>
+                        <h2 className="text-lg font-bold leading-tight tracking-tight flex-1 text-center">Profile</h2>
+                        <button className="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-primary">
+                            <span className="material-symbols-outlined">edit</span>
+                        </button>
+                    </header>
+                    <section className="flex flex-col items-center p-6 gap-6">
+                        <div className="relative group cursor-pointer">
+                            <div className="bg-center bg-no-repeat bg-cover rounded-full h-32 w-32 shadow-lg ring-4 ring-white dark:ring-surface-dark transition-transform group-hover:scale-105" style={{backgroundImage: "url('https://lh3.googleusercontent.com/aida-public/AB6AXuBNUHj9mi89eLL4S0tHLzifZaqTVVDfabGKUq-bJkKIbwLIKu3tM8bIJW0RgKwdx7vMDBQpqf8ZaA38-HrCnX2Rw65ER9VQvUsxgIa9hXMR1z4KbdIw2dcws8CdgA8pHo6qtQjR6u9cPnDnMyuEXXUDLmScE-8c0TcSrUQw_IMN-w-i72QYu5cX7EJ2eUnMWjhkZud-7QOPJXi0M9AWVttnr9baIVd_kcq82dpaXn-uYqM8wkAWT2OX2nXpG6sy5_Lnbd_X9huxMvE')"}}></div>
+                        </div>
+                        <div className="flex flex-col items-center gap-1">
+                            <h1 className="text-2xl font-extrabold leading-tight">John Doe</h1>
+                            <div className="flex items-center gap-2 bg-surface-light dark:bg-surface-dark px-3 py-1.5 rounded-full shadow-sm">
+                                <span className="material-symbols-outlined text-primary text-[20px] icon-filled">star</span>
+                                <span className="font-bold text-sm">4.9</span>
+                            </div>
+                        </div>
+                    </section>
+                    <div className="px-4 pb-8 flex flex-col gap-4 items-center mt-auto">
+                        <button onClick={() => navigate('/welcome')} className="w-full py-4 rounded-xl bg-surface-light dark:bg-surface-dark text-[#FF3B30] font-bold text-base shadow-sm border border-black/5 dark:border-white/5 flex items-center justify-center gap-2">
+                            <span className="material-symbols-outlined text-[20px]">logout</span>
+                            Log Out
+                        </button>
+                    </div>
+                    <BottomNav role="passenger" />
+                </div>
+            );
+        };
+
+        const Screen11_NotificationCenter = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative mx-auto flex h-screen w-full flex-col overflow-hidden bg-background-light dark:bg-background-dark md:max-w-md md:border-x md:border-gray-200 dark:md:border-gray-800">
+                    <header className="flex-none bg-background-light dark:bg-background-dark pt-2 z-10 sticky top-0">
+                        <div className="flex items-center justify-between px-4 pb-2 h-14">
+                            <button onClick={() => navigate(-1)} className="flex h-10 w-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-surface-dark transition-colors">
+                                <span className="material-symbols-outlined text-text-main dark:text-white" style={{fontSize: '24px'}}>arrow_back_ios_new</span>
+                            </button>
+                        </div>
+                        <div className="px-4 pb-4">
+                            <h1 className="text-text-main dark:text-white text-[28px] font-bold leading-tight tracking-tight">Notifications</h1>
+                        </div>
+                    </header>
+                    <main className="flex-1 overflow-y-auto no-scrollbar pb-6 scroll-smooth">
+                        <div className="mx-3 mb-3 group relative overflow-hidden rounded-2xl bg-primary/10 dark:bg-surface-dark border border-primary/20 dark:border-gray-700 transition-all active:scale-[0.99]">
+                            <div className="absolute right-3 top-3 h-2.5 w-2.5 rounded-full bg-primary shadow-[0_0_8px_rgba(19,236,91,0.6)]"></div>
+                            <div className="flex gap-4 p-4">
+                                <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-xl bg-white dark:bg-black/40 text-text-main dark:text-primary shadow-sm">
+                                    <span className="material-symbols-outlined" style={{fontSize: '24px'}}>local_taxi</span>
+                                </div>
+                                <div className="flex flex-1 flex-col justify-center gap-1">
+                                    <div className="flex justify-between items-start">
+                                        <p className="text-text-main dark:text-white text-base font-bold leading-tight pr-4">Driver Arrived</p>
+                                        <p className="text-text-secondary dark:text-primary/80 text-xs font-semibold whitespace-nowrap pt-0.5">2m</p>
+                                    </div>
+                                    <p className="text-text-main dark:text-gray-300 text-sm font-normal leading-relaxed opacity-90">Toyota Camry ABC-123 is waiting.</p>
+                                </div>
+                            </div>
+                        </div>
+                    </main>
+                </div>
+            );
+        };
+
+        const Screen8_DriverRatings = () => {
+            const navigate = useNavigate();
+            return (
+                <div className="relative min-h-screen flex flex-col pb-20 bg-background-light dark:bg-background-dark">
+                    <div className="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-gray-200/50 dark:border-gray-800/50">
+                        <div className="flex items-center px-4 h-14 justify-between">
+                            <button onClick={() => navigate(-1)} className="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+                                <span className="material-symbols-outlined">arrow_back</span>
+                            </button>
+                            <h2 className="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">My Rating</h2>
+                            <div className="size-10"></div>
+                        </div>
+                    </div>
+                    <main className="flex-1 w-full max-w-md mx-auto">
+                        <div className="flex flex-col items-center pt-6 pb-2 px-4">
+                            <div className="mt-4 flex flex-col items-center">
+                                <div className="flex items-baseline gap-1">
+                                    <span className="text-4xl font-black tracking-tight text-slate-900 dark:text-white">4.8</span>
+                                    <span className="material-symbols-outlined text-primary icon-filled" style={{fontSize: '24px'}}>star</span>
+                                </div>
+                                <p className="text-primary font-medium text-base mt-1">Excellent</p>
+                            </div>
+                        </div>
+                    </main>
+                    <BottomNav role="driver" />
+                </div>
+            );
+        }
+
+        const root = createRoot(document.getElementById('root'));
+        root.render(<App />);
+    </script>
+</body>
+</html>

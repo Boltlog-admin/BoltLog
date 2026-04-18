@@ -1,0 +1,179 @@
+# Deploy Firestore rules when firestore.rules changes or on manual run.
+# PRs: validate rules (dry-run). Push to main / manual: deploy to Firebase.
+#
+# Auth — use ONE of these (priority: WIF → service account JSON → CI token):
+#
+# A) Workload Identity Federation (best for orgs; no long-lived keys in GitHub):
+#    - GCP_WORKLOAD_IDENTITY_PROVIDER
+#    - GCP_SERVICE_ACCOUNT_EMAIL
+#
+# B) Service account JSON (stable; does not expire like CI tokens):
+#    - FIREBASE_SERVICE_ACCOUNT_JSON  (full JSON key for a GCP service account
+#      with permission to deploy Firestore rules, e.g. Firebase Admin or custom role)
+#
+# C) Legacy CI token — EXPIRES; rotate with: firebase login:ci
+#    - FIREBASE_TOKEN
+#
+# If you see "credentials are no longer valid": regenerate the token (C) or switch to (A) or (B).
+
+name: Deploy Firestore rules
+
+on:
+  workflow_dispatch:
+  pull_request:
+    branches: [main, master]
+    paths:
+      - 'firestore.rules'
+      - 'firebase.json'
+      - '.firebaserc'
+      - '.github/workflows/deploy-firestore-rules.yml'
+  push:
+    branches: [main, master]
+    paths:
+      - 'firestore.rules'
+      - 'firebase.json'
+      - '.firebaserc'
+      - '.github/workflows/deploy-firestore-rules.yml'
+
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: firestore-rules-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+env:
+  FIREBASE_TOOLS_VERSION: '13'
+  # Must match .firebaserc default project
+  FIREBASE_PROJECT: boltlog
+
+jobs:
+  validate-rules:
+    if: github.event_name == 'pull_request'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve auth method
+        id: auth
+        run: |
+          if [ -n "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ] && [ -n "${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}" ]; then
+            echo "method=wif" >> $GITHUB_OUTPUT
+          elif [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" ]; then
+            echo "method=sa" >> $GITHUB_OUTPUT
+          elif [ -n "${{ secrets.FIREBASE_TOKEN }}" ]; then
+            echo "method=token" >> $GITHUB_OUTPUT
+          else
+            echo "method=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to Google Cloud (WIF)
+        if: steps.auth.outputs.method == 'wif'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Authenticate to Google Cloud (service account JSON)
+        if: steps.auth.outputs.method == 'sa'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Validate Firestore rules — dry-run (WIF or SA)
+        if: steps.auth.outputs.method == 'wif' || steps.auth.outputs.method == 'sa'
+        run: |
+          npx --yes firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }} deploy \
+            --only firestore:rules \
+            --project ${{ env.FIREBASE_PROJECT }} \
+            --non-interactive \
+            --dry-run
+
+      - name: Validate Firestore rules — dry-run (CI token)
+        if: steps.auth.outputs.method == 'token'
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          npx --yes firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }} deploy \
+            --only firestore:rules \
+            --project ${{ env.FIREBASE_PROJECT }} \
+            --non-interactive \
+            --dry-run
+
+      - name: Skip validation (no Firebase credentials)
+        if: steps.auth.outputs.method == 'none'
+        run: |
+          echo "::warning::No deploy credentials — skipping rules dry-run."
+          echo "Set WIF secrets, or FIREBASE_SERVICE_ACCOUNT_JSON, or FIREBASE_TOKEN (expires; run firebase login:ci to renew)."
+
+  deploy-rules:
+    if: github.event_name == 'push' || github.event_name == 'workflow_dispatch'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Resolve auth method
+        id: auth
+        run: |
+          if [ -n "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ] && [ -n "${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}" ]; then
+            echo "method=wif" >> $GITHUB_OUTPUT
+          elif [ -n "${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}" ]; then
+            echo "method=sa" >> $GITHUB_OUTPUT
+          elif [ -n "${{ secrets.FIREBASE_TOKEN }}" ]; then
+            echo "method=token" >> $GITHUB_OUTPUT
+          else
+            echo "method=none" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to Google Cloud (WIF)
+        if: steps.auth.outputs.method == 'wif'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Authenticate to Google Cloud (service account JSON)
+        if: steps.auth.outputs.method == 'sa'
+        uses: google-github-actions/auth@v2
+        with:
+          credentials_json: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_JSON }}
+
+      - name: Deploy Firestore rules (WIF or SA)
+        if: steps.auth.outputs.method == 'wif' || steps.auth.outputs.method == 'sa'
+        run: |
+          npx --yes firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }} deploy \
+            --only firestore:rules \
+            --project ${{ env.FIREBASE_PROJECT }} \
+            --non-interactive
+
+      - name: Deploy Firestore rules (CI token)
+        if: steps.auth.outputs.method == 'token'
+        env:
+          FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+        run: |
+          npx --yes firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }} deploy \
+            --only firestore:rules \
+            --project ${{ env.FIREBASE_PROJECT }} \
+            --non-interactive
+
+      - name: Missing deploy credentials
+        if: steps.auth.outputs.method == 'none'
+        run: |
+          echo "::error::No Firebase deploy credentials."
+          echo "Add one of: WIF (GCP_WORKLOAD_IDENTITY_PROVIDER + GCP_SERVICE_ACCOUNT_EMAIL),"
+          echo "or FIREBASE_SERVICE_ACCOUNT_JSON (service account key JSON),"
+          echo "or FIREBASE_TOKEN (run firebase login:ci — expires; renew when auth fails)."
+          exit 1

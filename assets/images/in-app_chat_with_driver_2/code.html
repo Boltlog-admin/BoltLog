@@ -1,0 +1,161 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>In-App Chat with Driver</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2c20",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-neutral-900 dark:text-neutral-100 h-screen overflow-hidden flex flex-col antialiased selection:bg-primary selection:text-black">
+<header class="bg-surface-light dark:bg-surface-dark border-b border-neutral-200 dark:border-neutral-800 px-4 py-3 flex items-center justify-between shrink-0 z-20 shadow-sm">
+<div class="flex items-center gap-3">
+<button class="flex items-center justify-center size-10 rounded-full hover:bg-neutral-100 dark:hover:bg-neutral-800 transition-colors text-neutral-900 dark:text-white">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<div class="flex items-center gap-3">
+<div class="relative">
+<div class="size-10 rounded-full bg-cover bg-center border border-neutral-200 dark:border-neutral-700" data-alt="Portrait of the driver Ahmed" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuD1N6dG1BiPPkexpTlC2qzj6hUsB84fyOBdPSK4mYYfZWl5DmxJCyPKMYBislsCKxh9GmBdCsurlN1_Hje3EQK1CQ7Txoni0JPGQIwXz3-FWfgUM7hzORLDw8pM5pRfVvH6beDS3MYWlqS4UlTR1BYQIVL3lca16LCAzZ6MSkThSCOLL-ZFjLcUbMBXShnWLfFGofS5fsY14CUSidHRR-YStVPv4HcFfiZNwjHI_JWPGFLJ6rO2r9QrZQaAJPYCAHhyC4kYKoaQYdg');">
+</div>
+<div class="absolute bottom-0 right-0 size-2.5 bg-green-500 border-2 border-white dark:border-surface-dark rounded-full"></div>
+</div>
+<div class="flex flex-col">
+<h1 class="text-base font-bold leading-tight text-neutral-900 dark:text-white">Ahmed</h1>
+<div class="flex items-center gap-1.5 text-xs text-neutral-500 dark:text-neutral-400">
+<span class="truncate max-w-[120px]">Toyota Camry</span>
+<span class="size-1 rounded-full bg-neutral-300 dark:bg-neutral-600"></span>
+<span class="flex items-center gap-0.5 text-yellow-500 font-medium">
+<span class="material-symbols-outlined text-[14px] fill-1">star</span>
+                            4.9
+                        </span>
+</div>
+</div>
+</div>
+</div>
+<button class="size-10 flex items-center justify-center rounded-full bg-primary/10 text-green-700 dark:text-primary hover:bg-primary hover:text-black transition-all">
+<span class="material-symbols-outlined fill-1">call</span>
+</button>
+</header>
+<main class="flex-1 overflow-y-auto p-4 flex flex-col gap-6 bg-background-light dark:bg-background-dark w-full">
+<div class="flex justify-center w-full">
+<span class="px-3 py-1 bg-neutral-200/50 dark:bg-neutral-800/50 rounded-full text-xs font-medium text-neutral-500 dark:text-neutral-400">
+                Today, 4:30 PM
+            </span>
+</div>
+<div class="flex justify-center w-full">
+<p class="text-xs text-neutral-400 dark:text-neutral-500 flex items-center gap-1">
+<span class="material-symbols-outlined text-[16px]">local_taxi</span>
+                Driver has arrived at pickup point
+            </p>
+</div>
+<div class="flex items-end gap-2 max-w-[85%] self-start group">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0 mb-1" data-alt="Small avatar of driver" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDe8uDRXUWCXthGFWoJeer7ZBH1MgiqiH3kR8E-WKD7Le-wQc4ZX6j2jHgTC4vcZRwGO2ApEH1FjMWvODesW-lQhysiv-3XtxjRf47GlNlQE1Dp2W0Yk9329XvC9T5UFFyA3OFrm3rm_ozmJ4wpEgTonxShHELmeIjABHUY_P2UggheiZV_OgjJfGyjCJ2O0sLgW-sWX6rIX1XgwSZPzfRLeA3q-a_KDmk6cLPZu_hgNLCIfe4-efsKP3CFP591cYvtTwzzwGbWc40');">
+</div>
+<div class="flex flex-col gap-1">
+<div class="bg-white dark:bg-surface-dark border border-neutral-100 dark:border-neutral-700 p-3 rounded-2xl rounded-bl-none shadow-sm">
+<p class="text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed">
+                        Hello! I've arrived at the pickup point near the hotel entrance.
+                    </p>
+</div>
+<span class="text-[10px] text-neutral-400 ml-1">4:31 PM</span>
+</div>
+</div>
+<div class="flex items-end gap-2 max-w-[85%] self-end flex-row-reverse group">
+<div class="flex flex-col gap-1 items-end">
+<div class="bg-primary p-3 rounded-2xl rounded-br-none shadow-sm text-surface-dark">
+<p class="text-sm font-medium leading-relaxed">
+                        Great, thanks! Be right there.
+                    </p>
+</div>
+<div class="flex items-center gap-1 mr-1">
+<span class="text-[10px] text-neutral-400">4:32 PM</span>
+<span class="material-symbols-outlined text-[14px] text-primary">done_all</span>
+</div>
+</div>
+</div>
+<div class="flex items-end gap-2 max-w-[85%] self-start group">
+<div class="size-8 rounded-full bg-cover bg-center shrink-0 mb-1" data-alt="Small avatar of driver" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuBHVPqrgpe8kxyAsLAD9syiZffCN8uwINQe-e7AENCqGyJa9hLfiqIWCRgNFx0-5Z-hWzq78JRA_QwyK1ozLo4RcrEfL5o2HxeAC1cmnjjTFZZVbsjLy6c1anEDLZ2Fetf3A9sqqc8Bne2kLicw5LBVGoR7fwcK9h33h8BOPTuLWHC95MyoUvD6yS11632uYg6_OoYy-6DS8btOeu2pr1r_L_X1Fb3q_59qj_xw5mYjg5XAqzNOckYjbGBkCh1GyZ1NIABfMr5vj0w');">
+</div>
+<div class="flex flex-col gap-1">
+<div class="bg-white dark:bg-surface-dark border border-neutral-100 dark:border-neutral-700 p-3 rounded-2xl rounded-bl-none shadow-sm">
+<p class="text-sm text-neutral-800 dark:text-neutral-200 leading-relaxed">
+                        No rush. I'm parked in front of the lobby.
+                    </p>
+</div>
+<span class="text-[10px] text-neutral-400 ml-1">4:32 PM</span>
+</div>
+</div>
+<div class="h-2"></div>
+</main>
+<footer class="bg-surface-light dark:bg-surface-dark border-t border-neutral-200 dark:border-neutral-800 shrink-0 pb-safe">
+<div class="w-full overflow-x-auto no-scrollbar py-3 px-4 flex gap-2 border-b border-neutral-100 dark:border-neutral-800/50">
+<button class="shrink-0 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-4 py-2 rounded-full text-xs font-medium transition-colors border border-transparent dark:border-neutral-700">
+                I'm here
+            </button>
+<button class="shrink-0 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-4 py-2 rounded-full text-xs font-medium transition-colors border border-transparent dark:border-neutral-700">
+                Be right there
+            </button>
+<button class="shrink-0 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-4 py-2 rounded-full text-xs font-medium transition-colors border border-transparent dark:border-neutral-700">
+                5 minutes away
+            </button>
+<button class="shrink-0 bg-neutral-100 dark:bg-neutral-800 hover:bg-neutral-200 dark:hover:bg-neutral-700 text-neutral-600 dark:text-neutral-300 px-4 py-2 rounded-full text-xs font-medium transition-colors border border-transparent dark:border-neutral-700">
+                OK
+            </button>
+</div>
+<div class="p-4 flex items-center gap-3">
+<button class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors p-1">
+<span class="material-symbols-outlined">add_circle</span>
+</button>
+<button class="text-neutral-400 hover:text-neutral-600 dark:hover:text-neutral-200 transition-colors p-1" title="Share current location">
+<span class="material-symbols-outlined">location_on</span>
+</button>
+<div class="flex-1 relative">
+<input class="w-full bg-neutral-100 dark:bg-neutral-800 text-neutral-900 dark:text-white placeholder:text-neutral-500 rounded-xl px-4 py-3 text-sm focus:outline-none focus:ring-2 focus:ring-primary/50 border-none transition-all" placeholder="Message driver..." type="text"/>
+</div>
+<button class="size-10 flex items-center justify-center rounded-xl bg-primary text-[#0d1b12] shadow-lg shadow-primary/20 hover:shadow-primary/40 active:scale-95 transition-all">
+<span class="material-symbols-outlined fill-1 text-[20px]">send</span>
+</button>
+</div>
+<div class="h-4 w-full bg-surface-light dark:bg-surface-dark"></div>
+</footer>
+</body></html>

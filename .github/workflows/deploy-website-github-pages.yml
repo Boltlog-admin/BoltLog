@@ -1,0 +1,85 @@
+# Build website/ (Vite admin) + Flutter web, deploy to GitHub Pages.
+# First time: Repo → Settings → Pages → Build and deployment → Source: GitHub Actions.
+#
+# Admin UI: https://<owner>.github.io/<repo>/
+# Flutter web app: https://<owner>.github.io/<repo>/app/
+name: Deploy website to GitHub Pages
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - "website/**"
+      - "lib/**"
+      - "web/**"
+      - "pubspec.yaml"
+      - "pubspec.lock"
+      - ".github/workflows/deploy-website-github-pages.yml"
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+concurrency:
+  group: github-pages-website
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "20"
+          cache: npm
+          cache-dependency-path: website/package-lock.json
+
+      - name: Install and build (Vite admin)
+        working-directory: website
+        env:
+          # Must match GitHub Pages path: /<repository-name>/
+          VITE_BASE_PATH: /${{ github.event.repository.name }}/
+        run: |
+          npm ci
+          npm run build
+
+      - name: Set up Flutter (stable)
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Build Flutter web (under /app/)
+        env:
+          REPO_NAME: ${{ github.event.repository.name }}
+        run: |
+          set -e
+          flutter pub get
+          flutter build web --release --base-href "/${REPO_NAME}/app/"
+          mkdir -p "website/dist/app"
+          cp -r build/web/. "website/dist/app/"
+
+      - name: Upload Pages artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: website/dist
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
