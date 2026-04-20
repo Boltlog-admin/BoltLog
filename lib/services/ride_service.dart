@@ -369,7 +369,7 @@ class RideService {
     try {
       final notificationService = NotificationService();
       if (cancelledBy == 'transporter') {
-        final senderId = data['userId'] as String?;
+        final senderId = _uidStringFromRideField(data['userId']);
         if (senderId != null) {
           await notificationService.createNotification(
             userId: senderId,
@@ -751,7 +751,8 @@ class RideService {
       final offerData = offerDoc.data() as Map<String, dynamic>?;
       final transporterId = offerData?['transporterId'] as String?;
       final rideSnap = await _firestore.collection('rides').doc(rideId).get();
-      final senderUserId = rideSnap.data()?['userId'] as String?;
+      final senderUserId =
+          _uidStringFromRideField(rideSnap.data()?['userId']);
 
       await _firestore.collection('rides').doc(rideId).update({
         'status': 'open',
@@ -821,7 +822,7 @@ class RideService {
       }
 
       final rideDoc = await _firestore.collection('rides').doc(rideId).get();
-      final senderId = rideDoc.data()?['userId'] as String?;
+      final senderId = _uidStringFromRideField(rideDoc.data()?['userId']);
       if (senderId != null) {
         try {
           await NotificationService().createNotification(
@@ -1066,10 +1067,7 @@ class RideService {
     if (senderId == null || senderId.isEmpty) {
       final rideDoc = await _firestore.collection('rides').doc(rideId).get();
       final rideData = rideDoc.data();
-      final raw = rideData?['userId'];
-      senderId = raw is String
-          ? raw
-          : (raw != null ? raw.toString() : null);
+      senderId = _uidStringFromRideField(rideData?['userId']);
     }
     if (senderId == null || senderId.isEmpty) return;
     try {
@@ -1256,7 +1254,7 @@ class RideService {
       try {
         final rideDoc = await _firestore.collection('rides').doc(rideId).get();
         final data = rideDoc.data();
-        final senderUserId = data?['userId'] as String?;
+        final senderUserId = _uidStringFromRideField(data?['userId']);
         final driverId = (data?['driverId'] as String?)?.trim();
         if (senderUserId != null && driverId != null && driverId.isNotEmpty) {
           await MessagingService().sendTransporterSelectedMessage(
@@ -1386,7 +1384,7 @@ class RideService {
     });
     try {
       final rideDoc = await _firestore.collection('rides').doc(rideId).get();
-      final userId = rideDoc.data()?['userId'] as String?;
+      final userId = _uidStringFromRideField(rideDoc.data()?['userId']);
       if (userId != null) {
         final notificationService = NotificationService();
         await notificationService.createNotification(
@@ -1411,7 +1409,7 @@ class RideService {
     final snap = await ref.get();
     if (!snap.exists) throw Exception('Ride not found');
     final data = snap.data()!;
-    if (data['userId'] != uid) {
+    if (!_rideOwnedBySenderUid(data, uid)) {
       throw Exception('Only the sender can confirm pickup');
     }
     final now = DateTime.now().toIso8601String();
@@ -1442,7 +1440,7 @@ class RideService {
       'deliveryMarkedByDriverAt': now,
       'updatedAt': now,
     });
-    final senderId = data['userId'] as String?;
+    final senderId = _uidStringFromRideField(data['userId']);
     if (senderId != null) {
       try {
         await NotificationService().createNotification(
@@ -1627,7 +1625,7 @@ class RideService {
         throw Exception('Ride not found');
       }
       final rideData = rideDoc.data() as Map<String, dynamic>;
-      final senderId = rideData['userId'] as String?;
+      final senderId = _uidStringFromRideField(rideData['userId']);
       
       // Update the ride with counter-offer; mark this transporter as the one in negotiation (works for any sender/transporter)
       await _firestore.collection('rides').doc(rideId).update({
@@ -1787,7 +1785,7 @@ class RideService {
         final rd = ridePre.data() as Map<String, dynamic>;
         final existingCounter =
             (rd['counterOffer'] as num?)?.toDouble();
-        final neg = (rd['negotiatingTransporterId'] as String?)?.trim();
+        final neg = _uidStringFromRideField(rd['negotiatingTransporterId']);
         if (neg != null &&
             neg.isNotEmpty &&
             neg != offerTransporterId) {
@@ -1950,7 +1948,7 @@ class RideService {
           final rideData = rideDoc.data();
           final agreedPrice =
               (rideData?['price'] as num?)?.toDouble() ?? 0.0;
-          final senderUserId = rideData?['userId'] as String?;
+          final senderUserId = _uidStringFromRideField(rideData?['userId']);
 
           final notificationService = NotificationService();
           await notificationService.createNotification(
@@ -2004,7 +2002,8 @@ class RideService {
         final offerData = offerDoc.data();
         final transporterId = offerData?['transporterId'] as String?;
         final rideDoc = await _firestore.collection('rides').doc(rideId).get();
-        final senderUserId = rideDoc.data()?['userId'] as String?;
+        final senderUserId =
+            _uidStringFromRideField(rideDoc.data()?['userId']);
 
         if (transporterId != null) {
           final notificationService = NotificationService();
