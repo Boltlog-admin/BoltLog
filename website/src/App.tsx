@@ -55,7 +55,38 @@ function formatLoginError(e: unknown, emailUsed: string): string {
   return lines.join("\n");
 }
 
-type Tab = "users" | "rides" | "document";
+type Tab = "users" | "rides" | "activity" | "inbox" | "document";
+type UserRow = {
+  id: string;
+  email?: string;
+  role?: string;
+  data: Record<string, unknown>;
+};
+type ActivityRow = {
+  id: string;
+  source: "rides" | "notifications";
+  activityType: string;
+  rideId?: string;
+  senderId?: string;
+  driverId?: string;
+  userId?: string;
+  status?: string;
+  message?: string;
+  atText: string;
+  atMs: number;
+  raw: Record<string, unknown>;
+};
+type InboxRow = {
+  id: string;
+  source: "bugReports" | "notifications";
+  userId?: string;
+  userEmail?: string;
+  title?: string;
+  description?: string;
+  status?: string;
+  createdAtText: string;
+  createdAtMs: number;
+};
 
 function docRefFromPath(firestore: Firestore, path: string) {
   const parts = path.split("/").filter(Boolean);
@@ -131,6 +162,72 @@ function parseDocJson(text: string): Record<string, unknown> {
   return out;
 }
 
+function normalizeRole(role: unknown): string {
+  return typeof role === "string" ? role.trim().toLowerCase() : "";
+}
+
+function isDriverRole(role: unknown): boolean {
+  const r = normalizeRole(role);
+  return r === "driver" || r === "transporter";
+}
+
+function isSenderRole(role: unknown): boolean {
+  const r = normalizeRole(role);
+  return r === "passenger" || r === "sender" || r.length === 0;
+}
+
+function isAdminRole(role: unknown): boolean {
+  const r = normalizeRole(role);
+  return r === "admin" || r === "super_admin" || r === "superadmin";
+}
+
+function formatValue(v: unknown): string {
+  if (v === null || v === undefined) return "—";
+  if (v instanceof Timestamp) return v.toDate().toISOString();
+  if (typeof v === "object") {
+    try {
+      return JSON.stringify(v);
+    } catch {
+      return String(v);
+    }
+  }
+  return String(v);
+}
+
+function namePartsFromUser(data: Record<string, unknown>): {
+  firstName: string;
+  surname: string;
+} {
+  const displayNameRaw =
+    (typeof data.displayName === "string" ? data.displayName : "") ||
+    (typeof data.idFullName === "string" ? data.idFullName : "");
+  const displayName = displayNameRaw.trim();
+  if (!displayName) return { firstName: "—", surname: "—" };
+  const parts = displayName.split(/\s+/).filter(Boolean);
+  if (parts.length === 1) return { firstName: parts[0], surname: "—" };
+  return { firstName: parts[0], surname: parts.slice(1).join(" ") };
+}
+
+function toMillis(v: unknown): number {
+  if (!v) return 0;
+  if (v instanceof Timestamp) return v.toMillis();
+  if (typeof v === "string") {
+    const parsed = Date.parse(v);
+    return Number.isNaN(parsed) ? 0 : parsed;
+  }
+  if (typeof v === "number" && Number.isFinite(v)) return v;
+  return 0;
+}
+
+function readableWhen(v: unknown): string {
+  if (v instanceof Timestamp) return v.toDate().toISOString();
+  if (typeof v === "string") return v;
+  if (typeof v === "number" && Number.isFinite(v)) {
+    return new Date(v).toISOString();
+  }
+  return "—";
+}
+
 export default function App() {
   const [user, setUser] = useState<User | null>(null);
   const [isAdmin, setIsAdmin] = useState<boolean | null>(null);
@@ -142,12 +239,12 @@ export default function App() {
   const [busy, setBusy] = useState(false);
   const [toast, setToast] = useState<string | null>(null);
 
-  const [usersRows, setUsersRows] = useState<
-    { id: string; email?: string; role?: string }[]
-  >([]);
+  const [usersRows, setUsersRows] = useState<UserRow[]>([]);
   const [ridesRows, setRidesRows] = useState<
     { id: string; status?: string; userId?: string; driverId?: string }[]
   >([]);
+  const [activityRows, setActivityRows] = useState<ActivityRow[]>([]);
+  const [inboxRows, setInboxRows] = useState<InboxRow[]>([]);
 
   const [explorerPath, setExplorerPath] = useState("users/");
   const [explorerJson, setExplorerJson] = useState("");
@@ -191,6 +288,7 @@ export default function App() {
             id: d.id,
             email: x.email as string | undefined,
             role: x.role as string | undefined,
+            data: x,
           };
         }),
       );
@@ -226,6 +324,152 @@ export default function App() {
     }
   };
 
+  const loadActivities = async () => {
+    setBusy(true);
+    setAuthError(null);
+    try {
+      const [ridesSnap, notificationsSnap] = await Promise.all([
+        getDocs(query(collection(db, "rides"), limit(500))),
+        getDocs(query(collection(db, "notifications"), limit(500))),
+      ]);
+
+      const rideActivities: ActivityRow[] = ridesSnap.docs.map((d) => {
+        const x = d.data() as Record<string, unknown>;
+        const status = (x.status as string | undefined) ?? "unknown";
+        const rideId = d.id;
+        const senderId =
+          (typeof x.userId === "string" ? x.userId : undefined) ??
+          (typeof x.senderId === "string" ? x.senderId : undefined);
+        const driverId = typeof x.driverId === "string" ? x.driverId : undefined;
+        const when = x.completedAt ?? x.updatedAt ?? x.createdAt;
+        return {
+          id: `ride-${d.id}`,
+          source: "rides",
+          activityType: `ride_${status}`,
+          rideId,
+          senderId,
+          driverId,
+          status,
+          message: `Ride ${status.replaceAll("_", " ")}`,
+          atText: readableWhen(when),
+          atMs: toMillis(when),
+          raw: x,
+        };
+      });
+
+      const notificationActivities: ActivityRow[] = notificationsSnap.docs.map((d) => {
+        const x = d.data() as Record<string, unknown>;
+        const type = (x.type as string | undefined) ?? "notification";
+        const rideId = typeof x.rideId === "string" ? x.rideId : undefined;
+        const userId = typeof x.userId === "string" ? x.userId : undefined;
+        const when = x.createdAt;
+        return {
+          id: `notif-${d.id}`,
+          source: "notifications",
+          activityType: type,
+          rideId,
+          userId,
+          status: undefined,
+          message:
+            `${formatValue(x.title)}${x.message ? `: ${formatValue(x.message)}` : ""}`,
+          atText: readableWhen(when),
+          atMs: toMillis(when),
+          raw: x,
+        };
+      });
+
+      const all = [...rideActivities, ...notificationActivities].sort(
+        (a, b) => b.atMs - a.atMs,
+      );
+      setActivityRows(all);
+      showToast(
+        `Loaded ${all.length} activities (${rideActivities.length} rides, ${notificationActivities.length} notifications)`,
+      );
+    } catch (e) {
+      setAuthError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const loadInbox = async () => {
+    setBusy(true);
+    setAuthError(null);
+    try {
+      const [bugReportsSnap, notificationsSnap] = await Promise.all([
+        getDocs(query(collection(db, "bugReports"), limit(500))),
+        getDocs(query(collection(db, "notifications"), limit(500))),
+      ]);
+
+      const bugRows: InboxRow[] = bugReportsSnap.docs.map((d) => {
+        const x = d.data() as Record<string, unknown>;
+        const when = x.createdAt;
+        return {
+          id: d.id,
+          source: "bugReports",
+          userId: typeof x.userId === "string" ? x.userId : undefined,
+          userEmail: typeof x.userEmail === "string" ? x.userEmail : undefined,
+          title: "Bug report",
+          description: typeof x.description === "string" ? x.description : undefined,
+          status: typeof x.status === "string" ? x.status : "open",
+          createdAtText: readableWhen(when),
+          createdAtMs: toMillis(when),
+        };
+      });
+
+      const notifRows: InboxRow[] = notificationsSnap.docs
+        .map((d) => {
+          const x = d.data() as Record<string, unknown>;
+          const type = normalizeRole(x.type);
+          const looksLikeReport =
+            type.includes("report") || type.includes("issue") || type.includes("bug");
+          if (!looksLikeReport) return null;
+          const when = x.createdAt;
+          return {
+            id: d.id,
+            source: "notifications",
+            userId: typeof x.userId === "string" ? x.userId : undefined,
+            title: typeof x.title === "string" ? x.title : "Report notification",
+            description: typeof x.message === "string" ? x.message : undefined,
+            status: (x.isRead as boolean | undefined) ? "read" : "unread",
+            createdAtText: readableWhen(when),
+            createdAtMs: toMillis(when),
+          } as InboxRow;
+        })
+        .filter((row): row is InboxRow => row !== null);
+
+      const rows = [...bugRows, ...notifRows].sort((a, b) => b.createdAtMs - a.createdAtMs);
+      setInboxRows(rows);
+      showToast(`Loaded ${rows.length} inbox reports`);
+    } catch (e) {
+      setAuthError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const updateBugReportStatus = async (reportId: string, status: "open" | "in_progress" | "resolved" | "closed") => {
+    setBusy(true);
+    setAuthError(null);
+    try {
+      await setDoc(
+        doc(db, "bugReports", reportId),
+        {
+          status,
+          updatedAt: new Date().toISOString(),
+          updatedBy: user?.uid ?? null,
+        },
+        { merge: true },
+      );
+      showToast(`Report ${reportId} set to ${status}`);
+      await loadInbox();
+    } catch (e) {
+      setAuthError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
   const openUserEditor = async (uid: string) => {
     setSelectedUserId(uid);
     setBusy(true);
@@ -253,6 +497,63 @@ export default function App() {
       await setDoc(doc(db, "users", selectedUserId), data, { merge: true });
       showToast("User document saved");
       await loadUsers();
+    } catch (e) {
+      setAuthError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const setUserRole = async (uid: string, role: "Passenger" | "Driver" | "admin" | "super_admin") => {
+    setBusy(true);
+    setAuthError(null);
+    try {
+      await setDoc(
+        doc(db, "users", uid),
+        {
+          role,
+          isAdmin: role === "admin" || role === "super_admin",
+          superAdmin: role === "super_admin",
+          roleUpdatedAt: new Date().toISOString(),
+        },
+        { merge: true },
+      );
+      showToast(`Role updated to ${role} for ${uid}`);
+      await loadUsers();
+      if (selectedUserId === uid) {
+        await openUserEditor(uid);
+      }
+    } catch (e) {
+      setAuthError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const setAccountDecision = async (
+    uid: string,
+    decision: "accepted" | "declined",
+  ) => {
+    setBusy(true);
+    setAuthError(null);
+    try {
+      const isAccepted = decision === "accepted";
+      await setDoc(
+        doc(db, "users", uid),
+        {
+          verificationStatus: isAccepted ? "verified" : "rejected",
+          isAvailable: isAccepted ? true : false,
+          accountDecision: decision,
+          decisionAt: new Date().toISOString(),
+          decisionBy: user?.uid ?? null,
+        },
+        { merge: true },
+      );
+      showToast(`Account ${decision} for ${uid}`);
+      await loadUsers();
+      if (selectedUserId === uid) {
+        await openUserEditor(uid);
+      }
     } catch (e) {
       setAuthError(String(e));
     } finally {
@@ -371,6 +672,13 @@ export default function App() {
     await signOut(auth);
     setIsAdmin(null);
   };
+
+  const driverRows = usersRows.filter((u) => isDriverRole(u.role));
+  const senderRows = usersRows.filter((u) => isSenderRole(u.role));
+  const adminRows = usersRows.filter((u) => isAdminRole(u.role));
+  const otherRoleRows = usersRows.filter(
+    (u) => !isDriverRole(u.role) && !isSenderRole(u.role) && !isAdminRole(u.role),
+  );
 
   if (!authReady) {
     return (
@@ -548,6 +856,8 @@ export default function App() {
           [
             ["users", "Users"],
             ["rides", "Rides"],
+            ["activity", "Activity"],
+            ["inbox", "Inbox"],
             ["document", "Document"],
           ] as const
         ).map(([id, label]) => (
@@ -589,36 +899,328 @@ export default function App() {
               Refresh list
             </button>
           </div>
+          <div
+            style={{
+              display: "grid",
+              gap: "0.5rem",
+              gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))",
+              marginBottom: "1rem",
+            }}
+          >
+            <div style={{ background: "#eff6ff", borderRadius: 8, padding: "0.65rem 0.75rem" }}>
+              <div style={{ fontSize: 12, color: "#475569" }}>Total users</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#1e3a8a" }}>{usersRows.length}</div>
+            </div>
+            <div style={{ background: "#ecfdf5", borderRadius: 8, padding: "0.65rem 0.75rem" }}>
+              <div style={{ fontSize: 12, color: "#475569" }}>Drivers</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#065f46" }}>{driverRows.length}</div>
+            </div>
+            <div style={{ background: "#fefce8", borderRadius: 8, padding: "0.65rem 0.75rem" }}>
+              <div style={{ fontSize: 12, color: "#475569" }}>Senders</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#854d0e" }}>{senderRows.length}</div>
+            </div>
+            <div style={{ background: "#f3e8ff", borderRadius: 8, padding: "0.65rem 0.75rem" }}>
+              <div style={{ fontSize: 12, color: "#475569" }}>Admins</div>
+              <div style={{ fontSize: 18, fontWeight: 700, color: "#6d28d9" }}>{adminRows.length}</div>
+            </div>
+          </div>
+
+          <h3 style={{ marginTop: 0, marginBottom: "0.5rem", color: "#6d28d9" }}>Admin Accounts</h3>
           <div style={{ overflowX: "auto" }}>
             <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
               <thead>
                 <tr style={{ textAlign: "left", borderBottom: "2px solid #e2e8f0" }}>
-                  <th style={{ padding: "0.5rem" }}>UID</th>
+                  <th style={{ padding: "0.5rem" }}>Name</th>
+                  <th style={{ padding: "0.5rem" }}>Surname</th>
                   <th style={{ padding: "0.5rem" }}>Email</th>
                   <th style={{ padding: "0.5rem" }}>Role</th>
+                  <th style={{ padding: "0.5rem" }}>Role actions</th>
                   <th style={{ padding: "0.5rem" }} />
                 </tr>
               </thead>
               <tbody>
-                {usersRows.map((r) => (
+                {adminRows.map((r) => {
+                  const np = namePartsFromUser(r.data);
+                  return (
                   <tr key={r.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
-                    <td style={{ padding: "0.5rem", fontFamily: "monospace", fontSize: 12 }}>{r.id}</td>
+                    <td style={{ padding: "0.5rem" }}>{np.firstName}</td>
+                    <td style={{ padding: "0.5rem" }}>{np.surname}</td>
                     <td style={{ padding: "0.5rem" }}>{r.email ?? "—"}</td>
                     <td style={{ padding: "0.5rem" }}>{r.role ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "admin")}>
+                          Make admin
+                        </button>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "super_admin")}>
+                          Make super admin
+                        </button>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "Passenger")}>
+                          Downgrade to sender
+                        </button>
+                      </div>
+                    </td>
                     <td style={{ padding: "0.5rem" }}>
                       <button type="button" style={btnGhost} onClick={() => openUserEditor(r.id)}>
                         Edit JSON
                       </button>
                     </td>
                   </tr>
-                ))}
+                )})}
               </tbody>
             </table>
           </div>
 
+          <h3 style={{ marginTop: 0, marginBottom: "0.5rem", color: "#065f46" }}>Drivers</h3>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+              <thead>
+                <tr style={{ textAlign: "left", borderBottom: "2px solid #e2e8f0" }}>
+                  <th style={{ padding: "0.5rem" }}>Name</th>
+                  <th style={{ padding: "0.5rem" }}>Surname</th>
+                  <th style={{ padding: "0.5rem" }}>Email</th>
+                  <th style={{ padding: "0.5rem" }}>Phone</th>
+                  <th style={{ padding: "0.5rem" }}>Role</th>
+                  <th style={{ padding: "0.5rem" }}>Truck</th>
+                  <th style={{ padding: "0.5rem" }}>Vehicle #</th>
+                  <th style={{ padding: "0.5rem" }}>Available</th>
+                  <th style={{ padding: "0.5rem" }}>Verification</th>
+                  <th style={{ padding: "0.5rem" }}>Wallet</th>
+                  <th style={{ padding: "0.5rem" }}>Decision</th>
+                  <th style={{ padding: "0.5rem" }}>Role actions</th>
+                  <th style={{ padding: "0.5rem" }} />
+                </tr>
+              </thead>
+              <tbody>
+                {driverRows.map((r) => {
+                  const np = namePartsFromUser(r.data);
+                  return (
+                  <tr key={r.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <td style={{ padding: "0.5rem" }}>{np.firstName}</td>
+                    <td style={{ padding: "0.5rem" }}>{np.surname}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.email ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.phoneNumber)}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.role ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.truckType)}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.vehicleNumber)}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.isAvailable)}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.verificationStatus)}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.driverWalletBalance)}</td>
+                    <td style={{ padding: "0.5rem" }}>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          style={btnGhost}
+                          disabled={busy}
+                          onClick={() => setAccountDecision(r.id, "accepted")}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          style={btnGhost}
+                          disabled={busy}
+                          onClick={() => setAccountDecision(r.id, "declined")}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "Driver")}>
+                          Driver
+                        </button>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "Passenger")}>
+                          Sender
+                        </button>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "admin")}>
+                          Admin
+                        </button>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "super_admin")}>
+                          Super admin
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>
+                      <button type="button" style={btnGhost} onClick={() => openUserEditor(r.id)}>
+                        Edit JSON
+                      </button>
+                    </td>
+                  </tr>
+                )})}
+              </tbody>
+            </table>
+          </div>
+
+          <h3 style={{ marginTop: "1.25rem", marginBottom: "0.5rem", color: "#854d0e" }}>Senders</h3>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+              <thead>
+                <tr style={{ textAlign: "left", borderBottom: "2px solid #e2e8f0" }}>
+                  <th style={{ padding: "0.5rem" }}>Name</th>
+                  <th style={{ padding: "0.5rem" }}>Surname</th>
+                  <th style={{ padding: "0.5rem" }}>Email</th>
+                  <th style={{ padding: "0.5rem" }}>Phone</th>
+                  <th style={{ padding: "0.5rem" }}>Role</th>
+                  <th style={{ padding: "0.5rem" }}>Created</th>
+                  <th style={{ padding: "0.5rem" }}>Last Login</th>
+                  <th style={{ padding: "0.5rem" }}>Decision</th>
+                  <th style={{ padding: "0.5rem" }}>Role actions</th>
+                  <th style={{ padding: "0.5rem" }} />
+                </tr>
+              </thead>
+              <tbody>
+                {senderRows.map((r) => {
+                  const np = namePartsFromUser(r.data);
+                  return (
+                  <tr key={r.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <td style={{ padding: "0.5rem" }}>{np.firstName}</td>
+                    <td style={{ padding: "0.5rem" }}>{np.surname}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.email ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.phoneNumber)}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.role ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.createdAt)}</td>
+                    <td style={{ padding: "0.5rem" }}>{formatValue(r.data.lastLoginAt)}</td>
+                    <td style={{ padding: "0.5rem" }}>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button
+                          type="button"
+                          style={btnGhost}
+                          disabled={busy}
+                          onClick={() => setAccountDecision(r.id, "accepted")}
+                        >
+                          Accept
+                        </button>
+                        <button
+                          type="button"
+                          style={btnGhost}
+                          disabled={busy}
+                          onClick={() => setAccountDecision(r.id, "declined")}
+                        >
+                          Decline
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>
+                      <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "Passenger")}>
+                          Sender
+                        </button>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "Driver")}>
+                          Driver
+                        </button>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "admin")}>
+                          Admin
+                        </button>
+                        <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(r.id, "super_admin")}>
+                          Super admin
+                        </button>
+                      </div>
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>
+                      <button type="button" style={btnGhost} onClick={() => openUserEditor(r.id)}>
+                        Edit JSON
+                      </button>
+                    </td>
+                  </tr>
+                )})}
+              </tbody>
+            </table>
+          </div>
+
+          {otherRoleRows.length > 0 && (
+            <details style={{ marginTop: "1rem" }}>
+              <summary style={{ cursor: "pointer", color: "#334155", fontWeight: 600 }}>
+                Users with other/unknown role ({otherRoleRows.length})
+              </summary>
+              <div style={{ overflowX: "auto", marginTop: "0.5rem" }}>
+                <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+                  <thead>
+                    <tr style={{ textAlign: "left", borderBottom: "2px solid #e2e8f0" }}>
+                      <th style={{ padding: "0.5rem" }}>Name</th>
+                      <th style={{ padding: "0.5rem" }}>Surname</th>
+                      <th style={{ padding: "0.5rem" }}>Email</th>
+                      <th style={{ padding: "0.5rem" }}>Role</th>
+                      <th style={{ padding: "0.5rem" }} />
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {otherRoleRows.map((r) => {
+                      const np = namePartsFromUser(r.data);
+                      return (
+                      <tr key={r.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                        <td style={{ padding: "0.5rem" }}>{np.firstName}</td>
+                        <td style={{ padding: "0.5rem" }}>{np.surname}</td>
+                        <td style={{ padding: "0.5rem" }}>{r.email ?? "—"}</td>
+                        <td style={{ padding: "0.5rem" }}>{r.role ?? "—"}</td>
+                        <td style={{ padding: "0.5rem" }}>
+                          <button type="button" style={btnGhost} onClick={() => openUserEditor(r.id)}>
+                            Edit JSON
+                          </button>
+                        </td>
+                      </tr>
+                    )})}
+                  </tbody>
+                </table>
+              </div>
+            </details>
+          )}
+
           {selectedUserId && (
             <div style={{ marginTop: "1.5rem" }}>
               <h3 style={{ margin: "0 0 0.5rem" }}>Edit user /users/{selectedUserId}</h3>
+              <div style={{ display: "flex", gap: 8, flexWrap: "wrap", marginBottom: "0.75rem" }}>
+                <button
+                  type="button"
+                  style={btnGhost}
+                  disabled={busy}
+                  onClick={() => setAccountDecision(selectedUserId, "accepted")}
+                >
+                  Accept Account
+                </button>
+                <button
+                  type="button"
+                  style={btnGhost}
+                  disabled={busy}
+                  onClick={() => setAccountDecision(selectedUserId, "declined")}
+                >
+                  Decline Account
+                </button>
+                <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(selectedUserId, "Passenger")}>
+                  Set Sender
+                </button>
+                <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(selectedUserId, "Driver")}>
+                  Set Driver
+                </button>
+                <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(selectedUserId, "admin")}>
+                  Set Admin
+                </button>
+                <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(selectedUserId, "super_admin")}>
+                  Set Super Admin
+                </button>
+              </div>
+              <details style={{ marginBottom: "0.75rem" }}>
+                <summary style={{ cursor: "pointer", color: "#334155", fontWeight: 600 }}>
+                  Show full user details snapshot
+                </summary>
+                <pre
+                  style={{
+                    marginTop: "0.5rem",
+                    padding: "0.75rem",
+                    background: "#f8fafc",
+                    borderRadius: 8,
+                    overflow: "auto",
+                    fontSize: 12,
+                  }}
+                >
+                  {JSON.stringify(
+                    usersRows.find((u) => u.id === selectedUserId)?.data ?? {},
+                    null,
+                    2,
+                  )}
+                </pre>
+              </details>
               <p style={{ fontSize: 13, color: "#64748b", marginTop: 0 }}>
                 Valid JSON only. Timestamps round-trip as{" "}
                 <code>{`{ "__firestoreTimestamp": true, "seconds": n, "nanoseconds": n }`}</code>.
@@ -684,6 +1286,114 @@ export default function App() {
                     <td style={{ padding: "0.5rem" }}>{r.status ?? "—"}</td>
                     <td style={{ padding: "0.5rem", fontSize: 12 }}>{r.userId ?? "—"}</td>
                     <td style={{ padding: "0.5rem", fontSize: 12 }}>{r.driverId ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab === "activity" && (
+        <div style={card}>
+          <button type="button" disabled={busy} onClick={loadActivities} style={btnPrimary}>
+            Load activity feed
+          </button>
+          <p style={{ fontSize: 13, color: "#64748b" }}>
+            Shows timeline events from rides and notifications, including ride completion activity.
+          </p>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+              <thead>
+                <tr style={{ textAlign: "left", borderBottom: "2px solid #e2e8f0" }}>
+                  <th style={{ padding: "0.5rem" }}>When</th>
+                  <th style={{ padding: "0.5rem" }}>Source</th>
+                  <th style={{ padding: "0.5rem" }}>Activity</th>
+                  <th style={{ padding: "0.5rem" }}>Ride ID</th>
+                  <th style={{ padding: "0.5rem" }}>Sender</th>
+                  <th style={{ padding: "0.5rem" }}>Driver</th>
+                  <th style={{ padding: "0.5rem" }}>User</th>
+                  <th style={{ padding: "0.5rem" }}>Status</th>
+                  <th style={{ padding: "0.5rem" }}>Message</th>
+                </tr>
+              </thead>
+              <tbody>
+                {activityRows.map((r) => (
+                  <tr key={r.id} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <td style={{ padding: "0.5rem", whiteSpace: "nowrap" }}>{r.atText}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.source}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.activityType}</td>
+                    <td style={{ padding: "0.5rem", fontFamily: "monospace", fontSize: 12 }}>
+                      {r.rideId ?? "—"}
+                    </td>
+                    <td style={{ padding: "0.5rem", fontFamily: "monospace", fontSize: 12 }}>
+                      {r.senderId ?? "—"}
+                    </td>
+                    <td style={{ padding: "0.5rem", fontFamily: "monospace", fontSize: 12 }}>
+                      {r.driverId ?? "—"}
+                    </td>
+                    <td style={{ padding: "0.5rem", fontFamily: "monospace", fontSize: 12 }}>
+                      {r.userId ?? "—"}
+                    </td>
+                    <td style={{ padding: "0.5rem" }}>{r.status ?? "—"}</td>
+                    <td style={{ padding: "0.5rem", maxWidth: 420 }}>{r.message ?? "—"}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )}
+
+      {tab === "inbox" && (
+        <div style={card}>
+          <button type="button" disabled={busy} onClick={loadInbox} style={btnPrimary}>
+            Load inbox reports
+          </button>
+          <p style={{ fontSize: 13, color: "#64748b" }}>
+            Reported issues from <code>bugReports</code> and report-like notifications.
+          </p>
+          <div style={{ overflowX: "auto" }}>
+            <table style={{ width: "100%", borderCollapse: "collapse", fontSize: 14 }}>
+              <thead>
+                <tr style={{ textAlign: "left", borderBottom: "2px solid #e2e8f0" }}>
+                  <th style={{ padding: "0.5rem" }}>When</th>
+                  <th style={{ padding: "0.5rem" }}>Source</th>
+                  <th style={{ padding: "0.5rem" }}>User ID</th>
+                  <th style={{ padding: "0.5rem" }}>Email</th>
+                  <th style={{ padding: "0.5rem" }}>Title</th>
+                  <th style={{ padding: "0.5rem" }}>Description</th>
+                  <th style={{ padding: "0.5rem" }}>Status</th>
+                  <th style={{ padding: "0.5rem" }}>Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {inboxRows.map((r) => (
+                  <tr key={`${r.source}-${r.id}`} style={{ borderBottom: "1px solid #f1f5f9" }}>
+                    <td style={{ padding: "0.5rem", whiteSpace: "nowrap" }}>{r.createdAtText}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.source}</td>
+                    <td style={{ padding: "0.5rem", fontFamily: "monospace", fontSize: 12 }}>{r.userId ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.userEmail ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.title ?? "—"}</td>
+                    <td style={{ padding: "0.5rem", maxWidth: 360 }}>{r.description ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>{r.status ?? "—"}</td>
+                    <td style={{ padding: "0.5rem" }}>
+                      {r.source === "bugReports" ? (
+                        <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
+                          <button type="button" style={btnGhost} disabled={busy} onClick={() => updateBugReportStatus(r.id, "in_progress")}>
+                            In progress
+                          </button>
+                          <button type="button" style={btnGhost} disabled={busy} onClick={() => updateBugReportStatus(r.id, "resolved")}>
+                            Resolve
+                          </button>
+                          <button type="button" style={btnGhost} disabled={busy} onClick={() => updateBugReportStatus(r.id, "closed")}>
+                            Close
+                          </button>
+                        </div>
+                      ) : (
+                        "—"
+                      )}
+                    </td>
                   </tr>
                 ))}
               </tbody>
