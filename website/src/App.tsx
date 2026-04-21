@@ -6,6 +6,7 @@ import {
   signInWithEmailAndPassword,
   signOut,
 } from "firebase/auth";
+import { httpsCallable } from "firebase/functions";
 import {
   Timestamp,
   collection,
@@ -18,7 +19,7 @@ import {
   setDoc,
   type Firestore,
 } from "firebase/firestore";
-import { auth, db } from "./firebase";
+import { auth, db, functions } from "./firebase";
 
 /** When the form shows a plain username (no @), Firebase sign-in uses this email. */
 const ADMIN_LOGIN_EMAIL_DOMAIN = "boltlog-admin.local";
@@ -252,6 +253,7 @@ export default function App() {
 
   const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
   const [userEditJson, setUserEditJson] = useState("");
+  const [adminPassword, setAdminPassword] = useState("");
 
   const refreshClaims = useCallback(async (u: User | null) => {
     if (!u) {
@@ -571,6 +573,65 @@ export default function App() {
       setSelectedUserId(null);
       setUserEditJson("");
       await loadUsers();
+    } catch (e) {
+      setAuthError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const adminSetPassword = async () => {
+    if (!selectedUserId || !adminPassword.trim()) return;
+    setBusy(true);
+    setAuthError(null);
+    try {
+      const call = httpsCallable(functions, "adminSetUserPassword");
+      await call({ uid: selectedUserId, newPassword: adminPassword.trim() });
+      setAdminPassword("");
+      showToast("Password updated successfully");
+    } catch (e) {
+      setAuthError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const adminGenerateResetLink = async () => {
+    if (!selectedUserId) return;
+    setBusy(true);
+    setAuthError(null);
+    try {
+      const call = httpsCallable(functions, "adminSendPasswordResetEmail");
+      const out = await call({ uid: selectedUserId });
+      const payload = out.data as { resetLink?: string; email?: string };
+      if (payload.resetLink) {
+        await navigator.clipboard.writeText(payload.resetLink);
+        showToast(
+          `Reset link generated for ${payload.email ?? "user"} and copied to clipboard`,
+        );
+      } else {
+        showToast("Reset link generated");
+      }
+    } catch (e) {
+      setAuthError(String(e));
+    } finally {
+      setBusy(false);
+    }
+  };
+
+  const adminResetAccount = async () => {
+    if (!selectedUserId) return;
+    if (!confirm(`Reset account for ${selectedUserId}? This disables sign-in.`)) {
+      return;
+    }
+    setBusy(true);
+    setAuthError(null);
+    try {
+      const call = httpsCallable(functions, "adminResetAccount");
+      await call({ uid: selectedUserId });
+      showToast("Account reset and disabled");
+      await loadUsers();
+      await openUserEditor(selectedUserId);
     } catch (e) {
       setAuthError(String(e));
     } finally {
@@ -1199,6 +1260,36 @@ export default function App() {
                 <button type="button" style={btnGhost} disabled={busy} onClick={() => setUserRole(selectedUserId, "super_admin")}>
                   Set Super Admin
                 </button>
+              </div>
+              <div
+                style={{
+                  border: "1px solid #e2e8f0",
+                  borderRadius: 8,
+                  padding: "0.75rem",
+                  marginBottom: "0.75rem",
+                }}
+              >
+                <div style={{ fontWeight: 600, marginBottom: "0.5rem", color: "#1e3a8a" }}>
+                  Firebase account controls
+                </div>
+                <div style={{ display: "flex", gap: 8, flexWrap: "wrap", alignItems: "center" }}>
+                  <input
+                    type="text"
+                    value={adminPassword}
+                    onChange={(e) => setAdminPassword(e.target.value)}
+                    placeholder="New password (min 6 chars)"
+                    style={{ padding: "0.45rem 0.6rem", minWidth: 240 }}
+                  />
+                  <button type="button" style={btnGhost} disabled={busy || adminPassword.trim().length < 6} onClick={adminSetPassword}>
+                    Change password
+                  </button>
+                  <button type="button" style={btnGhost} disabled={busy} onClick={adminGenerateResetLink}>
+                    Generate reset link
+                  </button>
+                  <button type="button" style={btnDanger} disabled={busy} onClick={adminResetAccount}>
+                    Reset account
+                  </button>
+                </div>
               </div>
               <details style={{ marginBottom: "0.75rem" }}>
                 <summary style={{ cursor: "pointer", color: "#334155", fontWeight: 600 }}>

@@ -566,3 +566,89 @@ exports.onTransporterCommitRequestCreated = functions.firestore
     }
     return null;
   });
+
+function assertAdminCaller(context) {
+  if (!context.auth) {
+    throw new functions.https.HttpsError('unauthenticated', 'Sign in required');
+  }
+  const claims = context.auth.token || {};
+  const isAdmin = claims.admin === true;
+  if (!isAdmin) {
+    throw new functions.https.HttpsError(
+      'permission-denied',
+      'Admin privileges required',
+    );
+  }
+}
+
+exports.adminSetUserPassword = functions.https.onCall(async (data, context) => {
+  assertAdminCaller(context);
+  const uid = typeof data.uid === 'string' ? data.uid.trim() : '';
+  const newPassword =
+    typeof data.newPassword === 'string' ? data.newPassword : '';
+  if (!uid || !newPassword) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'uid and newPassword are required',
+    );
+  }
+  if (newPassword.length < 6) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'Password must be at least 6 characters',
+    );
+  }
+  await admin.auth().updateUser(uid, {password: newPassword});
+  return {ok: true};
+});
+
+exports.adminSendPasswordResetEmail = functions.https.onCall(
+  async (data, context) => {
+    assertAdminCaller(context);
+    const uid = typeof data.uid === 'string' ? data.uid.trim() : '';
+    if (!uid) {
+      throw new functions.https.HttpsError(
+        'invalid-argument',
+        'uid is required',
+      );
+    }
+    const user = await admin.auth().getUser(uid);
+    if (!user.email) {
+      throw new functions.https.HttpsError(
+        'failed-precondition',
+        'Target user has no email',
+      );
+    }
+    const link = await admin.auth().generatePasswordResetLink(user.email);
+    return {ok: true, email: user.email, resetLink: link};
+  },
+);
+
+exports.adminResetAccount = functions.https.onCall(async (data, context) => {
+  assertAdminCaller(context);
+  const uid = typeof data.uid === 'string' ? data.uid.trim() : '';
+  if (!uid) {
+    throw new functions.https.HttpsError(
+      'invalid-argument',
+      'uid is required',
+    );
+  }
+  const now = new Date().toISOString();
+  await admin.auth().updateUser(uid, {disabled: true});
+  await admin
+    .firestore()
+    .collection('users')
+    .doc(uid)
+    .set(
+      {
+        accountStatus: 'reset',
+        accountResetAt: now,
+        accountResetBy: context.auth.uid,
+        isAvailable: false,
+        fcmToken: admin.firestore.FieldValue.delete(),
+        fcmTokenUpdatedAt: admin.firestore.FieldValue.delete(),
+      },
+      {merge: true},
+    );
+  return {ok: true, disabled: true};
+});
