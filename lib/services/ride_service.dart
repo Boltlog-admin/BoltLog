@@ -1460,7 +1460,32 @@ class RideService {
   /// @deprecated Use [transporterRequestSenderConfirmation] (sender must confirm before map).
   /// Returns whether a new commit was written (see [transporterRequestSenderConfirmation]).
   Future<bool> acceptRide(String rideId, String transporterId) async {
-    return transporterRequestSenderConfirmation(rideId, transporterId);
+    try {
+      return transporterRequestSenderConfirmation(rideId, transporterId);
+    } catch (e, st) {
+      debugPrint('acceptRide primary path failed, trying direct fallback: $e\n$st');
+      final tid = transporterId.trim();
+      if (tid.isEmpty) rethrow;
+      final map = await _transporterCommitRideViaClientTransaction(
+        rideId: rideId,
+        transporterId: tid,
+      );
+      final wroteCommit = _jsonBool(map['wroteCommit']);
+      final senderUserId = map['senderUserId'] as String?;
+      if (wroteCommit) {
+        await _sendTransporterCommitNotifications(
+          rideId,
+          tid,
+          senderUserId: senderUserId,
+        );
+        await _sendTransporterCommitChatNudge(
+          rideId,
+          tid,
+          senderUserId: senderUserId,
+        );
+      }
+      return wroteCommit;
+    }
   }
 
   // Check balance and notify transporter if insufficient
