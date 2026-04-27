@@ -161,25 +161,34 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                       );
                     }
 
-                // Only show requests that match this transporter's vehicle type (when order has a type selected)
-                final driverTruckType = userModel?.truckType;
-                List<RideModel> filteredRides = rides
-                    .where((ride) {
-                      final orderType = ride.transportType;
-                      if (orderType == null || orderType.isEmpty)
-                        return true;
-                      return driverTruckType != null &&
-                          driverTruckType.isNotEmpty &&
-                          orderType == driverTruckType;
-                    })
-                    .toList();
-                // inDrive-style: only nearby requests, sorted by distance to pickup
-                filteredRides = filterAndSortRidesByDistance(
-                  filteredRides,
-                  driverLat: userModel?.currentLat,
-                  driverLng: userModel?.currentLng,
-                  maxRadiusKm: defaultMaxRadiusKm,
-                );
+                // QA mode: bypass request narrowing so transporters can test end-to-end
+                // acceptance even when profile/location metadata is incomplete.
+                List<RideModel> filteredRides;
+                if (TestingFlags.relaxTransporterVerification) {
+                  filteredRides = rides;
+                } else {
+                  // Only show requests that match this transporter's vehicle type
+                  // (when order has a type selected).
+                  final driverTruckType = userModel?.truckType;
+                  filteredRides = rides
+                      .where((ride) {
+                        final orderType = ride.transportType;
+                        if (orderType == null || orderType.isEmpty) {
+                          return true;
+                        }
+                        return driverTruckType != null &&
+                            driverTruckType.isNotEmpty &&
+                            orderType == driverTruckType;
+                      })
+                      .toList();
+                  // inDrive-style: only nearby requests, sorted by distance to pickup.
+                  filteredRides = filterAndSortRidesByDistance(
+                    filteredRides,
+                    driverLat: userModel?.currentLat,
+                    driverLng: userModel?.currentLng,
+                    maxRadiusKm: defaultMaxRadiusKm,
+                  );
+                }
 
                 _rides = filteredRides;
 
