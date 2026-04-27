@@ -81,6 +81,25 @@ class MessagingService {
     return sendMessage(message);
   }
 
+  /// Transporter-side service message after pressing Accept while waiting
+  /// for sender confirmation. Uses transporter as sender to satisfy rules.
+  Future<String> sendTransporterAwaitingSenderMessage({
+    required String rideId,
+    required String senderId,
+    required String transporterId,
+  }) async {
+    final message = MessageModel(
+      rideId: rideId,
+      senderId: transporterId,
+      receiverId: senderId,
+      message:
+          'Service update: I accepted this request. Please confirm to start the live map and trip.',
+      timestamp: DateTime.now(),
+      isRead: false,
+    );
+    return sendMessage(message);
+  }
+
   // Stream messages with cache metadata so UI can show offline/syncing state
   Stream<MessagesSnapshot> streamMessages(String rideId, {int limit = 100}) {
     return _firestore

@@ -919,11 +919,74 @@ class RideService {
       debugPrint(
         'transporterCommitRide callable failed (${e.code}): ${e.message} — trying HTTPS\n$st',
       );
-      return _transporterCommitRideViaHttps(
-        rideId: rideId,
-        transporterId: transporterId,
-      );
+      try {
+        return await _transporterCommitRideViaHttps(
+          rideId: rideId,
+          transporterId: transporterId,
+        );
+      } catch (_) {
+        // Final fallback for environments where callable/HTTPS/queue workers are blocked.
+        return _transporterCommitRideViaClientTransaction(
+          rideId: rideId,
+          transporterId: transporterId,
+        );
+      }
     }
+  }
+
+  /// Last-resort fallback: perform the transporter commit transition directly from
+  /// client Firestore transaction (subject to security rules).
+  Future<Map<String, dynamic>> _transporterCommitRideViaClientTransaction({
+    required String rideId,
+    required String transporterId,
+  }) async {
+    final uid = FirebaseAuth.instance.currentUser?.uid.trim() ?? '';
+    if (uid.isEmpty || uid != transporterId) {
+      throw Exception('Sign in with the selected transporter account before accepting.');
+    }
+    final rideRef = _firestore.collection('rides').doc(rideId);
+    String? senderUserId;
+    bool wroteCommit = false;
+
+    await _firestore.runTransaction((tx) async {
+      final snap = await tx.get(rideRef);
+      if (!snap.exists) {
+        throw Exception('Ride not found');
+      }
+      final data = snap.data() ?? <String, dynamic>{};
+      final status = (data['status'] as String?) ?? 'open';
+      if (status == 'cancelled' ||
+          status == 'completed' ||
+          status == 'in_progress' ||
+          status == 'parcel_collected') {
+        throw Exception('This request can no longer be accepted.');
+      }
+
+      senderUserId = _uidStringFromRideField(data['userId']);
+      final awaiting = _uidStringFromRideField(data['awaitingSenderConfirmDriverId']);
+      final driverId = _uidStringFromRideField(data['driverId']);
+      if (awaiting == transporterId || driverId == transporterId) {
+        wroteCommit = false;
+        return;
+      }
+      if (awaiting != null && awaiting.isNotEmpty && awaiting != transporterId) {
+        throw Exception('Another transporter is already waiting for sender confirmation.');
+      }
+
+      final update = <String, dynamic>{
+        'awaitingSenderConfirmDriverId': transporterId,
+        'negotiatingTransporterId': transporterId,
+        'status': 'pending',
+        'updatedAt': DateTime.now().toIso8601String(),
+      };
+      tx.update(rideRef, update);
+      wroteCommit = true;
+    });
+
+    return <String, dynamic>{
+      'wroteCommit': wroteCommit,
+      'senderUserId': senderUserId,
+    };
   }
 
   /// Firebase Callable HTTP API with explicit ID token (works when the
@@ -1029,7 +1092,31 @@ class RideService {
       'updatedAt': now,
     });
 
-    final end = DateTime.now().add(const Duration(seconds: 60));
+    Future<Map<String, dynamic>?> readRideCommitState() async {
+      final rideSnap = await _firestore.collection('rides').doc(rideId).get();
+      if (!rideSnap.exists) return null;
+      final rideData = rideSnap.data() ?? const <String, dynamic>{};
+      final awaiting =
+          (rideData['awaitingSenderConfirmDriverId'] as String?)?.trim();
+      final driverId = (rideData['driverId'] as String?)?.trim();
+      final status = (rideData['status'] as String?) ?? '';
+      final senderUserId = _uidStringFromRideField(rideData['userId']);
+
+      final waitingOnSender = awaiting == transporterId &&
+          (status == 'pending' || status == 'open');
+      final alreadyAssigned = driverId == transporterId;
+
+      if (waitingOnSender || alreadyAssigned) {
+        return <String, dynamic>{
+          'wroteCommit': false,
+          'senderUserId': senderUserId,
+        };
+      }
+      return null;
+    }
+
+    final end = DateTime.now().add(const Duration(seconds: 90));
+    var tick = 0;
     while (DateTime.now().isBefore(end)) {
       final snap = await reqRef.get();
       if (snap.exists) {
@@ -1047,9 +1134,20 @@ class RideService {
           _throwTransporterCommitCallableFailure(code, msg);
         }
       }
+      // Defensive: if the queue status doc lags/fails to update, still trust the ride state.
+      if (tick % 3 == 0) {
+        final rideCommitState = await readRideCommitState();
+        if (rideCommitState != null) return rideCommitState;
+      }
+      tick += 1;
       await Future<void>.delayed(const Duration(seconds: 1));
     }
-    throw Exception('Timed out waiting for server. Please try again.');
+    final rideCommitState = await readRideCommitState();
+    if (rideCommitState != null) return rideCommitState;
+    throw Exception(
+      'Timed out waiting for server. Please try again. '
+      'If this keeps happening, the server worker may be unavailable.',
+    );
   }
 
   bool _jsonBool(dynamic v) {
@@ -1091,6 +1189,29 @@ class RideService {
       );
     } catch (e) {
       debugPrint('transporterRequestSenderConfirmation notify: $e');
+    }
+  }
+
+  Future<void> _sendTransporterCommitChatNudge(
+    String rideId,
+    String tid, {
+    String? senderUserId,
+  }) async {
+    var senderId = senderUserId;
+    if (senderId == null || senderId.isEmpty) {
+      final rideDoc = await _firestore.collection('rides').doc(rideId).get();
+      final rideData = rideDoc.data();
+      senderId = _uidStringFromRideField(rideData?['userId']);
+    }
+    if (senderId == null || senderId.isEmpty) return;
+    try {
+      await MessagingService().sendTransporterAwaitingSenderMessage(
+        rideId: rideId,
+        senderId: senderId,
+        transporterId: tid,
+      );
+    } catch (e) {
+      debugPrint('transporterRequestSenderConfirmation chat nudge: $e');
     }
   }
 
@@ -1141,6 +1262,11 @@ class RideService {
         return false;
       }
       await _sendTransporterCommitNotifications(
+        rideId,
+        tid,
+        senderUserId: senderUserId,
+      );
+      await _sendTransporterCommitChatNudge(
         rideId,
         tid,
         senderUserId: senderUserId,
