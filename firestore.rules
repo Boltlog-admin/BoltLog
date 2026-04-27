@@ -19,10 +19,17 @@ service cloud.firestore {
       return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
     }
 
+    function roleIsDriverLike(role) {
+      return role == 'Driver' ||
+        role == 'driver' ||
+        role == 'Transporter' ||
+        role == 'transporter';
+    }
+
     function authIsDriver() {
       return isAuthenticated() &&
         exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
-        authUserData().role == 'Driver';
+        roleIsDriverLike(authUserData().role);
     }
 
     function isValidUserData() {
@@ -198,7 +205,7 @@ service cloud.firestore {
         rideDoc(request.resource.data.rideId).exists &&
         rideDoc(request.resource.data.rideId).data.userId == request.auth.uid &&
         exists(/databases/$(database)/documents/users/$(request.resource.data.userId)) &&
-        get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.role == 'Driver';
+        roleIsDriverLike(get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.role);
     }
 
     // Subcollections under rides/{rideId}: true if signed-in user may tear down docs (same people as ride delete).
@@ -293,7 +300,7 @@ service cloud.firestore {
       //   Note: this allows any Driver to read any Passenger doc; tighten later with a contacts subcollection if needed.
       allow read: if isAuthenticated() && (
         isOwner(userId) ||
-        resource.data.role == 'Driver' ||
+        roleIsDriverLike(resource.data.role) ||
         (authIsDriver() && resource.data.role == 'Passenger')
       );
 
