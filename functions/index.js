@@ -359,6 +359,18 @@ exports.transporterCommitRide = functions.https.onCall(async (data, context) => 
   const db = admin.firestore();
   try {
     const out = await commitTransporterRideInternal(db, rideId, transporterId);
+    if (out.wroteCommit) {
+      try {
+        await createTransporterCommitNotifications(
+          db,
+          rideId,
+          transporterId,
+          out.senderUserId,
+        );
+      } catch (notifyErr) {
+        console.error('transporterCommitRide notifications failed', notifyErr);
+      }
+    }
     return {
       ok: true,
       wroteCommit: out.wroteCommit,
@@ -508,6 +520,44 @@ async function commitTransporterRideInternal(db, rideId, transporterId) {
     });
 }
 
+async function createTransporterCommitNotifications(
+  db,
+  rideId,
+  transporterId,
+  senderUserId,
+) {
+  const senderId = senderUserId ? String(senderUserId).trim() : '';
+  const driverId = String(transporterId || '').trim();
+  if (!senderId || !driverId) return;
+  const now = new Date().toISOString();
+  const notifications = db.collection('notifications');
+
+  await Promise.all([
+    notifications.add({
+      userId: senderId,
+      type: 'transporter_awaits_sender_confirm',
+      title: 'Transporter accepted your request',
+      message:
+        'A transporter is ready to deliver. Open the request to confirm or view their profile.',
+      rideId,
+      isRead: false,
+      createdAt: now,
+      data: { rideId },
+    }),
+    notifications.add({
+      userId: driverId,
+      type: 'waiting_sender_confirm',
+      title: 'Waiting for sender',
+      message:
+        'The sender must confirm before the trip starts and the map opens.',
+      rideId,
+      isRead: false,
+      createdAt: now,
+      data: { rideId },
+    }),
+  ]);
+}
+
 // Org policies may block public invoker IAM on HTTPS functions.
 // This trigger-based queue keeps transporter commit working without open invoker bindings.
 exports.onTransporterCommitRequestCreated = functions.firestore
@@ -545,6 +595,21 @@ exports.onTransporterCommitRequestCreated = functions.firestore
         rideId,
         transporterId,
       );
+      if (out.wroteCommit) {
+        try {
+          await createTransporterCommitNotifications(
+            admin.firestore(),
+            rideId,
+            transporterId,
+            out.senderUserId,
+          );
+        } catch (notifyErr) {
+          console.error(
+            'onTransporterCommitRequestCreated notifications failed',
+            notifyErr,
+          );
+        }
+      }
       await snap.ref.update({
         status: 'done',
         wroteCommit: !!out.wroteCommit,
