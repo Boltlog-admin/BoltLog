@@ -115,7 +115,7 @@ jobs:
         if: steps.has-wif.outputs.defined == 'true'
         run: |
           npx --yes firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }} deploy \
-            --only functions \
+            --only functions:transporterCommitRide,functions:onTransporterCommitRequestCreated,functions:onNotificationCreated \
             --project ${{ env.GCP_PROJECT }} \
             --non-interactive \
             --debug
