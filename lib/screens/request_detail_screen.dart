@@ -701,57 +701,64 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                 ),
                 const SizedBox(height: 16),
               ],
-              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
-                stream: _firestore
-                    .collection('rides')
-                    .doc(ride.id)
-                    .collection('viewers')
-                    .snapshots(),
-                builder: (context, viewersSnap) {
-                  final count = viewersSnap.data?.docs.length ?? 0;
-                  return Container(
-                    width: double.infinity,
-                    padding: const EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
-                        colors: [
-                          Colors.blue.shade50,
-                          Colors.indigo.shade50,
-                        ],
-                      ),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(color: Colors.blue.shade100),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 34,
-                          height: 34,
-                          decoration: BoxDecoration(
-                            color: Colors.white.withOpacity(0.85),
-                            borderRadius: BorderRadius.circular(10),
+              Builder(
+                builder: (context) {
+                  if (!isSender || ride.id == null || ride.id!.isEmpty) {
+                    return const SizedBox.shrink();
+                  }
+                  return StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                    stream: _firestore
+                        .collection('rides')
+                        .doc(ride.id)
+                        .collection('viewers')
+                        .snapshots(),
+                    builder: (context, viewersSnap) {
+                      final count = viewersSnap.data?.docs.length ?? 0;
+                      return Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(16),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              Colors.blue.shade50,
+                              Colors.indigo.shade50,
+                            ],
                           ),
-                          child: const Icon(
-                            Icons.visibility,
-                            color: Color(0xFF2563EB),
-                            size: 20,
-                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(color: Colors.blue.shade100),
                         ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: Text(
-                            '$count transporter${count == 1 ? '' : 's'} viewing this request',
-                            style: GoogleFonts.inter(
-                              fontSize: 14,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF1E40AF),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 34,
+                              height: 34,
+                              decoration: BoxDecoration(
+                                color: Colors.white.withOpacity(0.85),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.visibility,
+                                color: Color(0xFF2563EB),
+                                size: 20,
+                              ),
                             ),
-                          ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Text(
+                                '$count transporter${count == 1 ? '' : 's'} viewing this request',
+                                style: GoogleFonts.inter(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.w700,
+                                  color: const Color(0xFF1E40AF),
+                                ),
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      );
+                    },
                   );
                 },
               ),

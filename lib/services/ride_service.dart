@@ -895,13 +895,8 @@ class RideService {
     _throwTransporterCommitCallableFailure(e.code, e.message);
   }
 
-  bool _isAuthOrPermissionFailure(String? code) {
-    final c = (code ?? '').toLowerCase().replaceAll('_', '-');
-    return c == 'unauthenticated' || c == 'permission-denied';
-  }
-
   /// Primary path: Firebase Callable SDK (handles CORS on web and attaches auth reliably).
-  /// Falls back to [ _transporterCommitRideViaHttps ] then Firestore queue when needed.
+  /// Falls back to Firestore queue first, then HTTPS, then client transaction.
   Future<Map<String, dynamic>> _invokeTransporterCommitRide({
     required String rideId,
     required String transporterId,
@@ -909,7 +904,7 @@ class RideService {
     try {
       final callable = FirebaseFunctions.instance.httpsCallable(
         'transporterCommitRide',
-        options: HttpsCallableOptions(timeout: const Duration(seconds: 20)),
+        options: HttpsCallableOptions(timeout: const Duration(seconds: 8)),
       );
       final result = await callable.call(<String, dynamic>{
         'rideId': rideId,
@@ -921,18 +916,17 @@ class RideService {
       }
       throw Exception('Invalid server response from transporterCommitRide');
     } on FirebaseFunctionsException catch (e, st) {
-      final fastQueue = _isAuthOrPermissionFailure(e.code);
       debugPrint(
         'transporterCommitRide callable failed (${e.code}): ${e.message} '
-        '— trying ${fastQueue ? 'queue' : 'HTTPS'}\n$st',
+        '— trying queue first\n$st',
       );
       try {
-        if (fastQueue) {
-          return await _transporterCommitRideViaQueue(
-            rideId: rideId,
-            transporterId: transporterId,
-          );
-        }
+        return await _transporterCommitRideViaQueue(
+          rideId: rideId,
+          transporterId: transporterId,
+        );
+      } catch (_) {
+        // If queue worker path is unavailable, try explicit HTTPS call.
         return await _transporterCommitRideViaHttps(
           rideId: rideId,
           transporterId: transporterId,
@@ -1038,7 +1032,7 @@ class RideService {
             },
           }),
         )
-        .timeout(const Duration(seconds: 60));
+        .timeout(const Duration(seconds: 15));
 
     dynamic decoded;
     try {
@@ -1128,7 +1122,8 @@ class RideService {
       return null;
     }
 
-    final end = DateTime.now().add(const Duration(seconds: 90));
+    // Keep queue fallback responsive: long waits make accept feel stuck.
+    final end = DateTime.now().add(const Duration(seconds: 18));
     var tick = 0;
     while (DateTime.now().isBefore(end)) {
       final snap = await reqRef.get();
@@ -1698,9 +1693,10 @@ class RideService {
           .collection('viewers')
           .doc(transporterId);
       
-      await viewerRef.update({
+      await viewerRef.set({
+        'transporterId': transporterId,
         'lastSeenAt': DateTime.now().toIso8601String(),
-      });
+      }, SetOptions(merge: true));
     } catch (e) {
       // Silently fail - not critical
     }
