@@ -926,17 +926,19 @@ class RideService {
           transporterId: transporterId,
         );
       } catch (_) {
-        // If queue worker path is unavailable, try explicit HTTPS call.
-        return await _transporterCommitRideViaHttps(
-          rideId: rideId,
-          transporterId: transporterId,
-        );
-      } catch (_) {
-        // Final fallback for environments where callable/HTTPS/queue workers are blocked.
-        return _transporterCommitRideViaClientTransaction(
-          rideId: rideId,
-          transporterId: transporterId,
-        );
+        try {
+          // If queue worker path is unavailable, try explicit HTTPS call.
+          return await _transporterCommitRideViaHttps(
+            rideId: rideId,
+            transporterId: transporterId,
+          );
+        } catch (_) {
+          // Final fallback for environments where callable/HTTPS/queue workers are blocked.
+          return _transporterCommitRideViaClientTransaction(
+            rideId: rideId,
+            transporterId: transporterId,
+          );
+        }
       }
     }
   }
