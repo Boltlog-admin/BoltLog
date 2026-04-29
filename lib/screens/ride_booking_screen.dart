@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import '../models/ride_model.dart';
 import '../models/payment_method_model.dart';
@@ -9,7 +10,10 @@ import '../services/pricing_service.dart';
 import '../services/routing_service.dart';
 import '../services/payment_service.dart';
 import '../services/error_handler_service.dart';
+import 'nearby_drivers_screen.dart';
+import 'ride_history_screen.dart';
 import 'request_detail_screen.dart';
+import 'support_screen.dart';
 
 class RideBookingScreen extends StatefulWidget {
   const RideBookingScreen({super.key});
@@ -36,6 +40,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
   Set<Polyline> _previewRoutePolylines = {};
   String? _transporterPaymentMethod; // 'cash' or 'ecocash' - how sender will pay transporter
   GoogleMapController? _mapController;
+  LatLng _initialMapTarget = const LatLng(-17.8252, 31.0335); // Harare fallback
 
   // Guided sender flow (map-first).
   int _step = 0; // 0 pickup, 1 dropoff, 2 transport type, 3 description, 4 amount/payment
@@ -46,6 +51,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
   void initState() {
     super.initState();
     _transporterPaymentMethod = 'cash';
+    _setInitialMapToCurrentLocation();
   }
 
   @override
@@ -386,11 +392,73 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
     _bookRide();
   }
 
+  Future<void> _setInitialMapToCurrentLocation() async {
+    try {
+      final serviceEnabled = await Geolocator.isLocationServiceEnabled();
+      if (!serviceEnabled) return;
+
+      var permission = await Geolocator.checkPermission();
+      if (permission == LocationPermission.denied) {
+        permission = await Geolocator.requestPermission();
+      }
+      if (permission == LocationPermission.denied ||
+          permission == LocationPermission.deniedForever) {
+        return;
+      }
+
+      final position = await Geolocator.getCurrentPosition(
+        locationSettings: const LocationSettings(
+          accuracy: LocationAccuracy.high,
+        ),
+      );
+      if (!mounted) return;
+
+      final target = LatLng(position.latitude, position.longitude);
+      setState(() {
+        _initialMapTarget = target;
+      });
+
+      if (_mapController != null) {
+        await _mapController!.animateCamera(
+          CameraUpdate.newLatLngZoom(target, 14),
+        );
+      }
+    } catch (_) {
+      // Keep fallback default when location is unavailable.
+    }
+  }
+
+  Future<void> _handleMenuSelection(String value) async {
+    if (value == 'nearby_drivers') {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const NearbyDriversScreen(),
+        ),
+      );
+      return;
+    }
+    if (value == 'request_history') {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const RideHistoryScreen(),
+        ),
+      );
+      return;
+    }
+    if (value == 'support') {
+      await Navigator.of(context).push(
+        MaterialPageRoute(
+          builder: (_) => const SupportScreen(),
+        ),
+      );
+    }
+  }
+
   @override
   Widget build(BuildContext context) {
     final initialTarget = _pickupLat != null && _pickupLng != null
         ? LatLng(_pickupLat!, _pickupLng!)
-        : const LatLng(-17.8252, 31.0335); // Harare fallback
+        : _initialMapTarget;
 
     final markers = <Marker>{
       if (_pickupLat != null && _pickupLng != null)
@@ -414,10 +482,7 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
       appBar: AppBar(
         backgroundColor: Colors.white,
         elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back, color: Color(0xFF1E40AF)), // Blue-700
-          onPressed: () => Navigator.of(context).pop(),
-        ),
+        automaticallyImplyLeading: false,
         title: Text(
           'Request Transport',
           style: GoogleFonts.inter(
@@ -426,6 +491,38 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
             color: const Color(0xFF1E40AF), // Blue-700
           ),
         ),
+        actions: [
+          PopupMenuButton<String>(
+            icon: const Icon(Icons.more_vert, color: Color(0xFF1E40AF)),
+            onSelected: _handleMenuSelection,
+            itemBuilder: (context) => const [
+              PopupMenuItem(
+                value: 'nearby_drivers',
+                child: ListTile(
+                  dense: true,
+                  leading: Icon(Icons.person_search),
+                  title: Text('Nearby Drivers'),
+                ),
+              ),
+              PopupMenuItem(
+                value: 'request_history',
+                child: ListTile(
+                  dense: true,
+                  leading: Icon(Icons.history),
+                  title: Text('Request History'),
+                ),
+              ),
+              PopupMenuItem(
+                value: 'support',
+                child: ListTile(
+                  dense: true,
+                  leading: Icon(Icons.support_agent),
+                  title: Text('Support'),
+                ),
+              ),
+            ],
+          ),
+        ],
       ),
       body: SafeArea(
         child: Column(
@@ -435,7 +532,14 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
               width: double.infinity,
               child: GoogleMap(
                 initialCameraPosition: CameraPosition(target: initialTarget, zoom: 12),
-                onMapCreated: (c) => _mapController = c,
+                onMapCreated: (c) {
+                  _mapController = c;
+                  if (_pickupLat == null && _pickupLng == null) {
+                    _mapController!.animateCamera(
+                      CameraUpdate.newLatLngZoom(_initialMapTarget, 14),
+                    );
+                  }
+                },
                 onTap: _handleMapTap,
                 markers: markers,
                 polylines: _previewRoutePolylines,

@@ -2,15 +2,12 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
 import 'active_ride_map_screen.dart';
 import 'chat_screen.dart';
-import 'home_screen.dart';
-import 'ride_history_screen.dart';
-import 'profile_screen.dart';
+import 'ride_booking_screen.dart';
 import '../models/ride_model.dart';
 import '../services/app_resume_service.dart';
 import '../services/notification_service.dart';
 import '../services/ride_service.dart';
 import 'request_detail_screen.dart';
-import '../theme/app_theme.dart';
 
 class MainNavigation extends StatefulWidget {
   final bool showWelcomeMessage;
@@ -29,20 +26,11 @@ class MainNavigation extends StatefulWidget {
 }
 
 class _MainNavigationState extends State<MainNavigation> with RouteAware {
-  late int _currentIndex;
-
   final RideService _rideService = RideService();
-
-  final List<Widget> _screens = [
-    const HomeScreen(),
-    const RideHistoryScreen(),
-    const ProfileScreen(),
-  ];
 
   @override
   void initState() {
     super.initState();
-    _currentIndex = widget.initialTabIndex.clamp(0, 2);
     WidgetsBinding.instance.addPostFrameCallback((_) async {
       if (!mounted) return;
       if (widget.showWelcomeMessage) {
@@ -82,7 +70,8 @@ class _MainNavigationState extends State<MainNavigation> with RouteAware {
   void _persistShell() {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid != null) {
-      AppResumeService.instance.saveSenderShell(uid, _currentIndex);
+      // Sender default shell now lands directly on Request Transport.
+      AppResumeService.instance.saveSenderShell(uid, 0);
     }
   }
 
@@ -164,25 +153,11 @@ class _MainNavigationState extends State<MainNavigation> with RouteAware {
     return null;
   }
 
-  void _selectTab(int index) {
-    if (_currentIndex == index) return;
-    setState(() {
-      _currentIndex = index;
-    });
-    _persistShell();
-  }
-
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
     if (uid == null) {
-      return Scaffold(
-        body: IndexedStack(
-          index: _currentIndex,
-          sizing: StackFit.expand,
-          children: _screens,
-        ),
-      );
+      return const RideBookingScreen();
     }
 
     return StreamBuilder<List<RideModel>>(
@@ -195,70 +170,7 @@ class _MainNavigationState extends State<MainNavigation> with RouteAware {
           return ActiveRideMapScreen(ride: travelRide);
         }
 
-        return Scaffold(
-          // Keep all tabs mounted so Home (active orders, streams, scroll) survives tab switches.
-          body: Stack(
-            children: [
-              IndexedStack(
-                index: _currentIndex,
-                sizing: StackFit.expand,
-                children: _screens,
-              ),
-              Positioned(
-                top: 8,
-                right: 8,
-                child: SafeArea(
-                  child: Material(
-                    color: AppColors.cardBackground,
-                    elevation: 3,
-                    shadowColor: Colors.black.withOpacity(0.08),
-                    borderRadius: BorderRadius.circular(AppRadii.md),
-                    child: PopupMenuButton<int>(
-                      tooltip: 'Open navigation menu',
-                      icon: const Icon(
-                        Icons.more_vert_rounded,
-                        color: AppColors.primaryDark,
-                      ),
-                      color: AppColors.cardBackground,
-                      surfaceTintColor: Colors.transparent,
-                      shape: RoundedRectangleBorder(
-                        borderRadius: BorderRadius.circular(AppRadii.md),
-                        side: BorderSide(color: Colors.grey.shade200),
-                      ),
-                      onSelected: _selectTab,
-                      itemBuilder: (context) => const [
-                        PopupMenuItem<int>(
-                          value: 0,
-                          child: ListTile(
-                            dense: true,
-                            leading: Icon(Icons.home_outlined),
-                            title: Text('Home'),
-                          ),
-                        ),
-                        PopupMenuItem<int>(
-                          value: 1,
-                          child: ListTile(
-                            dense: true,
-                            leading: Icon(Icons.history_outlined),
-                            title: Text('History'),
-                          ),
-                        ),
-                        PopupMenuItem<int>(
-                          value: 2,
-                          child: ListTile(
-                            dense: true,
-                            leading: Icon(Icons.person_outline_rounded),
-                            title: Text('Profile'),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ),
-              ),
-            ],
-          ),
-        );
+        return const RideBookingScreen();
       },
     );
   }
