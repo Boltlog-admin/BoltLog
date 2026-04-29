@@ -81,16 +81,6 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                     letterSpacing: -0.25,
                   ),
                 ),
-                const SizedBox(height: 2),
-                Text(
-                  'Wallet · \$${walletBalance.toStringAsFixed(2)}',
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    fontWeight: FontWeight.w600,
-                    color: const Color(0xFF2563EB),
-                    height: 1.2,
-                  ),
-                ),
               ],
             ),
             actions: [
@@ -153,6 +143,15 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                         (route) => false,
                       );
                       break;
+                    case 'report':
+                      _showReportIssueDialog(context);
+                      break;
+                    case 'help':
+                      _showHelpDialog(context);
+                      break;
+                    case 'support':
+                      _showContactSupportDialog(context);
+                      break;
                   }
                 },
                 itemBuilder: (context) => const [
@@ -194,6 +193,30 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                       dense: true,
                       leading: Icon(Icons.home_outlined),
                       title: Text('Go to home'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'report',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.report_problem_outlined),
+                      title: Text('Report an issue'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'help',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.help_outline),
+                      title: Text('Help & FAQ'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'support',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.contact_support_outlined),
+                      title: Text('Contact support'),
                     ),
                   ),
                 ],
@@ -328,6 +351,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                                   currentLat: userModel?.currentLat,
                                   currentLng: userModel?.currentLng,
                                   showPickupGuidesFromCurrent: true,
+                                  quickLoad: true,
                                   onRequestTap: (ride) {
                                     Navigator.push(
                                       context,
@@ -341,347 +365,11 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                               ),
                             ),
                             const SizedBox(height: 18),
-                        // Profile incomplete notification (hidden in testing mode)
-                        if (!TestingFlags.relaxTransporterVerification &&
-                            userModel != null &&
-                            _driverProfileProgressValue(userModel) < 1.0)
-                              Container(
-                                width: double.infinity,
-                                margin: const EdgeInsets.only(bottom: 16),
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 14, vertical: 12),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.shade100,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: Colors.amber.shade300,
-                                  ),
-                                ),
-                                child: Row(
-                                  children: [
-                                    Icon(
-                                      Icons.warning_amber_rounded,
-                                      color: Colors.amber.shade800,
-                                      size: 24,
-                                    ),
-                                    const SizedBox(width: 12),
-                                    Expanded(
-                                      child: Text(
-                                        'Your profile is incomplete. Complete it in the Profile tab.',
-                                        style: GoogleFonts.inter(
-                                          fontSize: 13,
-                                          fontWeight: FontWeight.w500,
-                                          color: Colors.amber.shade900,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            // Verification banner (hidden in testing mode)
-                            if (!TestingFlags.relaxTransporterVerification &&
-                                !isVerified)
-                              Container(
-                                width: double.infinity,
-                                margin: const EdgeInsets.only(bottom: 16),
-                                padding: const EdgeInsets.all(12),
-                                decoration: BoxDecoration(
-                                  color: Colors.amber.withOpacity(0.1),
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(
-                                    color: Colors.amber.withOpacity(0.3),
-                                  ),
-                                ),
-                                child: Row(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    const Icon(
-                                      Icons.verified_user,
-                                      color: Colors.amber,
-                                      size: 20,
-                                    ),
-                                    const SizedBox(width: 8),
-                                    Expanded(
-                                      child: Text(
-                                        _buildVerificationBannerText(
-                                          verificationStatus,
-                                          userModel?.verificationNotes,
-                                        ),
-                                        style: GoogleFonts.inter(
-                                          fontSize: 12,
-                                          color: Colors.amber.shade900,
-                                        ),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                              ),
-                            Container(
-                              width: double.infinity,
-                              margin: const EdgeInsets.only(bottom: 16),
-                              padding: const EdgeInsets.all(14),
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    AppColors.primary.withOpacity(0.08),
-                                    AppColors.primaryDark.withOpacity(0.04),
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                                border: Border.all(
-                                  color: AppColors.primary.withOpacity(0.2),
-                                ),
-                              ),
-                              child: Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(8),
-                                    decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.85),
-                                      borderRadius: BorderRadius.circular(8),
-                                    ),
-                                    child: const Icon(
-                                      Icons.bolt_rounded,
-                                      color: AppColors.primaryDark,
-                                      size: 20,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 10),
-                                  Expanded(
-                                    child: Text(
-                                      isAvailable
-                                          ? 'You are online. New delivery requests will appear below.'
-                                          : 'You are offline. Switch on availability to receive requests.',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 13,
-                                        fontWeight: FontWeight.w600,
-                                        color: AppColors.primaryDark,
-                                      ),
-                                    ),
-                                  ),
-                                ],
-                              ),
-                            ),
-                            // Availability Toggle
-                            _buildAvailabilityToggle(user.uid, isAvailable),
-                            const SizedBox(height: 20),
-                            
-                            // Stats Cards
-                            _buildStatsSection(
-                              totalEarnings: totalEarnings,
-                              activeDeliveries: activeDeliveriesCount,
-                              completedDeliveries: completedDeliveriesCount,
-                              rating: rating,
-                              availableRides: availableRides.length,
-                            ),
-                            const SizedBox(height: 24),
-                            
-                            // Quick Actions
-                            _buildQuickActionsSection(context),
-                            const SizedBox(height: 24),
-                            
-                            // Account Details Card
-                            _buildAccountCard(context, userModel),
-                            const SizedBox(height: 24),
-                            
-                            // Current Requests (Available Deliveries) Section
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Column(
-                                  crossAxisAlignment: CrossAxisAlignment.start,
-                                  children: [
-                                    Text(
-                                      'Current Requests',
-                                      style: _buildSectionHeaderTextStyle(),
-                                    ),
-                                    const SizedBox(height: 4),
-                                    Text(
-                                      availableRides.length.toString(),
-                                      style: GoogleFonts.inter(
-                                        fontSize: 28,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF2563EB),
-                                      ),
-                                    ),
-                                  ],
-                                ),
-                                if (availableRides.isNotEmpty)
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => const TransporterDashboardScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      'View All',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF2563EB),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            
-                            // Current Requests list (limited to 3)
-                            if (availableRides.isEmpty)
-                              _buildEmptyState('No current requests', 'New transport requests will appear here')
-                            else
-                              ...availableRides.take(3).map((ride) => _buildDeliveryPreviewCard(
-                                  context,
-                                  ride,
-                                  user.uid,
-                                  driverLat: userModel?.currentLat,
-                                  driverLng: userModel?.currentLng,
-                                  canActAsTransporter: TestingFlags.relaxTransporterVerification ||
-                                      !AppConstants.isDriverRole(userModel?.role) ||
-                                      isVerified,
-                                )),
-                            
-                            if (availableRides.length > 3)
-                              Padding(
-                                padding: const EdgeInsets.only(top: 12),
-                                child: SizedBox(
-                                  width: double.infinity,
-                                  child: OutlinedButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => const TransporterDashboardScreen(),
-                                        ),
-                                      );
-                                    },
-                                    style: OutlinedButton.styleFrom(
-                                      foregroundColor: const Color(0xFF2563EB),
-                                      side: const BorderSide(color: Color(0xFF2563EB), width: 2),
-                                      shape: RoundedRectangleBorder(
-                                        borderRadius: BorderRadius.circular(12),
-                                      ),
-                                      padding: const EdgeInsets.symmetric(vertical: 12),
-                                    ),
-                                    child: Text(
-                                      'View ${availableRides.length - 3} More Requests',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 16,
-                                        fontWeight: FontWeight.w600,
-                                      ),
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            
-                            const SizedBox(height: 24),
-                            
-                            // Active Deliveries Section
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                              children: [
-                                Text(
-                                  'Active Deliveries',
-                                  style: _buildSectionHeaderTextStyle(),
-                                ),
-                                if (deliveries.isNotEmpty)
-                                  TextButton(
-                                    onPressed: () {
-                                      Navigator.push(
-                                        context,
-                                        MaterialPageRoute(
-                                          builder: (_) => const ActiveDeliveriesScreen(),
-                                        ),
-                                      );
-                                    },
-                                    child: Text(
-                                      'View All',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 14,
-                                        fontWeight: FontWeight.w600,
-                                        color: const Color(0xFF2563EB),
-                                      ),
-                                    ),
-                                  ),
-                              ],
-                            ),
-                            const SizedBox(height: 12),
-                            
-                            // Active Deliveries: "No deliveries" or map of accepted ones
-                            if (deliveries.isEmpty)
-                              Center(
-                                child: Padding(
-                                  padding: const EdgeInsets.symmetric(vertical: 24),
-                                  child: Text(
-                                    'No deliveries',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      color: Colors.grey.shade600,
-                                    ),
-                                  ),
-                                ),
-                              )
-                            else ...[
-                              ClipRRect(
-                                borderRadius: BorderRadius.circular(12),
-                                child: SizedBox(
-                                  height: 220,
-                                  child: ActiveDeliveriesMapWidget(
-                                    deliveries: deliveries,
-                                    height: 220,
-                                  ),
-                                ),
-                              ),
-                              const SizedBox(height: 12),
-                              SizedBox(
-                                width: double.infinity,
-                                child: OutlinedButton(
-                                  onPressed: () {
-                                    Navigator.push(
-                                      context,
-                                      MaterialPageRoute(
-                                        builder: (_) => const ActiveDeliveriesScreen(),
-                                      ),
-                                    );
-                                  },
-                                  style: OutlinedButton.styleFrom(
-                                    foregroundColor: const Color(0xFF2563EB),
-                                    side: const BorderSide(color: Color(0xFF2563EB), width: 2),
-                                    shape: RoundedRectangleBorder(
-                                      borderRadius: BorderRadius.circular(12),
-                                    ),
-                                    padding: const EdgeInsets.symmetric(vertical: 12),
-                                  ),
-                                  child: Text(
-                                    'View All',
-                                    style: GoogleFonts.inter(
-                                      fontSize: 16,
-                                      fontWeight: FontWeight.w600,
-                                    ),
-                                  ),
-                                ),
-                              ),
-                            ],
-                            
-                            const SizedBox(height: 24),
-                            
-                            // Support & Help Section
-                            _buildSupportCard(context),
-                            const SizedBox(height: 24),
-                            Center(
-                              child: Text(
-                                'Developed by Fidinsky Tech Solutions',
-                                style: GoogleFonts.inter(
-                                  fontSize: 12,
-                                  fontWeight: FontWeight.w500,
-                                  color: Colors.grey.shade500,
-                                  fontStyle: FontStyle.italic,
-                                ),
+                            Text(
+                              'Tap a pickup marker to open request details and accept quickly.',
+                              style: GoogleFonts.inter(
+                                fontSize: 13,
+                                color: Colors.grey.shade600,
                               ),
                             ),
                           ],

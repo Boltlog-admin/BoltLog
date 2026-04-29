@@ -12,6 +12,7 @@ class ActiveDeliveriesMapWidget extends StatefulWidget {
   final double? currentLng;
   final bool showPickupGuidesFromCurrent;
   final ValueChanged<RideModel>? onRequestTap;
+  final bool quickLoad;
 
   const ActiveDeliveriesMapWidget({
     super.key,
@@ -21,6 +22,7 @@ class ActiveDeliveriesMapWidget extends StatefulWidget {
     this.currentLng,
     this.showPickupGuidesFromCurrent = false,
     this.onRequestTap,
+    this.quickLoad = false,
   });
 
   @override
@@ -159,6 +161,21 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
       }
 
       if (dropoffLat != null && dropoffLng != null) {
+        if (widget.quickLoad) {
+          polylines.add(
+            Polyline(
+              polylineId: PolylineId('route_${ride.id}_$i'),
+              points: [
+                LatLng(pickupLat, pickupLng),
+                LatLng(dropoffLat, dropoffLng),
+              ],
+              color: const Color(0xFF2563EB),
+              width: 3,
+              geodesic: true,
+            ),
+          );
+          continue;
+        }
         try {
           final route = await routingService.getRoute(
             originLat: pickupLat,

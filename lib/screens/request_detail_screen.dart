@@ -635,6 +635,12 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         if (isSender && ride.awaitingSenderToConfirmTransporter) ...[
                           _senderTransporterConfirmationCard(context, ride),
                         ],
+                        _buildCommitmentStateBar(ride),
+                        if (isTransporter) ...[
+                          const SizedBox(height: 10),
+                          _buildSenderPaymentMethodBadge(ride),
+                        ],
+                        const SizedBox(height: 12),
                         // Request Map (kept as primary context on top half)
                         Text(
                           'Live Request Map',
@@ -911,7 +917,7 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                       padding: const EdgeInsets.symmetric(vertical: 12),
                     ),
                     child: Text(
-                      'Decline Request',
+                      'Skip for now',
                       style: GoogleFonts.inter(
                         fontSize: 15,
                         fontWeight: FontWeight.w600,
@@ -1014,8 +1020,126 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
     );
   }
 
+  String _senderPaymentMethodLabel(RideModel ride) {
+    final method = (ride.senderPaymentMethod ?? 'cash').trim().toLowerCase();
+    if (method == 'ecocash') return 'EcoCash';
+    return 'Cash';
+  }
+
+  IconData _senderPaymentMethodIcon(RideModel ride) {
+    final method = (ride.senderPaymentMethod ?? 'cash').trim().toLowerCase();
+    if (method == 'ecocash') return Icons.account_balance_wallet;
+    return Icons.money;
+  }
+
+  Color _senderPaymentMethodColor(RideModel ride) {
+    final method = (ride.senderPaymentMethod ?? 'cash').trim().toLowerCase();
+    if (method == 'ecocash') return Colors.green.shade700;
+    return Colors.orange.shade800;
+  }
+
+  Widget _buildSenderPaymentMethodBadge(RideModel ride) {
+    final accent = _senderPaymentMethodColor(ride);
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+      decoration: BoxDecoration(
+        color: accent.withOpacity(0.1),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: accent.withOpacity(0.3)),
+      ),
+      child: Row(
+        children: [
+          Icon(_senderPaymentMethodIcon(ride), size: 18, color: accent),
+          const SizedBox(width: 8),
+          Expanded(
+            child: Text(
+              'Sender payment method: ${_senderPaymentMethodLabel(ride)}',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                fontWeight: FontWeight.w700,
+                color: accent,
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   String _formatDate(DateTime date) {
     return '${date.day}/${date.month}/${date.year} at ${date.hour}:${date.minute.toString().padLeft(2, '0')}';
+  }
+
+  List<String> _cancelReasonPresets({required bool isTransporter}) {
+    if (isTransporter) {
+      return const ['Vehicle issue', 'Too far from pickup', 'Traffic delay'];
+    }
+    return const ['Changed my plans', 'Wrong request details', 'No longer needed'];
+  }
+
+  Widget _buildCommitmentStateBar(RideModel ride) {
+    final isCommitted = ride.awaitingSenderToConfirmTransporter;
+    final isConfirmed = ride.status == 'in_progress' ||
+        ride.status == 'parcel_collected' ||
+        ride.status == 'completed';
+    final remaining = ride.createdAt
+        .add(const Duration(minutes: 10))
+        .difference(DateTime.now());
+    final countdown = remaining.isNegative
+        ? 'Offer window expired'
+        : 'Offer window ${remaining.inMinutes.toString().padLeft(2, '0')}:${(remaining.inSeconds % 60).toString().padLeft(2, '0')}';
+
+    Widget stage(String label, bool active) {
+      return Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(
+            active ? Icons.check_circle : Icons.radio_button_unchecked,
+            size: 16,
+            color: active ? Colors.green : Colors.grey,
+          ),
+          const SizedBox(width: 6),
+          Text(
+            label,
+            style: GoogleFonts.inter(
+              fontSize: 12,
+              fontWeight: FontWeight.w600,
+              color: active ? const Color(0xFF1E40AF) : Colors.grey.shade600,
+            ),
+          ),
+        ],
+      );
+    }
+
+    return Container(
+      width: double.infinity,
+      padding: const EdgeInsets.all(12),
+      decoration: BoxDecoration(
+        color: Colors.grey.shade50,
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Wrap(
+            spacing: 12,
+            runSpacing: 8,
+            children: [
+              stage('Offered', true),
+              stage('Awaiting sender', isCommitted || isConfirmed),
+              stage('Confirmed', isConfirmed),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            countdown,
+            style: GoogleFonts.inter(fontSize: 11, color: Colors.grey.shade700),
+          ),
+        ],
+      ),
+    );
   }
 
   // Calculate distance between two coordinates in km (Haversine formula)
@@ -1348,6 +1472,19 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               maxLines: 2,
               style: GoogleFonts.inter(fontSize: 14),
             ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _cancelReasonPresets(isTransporter: true)
+                  .map(
+                    (reason) => ActionChip(
+                      label: Text(reason),
+                      onPressed: () => reasonController.text = reason,
+                    ),
+                  )
+                  .toList(),
+            ),
           ],
         ),
         actions: [
@@ -1417,6 +1554,19 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
               ),
               maxLines: 2,
               style: GoogleFonts.inter(fontSize: 14),
+            ),
+            const SizedBox(height: 10),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: _cancelReasonPresets(isTransporter: false)
+                  .map(
+                    (reason) => ActionChip(
+                      label: Text(reason),
+                      onPressed: () => reasonController.text = reason,
+                    ),
+                  )
+                  .toList(),
             ),
           ],
         ),

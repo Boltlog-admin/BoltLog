@@ -40,7 +40,9 @@ double? pickupToDropoffKm(RideModel ride) {
   );
 }
 
-/// Filter rides to those within maxRadiusKm of driver, sort by distance (closest first).
+/// Filter rides to those within maxRadiusKm of driver, then rank by:
+/// 1) distance to pickup (closest first),
+/// 2) fresh negotiation activity (newer request first as responsiveness proxy).
 /// Rides without pickup coords are included at the end.
 List<RideModel> filterAndSortRidesByDistance(
   List<RideModel> rides, {
@@ -55,15 +57,23 @@ List<RideModel> filterAndSortRidesByDistance(
     withDistance.add((r, d));
   }
   withDistance.sort((a, b) {
+    int byRecency() {
+      return b.$1.createdAt.compareTo(a.$1.createdAt);
+    }
+
     final da = a.$2;
     final db = b.$2;
-    if (da == null && db == null) return 0;
+    if (da == null && db == null) return byRecency();
     if (da == null) return 1;
     if (db == null) return -1;
-    if (da > maxRadiusKm && db > maxRadiusKm) return da.compareTo(db);
+    if (da > maxRadiusKm && db > maxRadiusKm) {
+      final distanceCmp = da.compareTo(db);
+      return distanceCmp != 0 ? distanceCmp : byRecency();
+    }
     if (da > maxRadiusKm) return 1;
     if (db > maxRadiusKm) return -1;
-    return da.compareTo(db);
+    final distanceCmp = da.compareTo(db);
+    return distanceCmp != 0 ? distanceCmp : byRecency();
   });
   return withDistance
       .where((e) => e.$2 == null || e.$2! <= maxRadiusKm)

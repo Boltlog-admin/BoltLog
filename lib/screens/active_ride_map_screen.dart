@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
 import 'package:geolocator/geolocator.dart';
@@ -899,6 +900,13 @@ class _ActiveRideMapScreenState extends State<ActiveRideMapScreen> {
                 color: const Color(0xFF1E40AF),
               ),
             ),
+            actions: [
+              IconButton(
+                tooltip: 'Trip safety',
+                onPressed: () => _showTripSafetyActions(currentRide),
+                icon: const Icon(Icons.shield_outlined, color: Color(0xFF1E40AF)),
+              ),
+            ],
           ),
           body: _isLoading
               ? const Center(child: CircularProgressIndicator())
@@ -1618,5 +1626,69 @@ class _ActiveRideMapScreenState extends State<ActiveRideMapScreen> {
     _trafficRefreshTimer?.cancel();
     _mapController?.dispose();
     super.dispose();
+  }
+
+  void _showTripSafetyActions(RideModel ride) {
+    showModalBottomSheet<void>(
+      context: context,
+      builder: (ctx) => SafeArea(
+        child: Column(
+          mainAxisSize: MainAxisSize.min,
+          children: [
+            ListTile(
+              leading: const Icon(Icons.share_outlined),
+              title: const Text('Share trip'),
+              subtitle: const Text('Copy trip code to share'),
+              onTap: () async {
+                final code = 'Ride ${ride.id ?? 'unknown'}';
+                await Clipboard.setData(ClipboardData(text: code));
+                if (mounted) {
+                  Navigator.of(ctx).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(content: Text('Trip code copied')),
+                  );
+                }
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.sos_outlined, color: Colors.red),
+              title: const Text('Emergency'),
+              subtitle: const Text('Shows emergency guidance'),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                showDialog<void>(
+                  context: context,
+                  builder: (_) => AlertDialog(
+                    title: const Text('Emergency'),
+                    content: const Text(
+                      'If you are in danger, call local emergency services immediately and share your live location with a trusted contact.',
+                    ),
+                    actions: [
+                      TextButton(
+                        onPressed: () => Navigator.of(context).pop(),
+                        child: const Text('Close'),
+                      ),
+                    ],
+                  ),
+                );
+              },
+            ),
+            ListTile(
+              leading: const Icon(Icons.verified_outlined),
+              title: const Text('Delivery proof checklist'),
+              subtitle: const Text('Photo, recipient name, and timestamp'),
+              onTap: () {
+                Navigator.of(ctx).pop();
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Collect proof before confirming delivery.'),
+                  ),
+                );
+              },
+            ),
+          ],
+        ),
+      ),
+    );
   }
 }

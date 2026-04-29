@@ -31,6 +31,7 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
   List<RideModel>? _cachedRides;
   /// Accept-in-progress for a specific ride id (list card actions).
   String? _busyRideId;
+  final Set<String> _skippedRideIds = <String>{};
 
   @override
   void initState() {
@@ -190,6 +191,9 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                   );
                 }
 
+                filteredRides = filteredRides
+                    .where((ride) => !_skippedRideIds.contains(ride.id))
+                    .toList();
                 _rides = filteredRides;
 
                 Widget content;
@@ -531,6 +535,8 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                         driverLat: driverLat,
                         driverLng: driverLng,
                       ),
+                      const SizedBox(height: 10),
+                      _buildSenderPaymentMethodBadge(ride),
                       if (waitingForSender) ...[
                         const SizedBox(height: 12),
                         Text(
@@ -831,6 +837,51 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
     );
   }
 
+  String _senderPaymentMethodLabel(RideModel ride) {
+    final method = (ride.senderPaymentMethod ?? 'cash').trim().toLowerCase();
+    if (method == 'ecocash') return 'EcoCash';
+    return 'Cash';
+  }
+
+  IconData _senderPaymentMethodIcon(RideModel ride) {
+    final method = (ride.senderPaymentMethod ?? 'cash').trim().toLowerCase();
+    if (method == 'ecocash') return Icons.account_balance_wallet;
+    return Icons.money;
+  }
+
+  Color _senderPaymentMethodColor(RideModel ride) {
+    final method = (ride.senderPaymentMethod ?? 'cash').trim().toLowerCase();
+    if (method == 'ecocash') return Colors.green.shade700;
+    return Colors.orange.shade800;
+  }
+
+  Widget _buildSenderPaymentMethodBadge(RideModel ride) {
+    final accent = _senderPaymentMethodColor(ride);
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+      decoration: BoxDecoration(
+        color: accent.withOpacity(0.12),
+        borderRadius: BorderRadius.circular(999),
+        border: Border.all(color: accent.withOpacity(0.3)),
+      ),
+      child: Row(
+        mainAxisSize: MainAxisSize.min,
+        children: [
+          Icon(_senderPaymentMethodIcon(ride), size: 14, color: accent),
+          const SizedBox(width: 6),
+          Text(
+            'Paid by sender: ${_senderPaymentMethodLabel(ride)}',
+            style: GoogleFonts.inter(
+              fontSize: 11,
+              fontWeight: FontWeight.w700,
+              color: accent,
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
   Widget _buildListView(
     List<RideModel> rides,
     String transporterId, {
@@ -1100,6 +1151,8 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
               driverLat: driverLat,
               driverLng: driverLng,
             ),
+            const SizedBox(height: 10),
+            _buildSenderPaymentMethodBadge(ride),
             if (waitingForSender) ...[
               const SizedBox(height: 12),
               Container(
@@ -1211,6 +1264,25 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                     shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12),
                     ),
+                  ),
+                ),
+              ),
+              const SizedBox(height: 8),
+              SizedBox(
+                width: double.infinity,
+                height: 42,
+                child: TextButton.icon(
+                  onPressed: busy
+                      ? null
+                      : () {
+                          final id = ride.id;
+                          if (id == null || id.isEmpty) return;
+                          setState(() => _skippedRideIds.add(id));
+                        },
+                  icon: const Icon(Icons.skip_next_outlined, size: 18),
+                  label: Text(
+                    'Skip for now',
+                    style: GoogleFonts.inter(fontWeight: FontWeight.w600),
                   ),
                 ),
               ),
