@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_maps_flutter/google_maps_flutter.dart';
+import 'dart:math';
 import '../models/ride_model.dart';
 import '../services/routing_service.dart';
 
@@ -7,11 +8,19 @@ import '../services/routing_service.dart';
 class ActiveDeliveriesMapWidget extends StatefulWidget {
   final List<RideModel> deliveries;
   final double? height;
+  final double? currentLat;
+  final double? currentLng;
+  final bool showPickupGuidesFromCurrent;
+  final ValueChanged<RideModel>? onRequestTap;
 
   const ActiveDeliveriesMapWidget({
     super.key,
     required this.deliveries,
     this.height,
+    this.currentLat,
+    this.currentLng,
+    this.showPickupGuidesFromCurrent = false,
+    this.onRequestTap,
   });
 
   @override
@@ -26,7 +35,7 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
   @override
   void didUpdateWidget(ActiveDeliveriesMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.deliveries != widget.deliveries && widget.deliveries.isNotEmpty) {
+    if (oldWidget.deliveries != widget.deliveries) {
       _updateMapMarkers(widget.deliveries);
     }
   }
@@ -83,6 +92,19 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
     final Set<Marker> markers = {};
     final Set<Polyline> polylines = {};
     final routingService = RoutingService();
+    final hasCurrentLocation =
+        widget.currentLat != null && widget.currentLng != null;
+
+    if (hasCurrentLocation) {
+      markers.add(
+        Marker(
+          markerId: const MarkerId('driver_current_location'),
+          position: LatLng(widget.currentLat!, widget.currentLng!),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueAzure),
+          infoWindow: const InfoWindow(title: 'Your current location'),
+        ),
+      );
+    }
 
     for (int i = 0; i < deliveries.length; i++) {
       final ride = deliveries[i];
@@ -92,43 +114,70 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
       final dropoffLat = ride.dropoffLat;
       final dropoffLng = ride.dropoffLng;
 
-      if (pickupLat == null || pickupLng == null || dropoffLat == null || dropoffLng == null) continue;
+      if (pickupLat == null || pickupLng == null) continue;
 
       markers.add(
         Marker(
           markerId: MarkerId('pickup_${ride.id}_$i'),
           position: LatLng(pickupLat, pickupLng),
           icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-          infoWindow: InfoWindow(title: 'Pickup', snippet: ride.pickupLocation),
+          onTap: () => widget.onRequestTap?.call(ride),
+          infoWindow: InfoWindow(
+            title: 'Pickup',
+            snippet: hasCurrentLocation
+                ? '${_distanceKm(widget.currentLat!, widget.currentLng!, pickupLat, pickupLng).toStringAsFixed(1)} km from you'
+                : ride.pickupLocation,
+            onTap: () => widget.onRequestTap?.call(ride),
+          ),
         ),
       );
-      markers.add(
-        Marker(
-          markerId: MarkerId('dropoff_${ride.id}_$i'),
-          position: LatLng(dropoffLat, dropoffLng),
-          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-          infoWindow: InfoWindow(title: 'Dropoff', snippet: ride.dropoffLocation),
-        ),
-      );
-
-      try {
-        final route = await routingService.getRoute(
-          originLat: pickupLat,
-          originLng: pickupLng,
-          destLat: dropoffLat,
-          destLng: dropoffLng,
+      if (dropoffLat != null && dropoffLng != null) {
+        markers.add(
+          Marker(
+            markerId: MarkerId('dropoff_${ride.id}_$i'),
+            position: LatLng(dropoffLat, dropoffLng),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+            onTap: () => widget.onRequestTap?.call(ride),
+            infoWindow: InfoWindow(title: 'Dropoff', snippet: ride.dropoffLocation),
+          ),
         );
-        if (route != null) {
-          polylines.add(
-            Polyline(
-              polylineId: PolylineId('route_${ride.id}_$i'),
-              points: route.points,
-              color: const Color(0xFF2563EB),
-              width: 3,
-            ),
+      }
+
+      if (widget.showPickupGuidesFromCurrent && hasCurrentLocation) {
+        polylines.add(
+          Polyline(
+            polylineId: PolylineId('you_to_pickup_${ride.id}_$i'),
+            points: [
+              LatLng(widget.currentLat!, widget.currentLng!),
+              LatLng(pickupLat, pickupLng),
+            ],
+            color: const Color(0xFF0EA5E9),
+            width: 4,
+            geodesic: true,
+          ),
+        );
+      }
+
+      if (dropoffLat != null && dropoffLng != null) {
+        try {
+          final route = await routingService.getRoute(
+            originLat: pickupLat,
+            originLng: pickupLng,
+            destLat: dropoffLat,
+            destLng: dropoffLng,
           );
-        }
-      } catch (_) {}
+          if (route != null) {
+            polylines.add(
+              Polyline(
+                polylineId: PolylineId('route_${ride.id}_$i'),
+                points: route.points,
+                color: const Color(0xFF2563EB),
+                width: 3,
+              ),
+            );
+          }
+        } catch (_) {}
+      }
     }
 
     if (markers.isNotEmpty && _mapController != null) {
@@ -155,4 +204,23 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
     }
     return LatLngBounds(southwest: LatLng(minLat, minLng), northeast: LatLng(maxLat, maxLng));
   }
+
+  double _distanceKm(
+    double lat1,
+    double lng1,
+    double lat2,
+    double lng2,
+  ) {
+    const earthRadiusKm = 6371.0;
+    final dLat = _toRadians(lat2 - lat1);
+    final dLng = _toRadians(lng2 - lng1);
+    final a = (sin(dLat / 2) * sin(dLat / 2)) +
+        cos(_toRadians(lat1)) *
+            cos(_toRadians(lat2)) *
+            (sin(dLng / 2) * sin(dLng / 2));
+    final c = 2 * atan2(sqrt(a), sqrt(1 - a));
+    return earthRadiusKm * c;
+  }
+
+  double _toRadians(double value) => value * (3.141592653589793 / 180.0);
 }

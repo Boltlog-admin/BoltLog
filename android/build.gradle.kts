@@ -16,17 +16,6 @@ subprojects {
     val newSubprojectBuildDir: Directory = newBuildDir.dir(project.name)
     project.layout.buildDirectory.value(newSubprojectBuildDir)
 }
-subprojects {
-    project.evaluationDependsOn(":app")
-    
-    configurations.all {
-        resolutionStrategy {
-            force("com.android.tools.build:gradle:8.11.1")
-            force("com.android.tools.build:builder:8.11.1")
-            force("com.android.tools.build:apkzlib:8.11.1")
-        }
-    }
-}
 
 tasks.register<Delete>("clean") {
     delete(rootProject.layout.buildDirectory)

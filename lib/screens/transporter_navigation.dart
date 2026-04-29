@@ -5,10 +5,12 @@ import 'chat_screen.dart';
 import 'driver_dashboard_screen.dart';
 import 'active_deliveries_screen.dart';
 import 'profile_screen.dart';
+import '../models/ride_model.dart';
 import '../services/app_resume_service.dart';
 import '../services/notification_service.dart';
 import '../services/ride_service.dart';
 import 'request_detail_screen.dart';
+import '../theme/app_theme.dart';
 
 class TransporterNavigation extends StatefulWidget {
   final bool showWelcomeMessage;
@@ -153,36 +155,101 @@ class _TransporterNavigationState extends State<TransporterNavigation>
     await _saveFcmToken();
   }
 
+  RideModel? _transporterTravelRide(List<RideModel> rides, String uid) {
+    for (final ride in rides) {
+      final mine = ride.driverId?.trim() == uid;
+      final travelling =
+          ride.status == 'in_progress' || ride.status == 'parcel_collected';
+      if (mine && travelling) return ride;
+    }
+    return null;
+  }
+
+  void _selectTab(int index) {
+    if (_currentIndex == index) return;
+    setState(() {
+      _currentIndex = index;
+    });
+    _persistShell();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      body: _screens[_currentIndex],
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          _persistShell();
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.dashboard_outlined),
-            selectedIcon: Icon(Icons.dashboard_rounded),
-            label: 'Dashboard',
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Scaffold(body: _screens[_currentIndex]);
+    }
+
+    return StreamBuilder<List<RideModel>>(
+      stream: _rideService.streamTransporterDeliveries(uid),
+      builder: (context, snapshot) {
+        final rides = snapshot.data ?? const <RideModel>[];
+        final travelRide = _transporterTravelRide(rides, uid);
+        if (travelRide != null) {
+          // Override transporter shell with shared live travel map while trip is active.
+          return ActiveRideMapScreen(ride: travelRide);
+        }
+
+        return Scaffold(
+          body: Stack(
+            children: [
+              _screens[_currentIndex],
+              Positioned(
+                top: 8,
+                right: 8,
+                child: SafeArea(
+                  child: Material(
+                    color: AppColors.cardBackground,
+                    elevation: 3,
+                    shadowColor: Colors.black.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
+                    child: PopupMenuButton<int>(
+                      tooltip: 'Open navigation menu',
+                      icon: const Icon(
+                        Icons.more_vert_rounded,
+                        color: AppColors.primaryDark,
+                      ),
+                      color: AppColors.cardBackground,
+                      surfaceTintColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.md),
+                        side: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      onSelected: _selectTab,
+                      itemBuilder: (context) => const [
+                        PopupMenuItem<int>(
+                          value: 0,
+                          child: ListTile(
+                            dense: true,
+                            leading: Icon(Icons.dashboard_outlined),
+                            title: Text('Dashboard'),
+                          ),
+                        ),
+                        PopupMenuItem<int>(
+                          value: 1,
+                          child: ListTile(
+                            dense: true,
+                            leading: Icon(Icons.local_shipping_outlined),
+                            title: Text('Active'),
+                          ),
+                        ),
+                        PopupMenuItem<int>(
+                          value: 2,
+                          child: ListTile(
+                            dense: true,
+                            leading: Icon(Icons.person_outline_rounded),
+                            title: Text('Profile'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.local_shipping_outlined),
-            selectedIcon: Icon(Icons.local_shipping_rounded),
-            label: 'Active',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profile',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

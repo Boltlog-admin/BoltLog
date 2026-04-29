@@ -119,7 +119,7 @@ service cloud.firestore {
       // permission-denied. Enforce "no new driver assignment" by equality on before/after merge.
       return isAuthenticated() &&
         !uidFieldEquals(r.userId, uid) &&
-        w.driverId == r.driverId &&
+        driverIdsRepresentSameSlot(r, w) &&
         w.status == 'pending' &&
         rideStatusAllowsTransporterCommit(r) &&
         uidFieldEquals(w.awaitingSenderConfirmDriverId, uid) &&

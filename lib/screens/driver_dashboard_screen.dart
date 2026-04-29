@@ -18,6 +18,7 @@ import 'wallet_topup_screen.dart';
 import '../widgets/storage_image.dart';
 import '../utils/ride_distance_utils.dart';
 import '../utils/transporter_accept_nav.dart';
+import '../theme/app_theme.dart';
 
 class DriverDashboardScreen extends StatefulWidget {
   const DriverDashboardScreen({super.key});
@@ -72,7 +73,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
               mainAxisSize: MainAxisSize.min,
               children: [
                 Text(
-                  'Dashboard',
+                  'Transporter Home',
                   style: GoogleFonts.inter(
                     fontSize: 20,
                     fontWeight: FontWeight.w600,
@@ -92,6 +93,112 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                 ),
               ],
             ),
+            actions: [
+              PopupMenuButton<String>(
+                tooltip: 'More options',
+                icon: const Icon(
+                  Icons.more_vert_rounded,
+                  color: AppColors.primaryDark,
+                ),
+                color: AppColors.cardBackground,
+                surfaceTintColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(AppRadii.md),
+                  side: BorderSide(color: Colors.grey.shade200),
+                ),
+                onSelected: (value) {
+                  switch (value) {
+                    case 'requests':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const TransporterDashboardScreen(),
+                        ),
+                      );
+                      break;
+                    case 'active':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const ActiveDeliveriesScreen(),
+                        ),
+                      );
+                      break;
+                    case 'wallet':
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const WalletTopUpScreen(),
+                        ),
+                      );
+                      break;
+                    case 'account':
+                      if (userModel == null) return;
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) =>
+                              DriverAccountEditScreen(user: userModel),
+                        ),
+                      );
+                      break;
+                    case 'home':
+                      Navigator.pushAndRemoveUntil(
+                        context,
+                        MaterialPageRoute(
+                          builder: (_) => const MainNavigation(
+                            initialTabIndex: 0,
+                          ),
+                        ),
+                        (route) => false,
+                      );
+                      break;
+                  }
+                },
+                itemBuilder: (context) => const [
+                  PopupMenuItem(
+                    value: 'requests',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.dashboard_outlined),
+                      title: Text('Current requests'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'active',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.local_shipping_outlined),
+                      title: Text('Active deliveries'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'wallet',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.account_balance_wallet_outlined),
+                      title: Text('Wallet top up'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'account',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.person_outline_rounded),
+                      title: Text('Account details'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'home',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.home_outlined),
+                      title: Text('Go to home'),
+                    ),
+                  ),
+                ],
+              ),
+            ],
           ),
           body: SafeArea(
             child: StreamBuilder<List<RideModel>>(
@@ -148,6 +255,92 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                             child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
+                            Container(
+                              width: double.infinity,
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 14,
+                                vertical: 10,
+                              ),
+                              decoration: BoxDecoration(
+                                color: AppColors.cardBackground,
+                                borderRadius: BorderRadius.circular(AppRadii.md),
+                                border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.2),
+                                ),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.04),
+                                    blurRadius: 8,
+                                    offset: const Offset(0, 2),
+                                  ),
+                                ],
+                              ),
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.account_balance_wallet_rounded,
+                                    color: AppColors.primary,
+                                    size: 20,
+                                  ),
+                                  const SizedBox(width: 8),
+                                  Text(
+                                    'Wallet',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.w600,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                  const Spacer(),
+                                  Text(
+                                    '\$${walletBalance.toStringAsFixed(2)}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 16,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primaryDark,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(height: 12),
+                            _buildSectionHeader('Open Requests Map'),
+                            const SizedBox(height: 10),
+                            Container(
+                              height: MediaQuery.of(context).size.height * 0.5,
+                              width: double.infinity,
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(AppRadii.lg),
+                                boxShadow: [
+                                  BoxShadow(
+                                    color: Colors.black.withOpacity(0.08),
+                                    blurRadius: 16,
+                                    offset: const Offset(0, 6),
+                                  ),
+                                ],
+                              ),
+                              child: ClipRRect(
+                                borderRadius: BorderRadius.circular(AppRadii.lg),
+                                child: ActiveDeliveriesMapWidget(
+                                  deliveries: availableRides,
+                                  height:
+                                      MediaQuery.of(context).size.height * 0.5,
+                                  currentLat: userModel?.currentLat,
+                                  currentLng: userModel?.currentLng,
+                                  showPickupGuidesFromCurrent: true,
+                                  onRequestTap: (ride) {
+                                    Navigator.push(
+                                      context,
+                                      MaterialPageRoute(
+                                        builder: (_) =>
+                                            RequestDetailScreen(ride: ride),
+                                      ),
+                                    );
+                                  },
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 18),
                         // Profile incomplete notification (hidden in testing mode)
                         if (!TestingFlags.relaxTransporterVerification &&
                             userModel != null &&
@@ -223,6 +416,54 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                                   ],
                                 ),
                               ),
+                            Container(
+                              width: double.infinity,
+                              margin: const EdgeInsets.only(bottom: 16),
+                              padding: const EdgeInsets.all(14),
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    AppColors.primary.withOpacity(0.08),
+                                    AppColors.primaryDark.withOpacity(0.04),
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                                border: Border.all(
+                                  color: AppColors.primary.withOpacity(0.2),
+                                ),
+                              ),
+                              child: Row(
+                                children: [
+                                  Container(
+                                    padding: const EdgeInsets.all(8),
+                                    decoration: BoxDecoration(
+                                      color: Colors.white.withOpacity(0.85),
+                                      borderRadius: BorderRadius.circular(8),
+                                    ),
+                                    child: const Icon(
+                                      Icons.bolt_rounded,
+                                      color: AppColors.primaryDark,
+                                      size: 20,
+                                    ),
+                                  ),
+                                  const SizedBox(width: 10),
+                                  Expanded(
+                                    child: Text(
+                                      isAvailable
+                                          ? 'You are online. New delivery requests will appear below.'
+                                          : 'You are offline. Switch on availability to receive requests.',
+                                      style: GoogleFonts.inter(
+                                        fontSize: 13,
+                                        fontWeight: FontWeight.w600,
+                                        color: AppColors.primaryDark,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
                             // Availability Toggle
                             _buildAvailabilityToggle(user.uid, isAvailable),
                             const SizedBox(height: 20),
@@ -254,11 +495,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                                   children: [
                                     Text(
                                       'Current Requests',
-                                      style: GoogleFonts.inter(
-                                        fontSize: 20,
-                                        fontWeight: FontWeight.bold,
-                                        color: const Color(0xFF1E40AF),
-                                      ),
+                                      style: _buildSectionHeaderTextStyle(),
                                     ),
                                     const SizedBox(height: 4),
                                     Text(
@@ -350,11 +587,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                               children: [
                                 Text(
                                   'Active Deliveries',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 20,
-                                    fontWeight: FontWeight.bold,
-                                    color: const Color(0xFF1E40AF),
-                                  ),
+                                  style: _buildSectionHeaderTextStyle(),
                                 ),
                                 if (deliveries.isNotEmpty)
                                   TextButton(
@@ -584,6 +817,11 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(
+          color: isAvailable
+              ? Colors.green.withOpacity(0.25)
+              : Colors.grey.shade300,
+        ),
         boxShadow: [
           BoxShadow(
             color: Colors.black.withOpacity(0.05),
@@ -611,7 +849,8 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                 isAvailable ? 'Available for deliveries' : 'Currently offline',
                 style: GoogleFonts.inter(
                   fontSize: 14,
-                  color: Colors.grey.shade600,
+                  color: isAvailable ? Colors.green.shade700 : Colors.grey.shade600,
+                  fontWeight: FontWeight.w600,
                 ),
               ),
             ],
@@ -695,13 +934,14 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: AppColors.cardBackground,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
         boxShadow: [
           BoxShadow(
-            color: Colors.black.withOpacity(0.05),
-            blurRadius: 4,
-            offset: const Offset(0, 2),
+            color: Colors.black.withOpacity(0.035),
+            blurRadius: 10,
+            offset: const Offset(0, 3),
           ),
         ],
       ),
@@ -730,7 +970,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
             style: GoogleFonts.inter(
               fontSize: 20,
               fontWeight: FontWeight.bold,
-              color: const Color(0xFF1E40AF),
+              color: AppColors.primaryDark,
             ),
           ),
           const SizedBox(height: 2),
@@ -750,14 +990,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
-        Text(
-          'Quick Actions',
-          style: GoogleFonts.inter(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            color: const Color(0xFF1E40AF),
-          ),
-        ),
+        _buildSectionHeader('Quick Actions'),
         const SizedBox(height: 12),
         Row(
           children: [
@@ -797,25 +1030,19 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
           ],
         ),
         const SizedBox(height: 12),
-        Row(
-          children: [
-            Expanded(
-              child: _buildQuickActionCard(
-                icon: Icons.account_balance_wallet,
-                title: 'Top Up',
-                subtitle: 'Wallet',
-                color: Colors.green,
-                onTap: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (_) => const WalletTopUpScreen(),
-                    ),
-                  );
-                },
+        _buildQuickActionCard(
+          icon: Icons.account_balance_wallet,
+          title: 'Top Up Wallet',
+          subtitle: 'Add funds to accept more deliveries',
+          color: Colors.green,
+          onTap: () {
+            Navigator.push(
+              context,
+              MaterialPageRoute(
+                builder: (_) => const WalletTopUpScreen(),
               ),
-            ),
-          ],
+            );
+          },
         ),
       ],
     );
@@ -828,44 +1055,79 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
     required Color color,
     required VoidCallback onTap,
   }) {
-    return GestureDetector(
-      onTap: onTap,
-      child: Container(
-        padding: const EdgeInsets.all(16),
-        decoration: BoxDecoration(
-          color: Colors.white,
-          borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: color.withOpacity(0.3), width: 1),
-          boxShadow: [
-            BoxShadow(
-              color: Colors.black.withOpacity(0.05),
-              blurRadius: 4,
-              offset: const Offset(0, 2),
-            ),
-          ],
-        ),
-        child: Column(
-          children: [
-            Icon(icon, color: color, size: 32),
-            const SizedBox(height: 8),
-            Text(
-              title,
-              style: GoogleFonts.inter(
-                fontSize: 14,
-                fontWeight: FontWeight.w600,
-                color: const Color(0xFF1E40AF),
+    return Material(
+      color: Colors.white,
+      borderRadius: BorderRadius.circular(12),
+      child: InkWell(
+        onTap: onTap,
+        borderRadius: BorderRadius.circular(12),
+        child: Ink(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: color.withOpacity(0.25), width: 1),
+            boxShadow: [
+              BoxShadow(
+                color: Colors.black.withOpacity(0.04),
+                blurRadius: 6,
+                offset: const Offset(0, 2),
               ),
-            ),
-            Text(
-              subtitle,
-              style: GoogleFonts.inter(
-                fontSize: 12,
-                color: Colors.grey.shade600,
+            ],
+          ),
+          child: Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: color.withOpacity(0.1),
+                  borderRadius: BorderRadius.circular(10),
+                ),
+                child: Icon(icon, color: color, size: 20),
               ),
-            ),
-          ],
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      title,
+                      style: GoogleFonts.inter(
+                        fontSize: 14,
+                        fontWeight: FontWeight.w600,
+                        color: const Color(0xFF1E40AF),
+                      ),
+                    ),
+                    const SizedBox(height: 2),
+                    Text(
+                      subtitle,
+                      style: GoogleFonts.inter(
+                        fontSize: 12,
+                        color: Colors.grey.shade600,
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              Icon(Icons.chevron_right, color: Colors.grey.shade400),
+            ],
+          ),
         ),
       ),
+    );
+  }
+
+  Widget _buildSectionHeader(String title) {
+    return Text(
+      title,
+      style: _buildSectionHeaderTextStyle(),
+    );
+  }
+
+  TextStyle _buildSectionHeaderTextStyle() {
+    return GoogleFonts.inter(
+      fontSize: 18,
+      fontWeight: FontWeight.bold,
+      color: const Color(0xFF1E40AF),
     );
   }
 
@@ -1235,6 +1497,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.grey.shade200),
       ),
       child: Column(
         children: [

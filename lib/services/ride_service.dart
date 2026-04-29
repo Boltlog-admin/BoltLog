@@ -895,6 +895,11 @@ class RideService {
     _throwTransporterCommitCallableFailure(e.code, e.message);
   }
 
+  bool _isAuthOrPermissionFailure(String? code) {
+    final c = (code ?? '').toLowerCase().replaceAll('_', '-');
+    return c == 'unauthenticated' || c == 'permission-denied';
+  }
+
   /// Primary path: Firebase Callable SDK (handles CORS on web and attaches auth reliably).
   /// Falls back to [ _transporterCommitRideViaHttps ] then Firestore queue when needed.
   Future<Map<String, dynamic>> _invokeTransporterCommitRide({
@@ -904,7 +909,7 @@ class RideService {
     try {
       final callable = FirebaseFunctions.instance.httpsCallable(
         'transporterCommitRide',
-        options: HttpsCallableOptions(timeout: const Duration(seconds: 60)),
+        options: HttpsCallableOptions(timeout: const Duration(seconds: 20)),
       );
       final result = await callable.call(<String, dynamic>{
         'rideId': rideId,
@@ -916,10 +921,18 @@ class RideService {
       }
       throw Exception('Invalid server response from transporterCommitRide');
     } on FirebaseFunctionsException catch (e, st) {
+      final fastQueue = _isAuthOrPermissionFailure(e.code);
       debugPrint(
-        'transporterCommitRide callable failed (${e.code}): ${e.message} — trying HTTPS\n$st',
+        'transporterCommitRide callable failed (${e.code}): ${e.message} '
+        '— trying ${fastQueue ? 'queue' : 'HTTPS'}\n$st',
       );
       try {
+        if (fastQueue) {
+          return await _transporterCommitRideViaQueue(
+            rideId: rideId,
+            transporterId: transporterId,
+          );
+        }
         return await _transporterCommitRideViaHttps(
           rideId: rideId,
           transporterId: transporterId,
@@ -1261,16 +1274,16 @@ class RideService {
         );
         return false;
       }
-      await _sendTransporterCommitNotifications(
+      unawaited(_sendTransporterCommitNotifications(
         rideId,
         tid,
         senderUserId: senderUserId,
-      );
-      await _sendTransporterCommitChatNudge(
+      ));
+      unawaited(_sendTransporterCommitChatNudge(
         rideId,
         tid,
         senderUserId: senderUserId,
-      );
+      ));
       return true;
     } on FirebaseFunctionsException catch (e, st) {
       debugPrint(

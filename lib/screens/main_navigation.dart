@@ -5,10 +5,12 @@ import 'chat_screen.dart';
 import 'home_screen.dart';
 import 'ride_history_screen.dart';
 import 'profile_screen.dart';
+import '../models/ride_model.dart';
 import '../services/app_resume_service.dart';
 import '../services/notification_service.dart';
 import '../services/ride_service.dart';
 import 'request_detail_screen.dart';
+import '../theme/app_theme.dart';
 
 class MainNavigation extends StatefulWidget {
   final bool showWelcomeMessage;
@@ -152,41 +154,112 @@ class _MainNavigationState extends State<MainNavigation> with RouteAware {
     await _saveFcmToken();
   }
 
+  RideModel? _senderTravelRide(List<RideModel> rides) {
+    for (final ride in rides) {
+      final hasDriver = (ride.driverId?.trim().isNotEmpty ?? false);
+      final travelling =
+          ride.status == 'in_progress' || ride.status == 'parcel_collected';
+      if (hasDriver && travelling) return ride;
+    }
+    return null;
+  }
+
+  void _selectTab(int index) {
+    if (_currentIndex == index) return;
+    setState(() {
+      _currentIndex = index;
+    });
+    _persistShell();
+  }
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      // Keep all tabs mounted so Home (active orders, streams, scroll) survives tab switches.
-      body: IndexedStack(
-        index: _currentIndex,
-        sizing: StackFit.expand,
-        children: _screens,
-      ),
-      bottomNavigationBar: NavigationBar(
-        selectedIndex: _currentIndex,
-        onDestinationSelected: (index) {
-          setState(() {
-            _currentIndex = index;
-          });
-          _persistShell();
-        },
-        destinations: const [
-          NavigationDestination(
-            icon: Icon(Icons.home_outlined),
-            selectedIcon: Icon(Icons.home_rounded),
-            label: 'Home',
+    final uid = FirebaseAuth.instance.currentUser?.uid;
+    if (uid == null) {
+      return Scaffold(
+        body: IndexedStack(
+          index: _currentIndex,
+          sizing: StackFit.expand,
+          children: _screens,
+        ),
+      );
+    }
+
+    return StreamBuilder<List<RideModel>>(
+      stream: _rideService.streamUserRides(uid),
+      builder: (context, snapshot) {
+        final rides = snapshot.data ?? const <RideModel>[];
+        final travelRide = _senderTravelRide(rides);
+        if (travelRide != null) {
+          // Override sender shell with shared live travel map while trip is active.
+          return ActiveRideMapScreen(ride: travelRide);
+        }
+
+        return Scaffold(
+          // Keep all tabs mounted so Home (active orders, streams, scroll) survives tab switches.
+          body: Stack(
+            children: [
+              IndexedStack(
+                index: _currentIndex,
+                sizing: StackFit.expand,
+                children: _screens,
+              ),
+              Positioned(
+                top: 8,
+                right: 8,
+                child: SafeArea(
+                  child: Material(
+                    color: AppColors.cardBackground,
+                    elevation: 3,
+                    shadowColor: Colors.black.withOpacity(0.08),
+                    borderRadius: BorderRadius.circular(AppRadii.md),
+                    child: PopupMenuButton<int>(
+                      tooltip: 'Open navigation menu',
+                      icon: const Icon(
+                        Icons.more_vert_rounded,
+                        color: AppColors.primaryDark,
+                      ),
+                      color: AppColors.cardBackground,
+                      surfaceTintColor: Colors.transparent,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(AppRadii.md),
+                        side: BorderSide(color: Colors.grey.shade200),
+                      ),
+                      onSelected: _selectTab,
+                      itemBuilder: (context) => const [
+                        PopupMenuItem<int>(
+                          value: 0,
+                          child: ListTile(
+                            dense: true,
+                            leading: Icon(Icons.home_outlined),
+                            title: Text('Home'),
+                          ),
+                        ),
+                        PopupMenuItem<int>(
+                          value: 1,
+                          child: ListTile(
+                            dense: true,
+                            leading: Icon(Icons.history_outlined),
+                            title: Text('History'),
+                          ),
+                        ),
+                        PopupMenuItem<int>(
+                          value: 2,
+                          child: ListTile(
+                            dense: true,
+                            leading: Icon(Icons.person_outline_rounded),
+                            title: Text('Profile'),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-          NavigationDestination(
-            icon: Icon(Icons.history_outlined),
-            selectedIcon: Icon(Icons.history_rounded),
-            label: 'History',
-          ),
-          NavigationDestination(
-            icon: Icon(Icons.person_outline_rounded),
-            selectedIcon: Icon(Icons.person_rounded),
-            label: 'Profile',
-          ),
-        ],
-      ),
+        );
+      },
     );
   }
 }

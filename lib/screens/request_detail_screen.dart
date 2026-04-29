@@ -15,11 +15,9 @@ import '../services/pricing_service.dart';
 import '../services/error_handler_service.dart';
 import '../constants/app_constants.dart';
 import '../config/testing_flags.dart';
+import '../theme/app_theme.dart';
 import '../utils/negotiation_utils.dart';
-import '../utils/chat_utils.dart';
-import '../models/transporter_offer_model.dart';
 import 'active_ride_map_screen.dart';
-import 'chat_screen.dart';
 
 class RequestDetailScreen extends StatefulWidget {
   final RideModel ride;
@@ -33,6 +31,7 @@ class RequestDetailScreen extends StatefulWidget {
 class _RequestDetailScreenState extends State<RequestDetailScreen> {
   final RideService _rideService = RideService();
   final UserService _userService = UserService();
+  final FirebaseFirestore _firestore = FirebaseFirestore.instance;
   bool _isOffering = false;
   Set<Polyline> _routePolylines = {};
   bool _routeRequested = false;
@@ -349,10 +348,88 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   }
 
                   return SingleChildScrollView(
-                    padding: const EdgeInsets.all(16),
+                    padding: const EdgeInsets.fromLTRB(16, 12, 16, 20),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(14),
+                        margin: const EdgeInsets.only(bottom: 12),
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                            colors: [
+                              AppColors.primary.withOpacity(0.08),
+                              AppColors.primaryDark.withOpacity(0.03),
+                            ],
+                          ),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.primary.withOpacity(0.18),
+                          ),
+                        ),
+                        child: Row(
+                          children: [
+                            Container(
+                              width: 38,
+                              height: 38,
+                              decoration: BoxDecoration(
+                                color: AppColors.primary.withOpacity(0.12),
+                                borderRadius: BorderRadius.circular(10),
+                              ),
+                              child: const Icon(
+                                Icons.local_shipping_outlined,
+                                color: AppColors.primaryDark,
+                              ),
+                            ),
+                            const SizedBox(width: 10),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Delivery request',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.w700,
+                                      color: AppColors.primaryDark,
+                                    ),
+                                  ),
+                                  const SizedBox(height: 2),
+                                  Text(
+                                    'Created ${_formatDate(ride.createdAt)}',
+                                    style: GoogleFonts.inter(
+                                      fontSize: 12,
+                                      color: Colors.grey.shade700,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                horizontal: 10,
+                                vertical: 6,
+                              ),
+                              decoration: BoxDecoration(
+                                color: Colors.white,
+                                borderRadius: BorderRadius.circular(999),
+                                border: Border.all(color: Colors.grey.shade300),
+                              ),
+                              child: Text(
+                                ride.status.toUpperCase(),
+                                style: GoogleFonts.inter(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w700,
+                                  color: AppColors.primaryDark,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
                       if (isTransporter &&
                           ride.awaitingSenderToConfirmTransporter &&
                           ride.awaitingSenderConfirmDriverId?.trim() ==
@@ -558,129 +635,36 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                         if (isSender && ride.awaitingSenderToConfirmTransporter) ...[
                           _senderTransporterConfirmationCard(context, ride),
                         ],
-                        // Package Description
-              if (ride.packageDescription != null) ...[
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF2563EB).withOpacity(0.1),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(
-                      color: const Color(0xFF2563EB).withOpacity(0.3),
-                      width: 1,
-                    ),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Row(
-                        children: [
-                          Icon(
-                            Icons.inventory_2,
-                            color: const Color(0xFF2563EB),
-                            size: 20,
+                        // Request Map (kept as primary context on top half)
+                        Text(
+                          'Live Request Map',
+                          style: GoogleFonts.inter(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: const Color(0xFF1E40AF),
                           ),
-                          const SizedBox(width: 8),
-                          Text(
-                            'Package Description',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 8),
-                      Text(
-                        ride.packageDescription!,
-                        style: GoogleFonts.inter(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: const Color(0xFF1E40AF),
                         ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-
-              // Package Details Section
-              Text(
-                'Package Details',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1E40AF),
-                ),
-              ),
-              const SizedBox(height: 12),
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Column(
-                  children: [
-                    if (ride.packageType != null) ...[
-                      _buildDetailRow(
-                        Icons.category,
-                        'Package Type',
-                        ride.packageType!.toUpperCase(),
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (ride.weight != null) ...[
-                      _buildDetailRow(
-                        Icons.scale,
-                        'Weight',
-                        '${ride.weight} kg',
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (ride.dimensions != null) ...[
-                      _buildDetailRow(
-                        Icons.straighten,
-                        'Dimensions',
-                        ride.dimensions!,
-                      ),
-                      const SizedBox(height: 12),
-                    ],
-                    if (ride.estimatedValue != null) ...[
-                      _buildDetailRow(
-                        Icons.attach_money,
-                        'Estimated Value',
-                        '\$${ride.estimatedValue!.toStringAsFixed(2)}',
-                      ),
-                    ],
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Locations Section
-              Text(
-                'Locations',
-                style: GoogleFonts.inter(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1E40AF),
-                ),
-              ),
-              const SizedBox(height: 12),
+                        const SizedBox(height: 12),
               
               // Map with route between pickup and dropoff
               if (ride.pickupLat != null &&
                   ride.pickupLng != null &&
                   ride.dropoffLat != null &&
                   ride.dropoffLng != null) ...[
-                SizedBox(
-                  height: 220,
+                Container(
+                  height: MediaQuery.of(context).size.height * 0.5,
+                  decoration: BoxDecoration(
+                    borderRadius: BorderRadius.circular(16),
+                    boxShadow: [
+                      BoxShadow(
+                        color: Colors.black.withOpacity(0.08),
+                        blurRadius: 16,
+                        offset: const Offset(0, 6),
+                      ),
+                    ],
+                  ),
                   child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
+                    borderRadius: BorderRadius.circular(16),
                     child: GoogleMap(
                       initialCameraPosition: CameraPosition(
                         target: LatLng(
@@ -715,360 +699,64 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                     ),
                   ),
                 ),
-                const SizedBox(height: 8),
-                Align(
-                  alignment: Alignment.centerLeft,
-                  child: Text(
-                    'Distance: ${_calculateDistanceKm(ride.pickupLat!, ride.pickupLng!, ride.dropoffLat!, ride.dropoffLng!).toStringAsFixed(1)} km',
-                    style: GoogleFonts.inter(
-                      fontSize: 13,
-                      fontWeight: FontWeight.w600,
-                      color: Colors.grey.shade700,
-                    ),
-                  ),
-                ),
                 const SizedBox(height: 16),
               ],
-              
-              // Pickup Location
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB).withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Color(0xFF2563EB),
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Pickup Location',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            ride.pickupLocation,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1E40AF),
-                            ),
-                          ),
+              StreamBuilder<QuerySnapshot<Map<String, dynamic>>>(
+                stream: _firestore
+                    .collection('rides')
+                    .doc(ride.id)
+                    .collection('viewers')
+                    .snapshots(),
+                builder: (context, viewersSnap) {
+                  final count = viewersSnap.data?.docs.length ?? 0;
+                  return Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                        colors: [
+                          Colors.blue.shade50,
+                          Colors.indigo.shade50,
                         ],
                       ),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.blue.shade100),
                     ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 12),
-              
-              // Dropoff Location
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(color: Colors.grey.shade200),
-                ),
-                child: Row(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: Colors.red.withOpacity(0.1),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: const Icon(
-                        Icons.location_on,
-                        color: Colors.red,
-                        size: 24,
-                      ),
-                    ),
-                    const SizedBox(width: 12),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Dropoff Location',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 4),
-                          Text(
-                            ride.dropoffLocation,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              fontWeight: FontWeight.w500,
-                              color: const Color(0xFF1E40AF),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 24),
-
-              // Price Section
-              Container(
-                padding: const EdgeInsets.all(20),
-                decoration: BoxDecoration(
-                  color: const Color(0xFF2563EB).withOpacity(0.05),
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: const Color(0xFF2563EB).withOpacity(0.2),
-                    width: 2,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
+                    child: Row(
                       children: [
-                        Text(
-                          effectiveOfferLabel(ride, isSender: isSender),
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            color: Colors.grey.shade600,
+                        Container(
+                          width: 34,
+                          height: 34,
+                          decoration: BoxDecoration(
+                            color: Colors.white.withOpacity(0.85),
+                            borderRadius: BorderRadius.circular(10),
+                          ),
+                          child: const Icon(
+                            Icons.visibility,
+                            color: Color(0xFF2563EB),
+                            size: 20,
                           ),
                         ),
-                        if (effectiveOfferLastMoveHint(ride) != null) ...[
-                          const SizedBox(height: 2),
-                          Text(
-                            effectiveOfferLastMoveHint(ride)!,
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Text(
+                            '$count transporter${count == 1 ? '' : 's'} viewing this request',
                             style: GoogleFonts.inter(
-                              fontSize: 11,
-                              color: Colors.grey.shade500,
-                            ),
-                          ),
-                        ],
-                        const SizedBox(height: 4),
-                        Text(
-                          effectiveOfferAmount(ride) != null
-                              ? '\$${effectiveOfferAmount(ride)!.toStringAsFixed(2)}'
-                              : 'Not specified',
-                          style: GoogleFonts.inter(
-                            fontSize: 22,
-                            fontWeight: FontWeight.bold,
-                            color: ride.finalPrice != null
-                                ? const Color(0xFF15803D)
-                                : (ride.counterOffer != null
-                                    ? (ride.lastCounterOfferBy == 'transporter'
-                                        ? Colors.amber.shade800
-                                        : Colors.green.shade700)
-                                    : const Color(0xFF2563EB)),
-                          ),
-                        ),
-                        if (isTransporter &&
-                            userModel?.ratePer10Km != null &&
-                            userModel!.ratePer10Km! > 0 &&
-                            ride.pickupLat != null &&
-                            ride.pickupLng != null &&
-                            ride.dropoffLat != null &&
-                            ride.dropoffLng != null) ...[
-                          const SizedBox(height: 12),
-                          Text(
-                            'Your rate for this trip',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '\$${PricingService.calculateDriverPriceForDistance(
-                              PricingService.calculateDistance(
-                                ride.pickupLat!, ride.pickupLng!,
-                                ride.dropoffLat!, ride.dropoffLng!,
-                              ),
-                              userModel.ratePer10Km,
-                            )!.toStringAsFixed(2)}',
-                            style: GoogleFonts.inter(
-                              fontSize: 20,
-                              fontWeight: FontWeight.w600,
+                              fontSize: 14,
+                              fontWeight: FontWeight.w700,
                               color: const Color(0xFF1E40AF),
                             ),
                           ),
-                        ],
-                        if (isTransporter && (ride.finalPrice != null || ride.counterOffer != null || ride.price != null)) ...[
-                          const SizedBox(height: 10),
-                          Text(
-                            'You\'ll receive',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                          const SizedBox(height: 2),
-                          Text(
-                            '\$${PricingService.transporterNetFromAgreed((ride.finalPrice ?? ride.counterOffer ?? ride.price)!).toStringAsFixed(2)}',
-                            style: GoogleFonts.inter(
-                              fontSize: 18,
-                              fontWeight: FontWeight.w700,
-                              color: const Color(0xFF15803D),
-                            ),
-                          ),
-                          Text(
-                            PricingService.deductFeeOnAcceptance
-                                ? 'after ${(PricingService.platformFeePercentage * 100).toInt()}% platform fee'
-                                : 'Agreed fare (platform fee off until go-live)',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                        if (ride.senderPaymentMethod != null) ...[
-                          const SizedBox(height: 12),
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                              horizontal: 12,
-                              vertical: 8,
-                            ),
-                            decoration: BoxDecoration(
-                              color: ride.senderPaymentMethod == 'ecocash'
-                                  ? Colors.green.withOpacity(0.1)
-                                  : Colors.orange.withOpacity(0.1),
-                              borderRadius: BorderRadius.circular(8),
-                              border: Border.all(
-                                color: ride.senderPaymentMethod == 'ecocash'
-                                    ? Colors.green
-                                    : Colors.orange,
-                                width: 1.5,
-                              ),
-                            ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  ride.senderPaymentMethod == 'ecocash'
-                                      ? Icons.account_balance_wallet
-                                      : Icons.money,
-                                  size: 18,
-                                  color: ride.senderPaymentMethod == 'ecocash'
-                                      ? Colors.green
-                                      : Colors.orange,
-                                ),
-                                const SizedBox(width: 8),
-                                Text(
-                                  'Sender pays with ${ride.senderPaymentMethod == 'ecocash' ? 'EcoCash' : 'cash'}',
-                                  style: GoogleFonts.inter(
-                                    fontSize: 13,
-                                    fontWeight: FontWeight.w600,
-                                    color: ride.senderPaymentMethod == 'ecocash'
-                                        ? Colors.green
-                                        : Colors.orange,
-                                  ),
-                                ),
-                              ],
-                            ),
-                          ),
-                        ],
+                        ),
                       ],
                     ),
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                        horizontal: 12,
-                        vertical: 8,
-                      ),
-                      decoration: BoxDecoration(
-                        color: const Color(0xFF2563EB),
-                        borderRadius: BorderRadius.circular(8),
-                      ),
-                      child: Text(
-                        'OFFER',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
+                  );
+                },
               ),
-              const SizedBox(height: 24),
-
-              // Additional Notes
-              if (ride.notes != null && ride.notes!.isNotEmpty) ...[
-                Text(
-                  'Additional Notes',
-                  style: GoogleFonts.inter(
-                    fontSize: 18,
-                    fontWeight: FontWeight.bold,
-                    color: const Color(0xFF1E40AF),
-                  ),
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(16),
-                  decoration: BoxDecoration(
-                    color: Colors.grey.shade50,
-                    borderRadius: BorderRadius.circular(12),
-                  ),
-                  child: Text(
-                    ride.notes!,
-                    style: GoogleFonts.inter(
-                      fontSize: 14,
-                      color: Colors.grey.shade700,
-                      height: 1.5,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 24),
-              ],
-
-              // Request Date
-              Container(
-                padding: const EdgeInsets.all(12),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(8),
-                ),
-                child: Row(
-                  children: [
-                    Icon(Icons.calendar_today, size: 16, color: Colors.grey.shade600),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Requested: ${_formatDate(ride.createdAt)}',
-                      style: GoogleFonts.inter(
-                        fontSize: 12,
-                        color: Colors.grey.shade600,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
+              const SizedBox(height: 16),
+              const SizedBox(height: 20),
 
               // Action Buttons (for transporters): show when open or when pending (negotiating / sender accepted)
               if (user != null &&
@@ -1225,104 +913,30 @@ class _RequestDetailScreenState extends State<RequestDetailScreen> {
                   ),
                 ),
               ],
-              // Chat: senders see this for all active requests (incl. open / waiting for transporters).
-              // Transporters see chat once there is a counterparty or active negotiation.
-              Builder(
-                builder: (context) {
-                  final showChatForSender =
-                      isSender && ride.id != null && isChatAllowedForRide(ride);
-                  final showChatForTransporter = isTransporter &&
-                      (ride.driverId != null ||
-                          ride.acceptedTransporterId != null ||
-                          (ride.status == 'pending' &&
-                              ride.negotiatingTransporterId != null));
-                  final showChatButton = showChatForSender || showChatForTransporter;
-
-                  final chatLabel = isTransporter
-                      ? 'Chat with Sender'
-                      : (ride.status == 'open'
-                          ? 'Chat with transporters'
-                          : 'Chat with transporter');
-
-                  return Column(
-                    crossAxisAlignment: CrossAxisAlignment.stretch,
-                    children: [
-                      if (showChatButton) ...[
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: OutlinedButton.icon(
-                            onPressed: () {
-                              if (!isChatAllowedForRide(ride)) {
-                                ScaffoldMessenger.of(context).showSnackBar(
-                                  const SnackBar(
-                                    content: Text(
-                                      'Chat is no longer available for this delivery.',
-                                    ),
-                                    backgroundColor: Colors.red,
-                                  ),
-                                );
-                              } else {
-                                Navigator.push(
-                                  context,
-                                  MaterialPageRoute(
-                                    builder: (_) => ChatScreen(ride: ride),
-                                  ),
-                                );
-                              }
-                            },
-                            icon: const Icon(Icons.chat, size: 20),
-                            label: Text(
-                              chatLabel,
-                              style: GoogleFonts.inter(
-                                fontSize: 15,
-                                fontWeight: FontWeight.w600,
-                              ),
-                            ),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: const Color(0xFF2563EB),
-                              side: const BorderSide(
-                                color: Color(0xFF2563EB),
-                                width: 1.5,
-                              ),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        ),
-                      ],
-                      // Sender: cancel entire request (hard delete) — always directly under chat when chat is shown.
-                      if (showChatButton &&
-                          isSender &&
-                          ride.id != null &&
-                          ride.status != 'completed' &&
-                          ride.status != 'cancelled') ...[
-                        const SizedBox(height: 12),
-                        SizedBox(
-                          width: double.infinity,
-                          height: 48,
-                          child: OutlinedButton.icon(
-                            onPressed: () => _showSenderCancelDialog(context, ride),
-                            icon: const Icon(Icons.cancel_outlined, size: 20),
-                            label: const Text('Cancel ride'),
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.red.shade700,
-                              side: BorderSide(color: Colors.red.shade400),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              padding: const EdgeInsets.symmetric(vertical: 12),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ],
-                  );
-                },
-              ),
+              if (isSender &&
+                  ride.id != null &&
+                  ride.status != 'completed' &&
+                  ride.status != 'cancelled') ...[
+                const SizedBox(height: 12),
+                SizedBox(
+                  width: double.infinity,
+                  height: 52,
+                  child: ElevatedButton.icon(
+                    onPressed: () => _showSenderCancelDialog(context, ride),
+                    icon: const Icon(Icons.cancel_outlined, size: 20),
+                    label: const Text('Cancel request'),
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: Colors.red.shade600,
+                      foregroundColor: Colors.white,
+                      shape: RoundedRectangleBorder(
+                        borderRadius: BorderRadius.circular(14),
+                      ),
+                      padding: const EdgeInsets.symmetric(vertical: 12),
+                      elevation: 0,
+                    ),
+                  ),
+                ),
+              ],
               // Transporter cancel (inDrive-style: driver can cancel, sender is notified)
               if (user != null &&
                   isTransporter &&

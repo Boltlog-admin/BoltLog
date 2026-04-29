@@ -9,15 +9,7 @@ import '../services/pricing_service.dart';
 import '../services/routing_service.dart';
 import '../services/payment_service.dart';
 import '../services/error_handler_service.dart';
-import '../services/error_handler_service.dart';
-import 'home_screen.dart';
-import 'transporter_selection_screen.dart';
-import 'transporter_viewers_screen.dart';
-import 'location_picker_screen.dart';
-import 'saved_locations_screen.dart';
-import 'payment_methods_screen.dart';
 import 'request_detail_screen.dart';
-import '../widgets/address_autocomplete_field.dart';
 
 class RideBookingScreen extends StatefulWidget {
   const RideBookingScreen({super.key});
@@ -29,15 +21,9 @@ class RideBookingScreen extends StatefulWidget {
 class _RideBookingScreenState extends State<RideBookingScreen> {
   final TextEditingController pickupController = TextEditingController();
   final TextEditingController dropoffController = TextEditingController();
-  final TextEditingController notesController = TextEditingController();
   final TextEditingController packageDescriptionController = TextEditingController();
-  final TextEditingController weightController = TextEditingController();
-  final TextEditingController dimensionsController = TextEditingController();
-  final TextEditingController estimatedValueController = TextEditingController();
   final TextEditingController priceController = TextEditingController();
   final RideService _rideService = RideService();
-  final PaymentService _paymentService = PaymentService();
-  String _selectedPackageType = 'small';
   String? _selectedTransportType;
   bool _isLoading = false;
   double? _suggestedPrice;
@@ -48,34 +34,27 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
   double? _dropoffLng;
   // Preview map route between pickup and dropoff before sending request
   Set<Polyline> _previewRoutePolylines = {};
-  PaymentMethodModel? _selectedPaymentMethod;
   String? _transporterPaymentMethod; // 'cash' or 'ecocash' - how sender will pay transporter
-  String? _senderPaymentMethod; // Alias for _transporterPaymentMethod
+  GoogleMapController? _mapController;
+
+  // Guided sender flow (map-first).
+  int _step = 0; // 0 pickup, 1 dropoff, 2 transport type, 3 description, 4 amount/payment
+  bool _mapPickPickup = false;
+  bool _mapPickDropoff = false;
 
   @override
   void initState() {
     super.initState();
-    // Listen to changes and calculate suggested price
-    // Pickup and dropoff are now chosen only from the map (no free typing),
-    // so we don't need to listen for manual text changes here.
-    weightController.addListener(() => _calculatePrice());
-    _selectedPackageType = 'small';
-    _senderPaymentMethod = 'cash'; // Default to cash
+    _transporterPaymentMethod = 'cash';
   }
 
   @override
   void dispose() {
     pickupController.dispose();
     dropoffController.dispose();
-    notesController.dispose();
     packageDescriptionController.dispose();
-    weightController.dispose();
-    dimensionsController.dispose();
-    estimatedValueController.dispose();
     priceController.dispose();
-    pickupController.removeListener(_calculatePrice);
-    dropoffController.removeListener(_calculatePrice);
-    weightController.removeListener(_calculatePrice);
+    _mapController?.dispose();
     super.dispose();
   }
 
@@ -192,41 +171,6 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
     }
   }
 
-  String _getPriceInfoText() {
-    if (_selectedTransportType == null ||
-        _pickupLat == null ||
-        _pickupLng == null ||
-        _dropoffLat == null ||
-        _dropoffLng == null) {
-      return '';
-    }
-
-    final distanceKm = PricingService.calculateDistance(
-      _pickupLat!,
-      _pickupLng!,
-      _dropoffLat!,
-      _dropoffLng!,
-    );
-
-    final isLocal = PricingService.isLocalRoute(distanceKm);
-    final routeType = isLocal ? 'Local' : 'Inter-city';
-    
-    // Get price range if available
-    final priceRange = PricingService.getPriceRange(
-      transportType: _selectedTransportType,
-      pickupLat: _pickupLat,
-      pickupLng: _pickupLng,
-      dropoffLat: _dropoffLat,
-      dropoffLng: _dropoffLng,
-    );
-
-    if (priceRange != null) {
-      return '$routeType route • $priceRange';
-    }
-
-    return '$routeType route • ${distanceKm.toStringAsFixed(1)} km';
-  }
-
   Future<void> _bookRide() async {
     if (_pickupLat == null ||
         _pickupLng == null ||
@@ -310,21 +254,15 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         pickupLng: _pickupLng,
         dropoffLat: _dropoffLat,
         dropoffLng: _dropoffLng,
-        notes: notesController.text.trim().isEmpty ? null : notesController.text.trim(),
+        notes: null,
         packageDescription: packageDescriptionController.text.trim().isEmpty 
             ? null 
             : packageDescriptionController.text.trim(),
-        weight: weightController.text.trim().isEmpty 
-            ? null 
-            : double.tryParse(weightController.text.trim()),
-        dimensions: dimensionsController.text.trim().isEmpty 
-            ? null 
-            : dimensionsController.text.trim(),
-        packageType: _selectedPackageType,
+        weight: null,
+        dimensions: null,
+        packageType: null,
         transportType: _selectedTransportType,
-        estimatedValue: estimatedValueController.text.trim().isEmpty 
-            ? null 
-            : double.tryParse(estimatedValueController.text.trim()),
+        estimatedValue: null,
         price: price,
         createdAt: DateTime.now(),
         status: 'open',
@@ -365,8 +303,112 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
     }
   }
 
+  String _stepButtonLabel() {
+    switch (_step) {
+      case 0:
+        return _pickupLat == null ? 'Select pickup location' : 'Pickup selected - continue';
+      case 1:
+        return _dropoffLat == null ? 'Select drop off location' : 'Drop off selected - continue';
+      case 2:
+        return _selectedTransportType == null
+            ? 'Select transport type to continue'
+            : 'Continue to item description';
+      case 3:
+        return packageDescriptionController.text.trim().isEmpty
+            ? 'Enter item description to continue'
+            : 'Continue to suggested amount';
+      default:
+        return _isLoading ? 'Requesting...' : 'Request Transport';
+    }
+  }
+
+  void _handleMapTap(LatLng point) {
+    if (!_mapPickPickup && !_mapPickDropoff) return;
+    final label = '${point.latitude.toStringAsFixed(6)}, ${point.longitude.toStringAsFixed(6)}';
+    setState(() {
+      if (_mapPickPickup) {
+        _pickupLat = point.latitude;
+        _pickupLng = point.longitude;
+        pickupController.text = 'Pickup pin: $label';
+        _mapPickPickup = false;
+        _step = 1;
+      } else if (_mapPickDropoff) {
+        _dropoffLat = point.latitude;
+        _dropoffLng = point.longitude;
+        dropoffController.text = 'Drop off pin: $label';
+        _mapPickDropoff = false;
+        _step = 2;
+      }
+    });
+    _calculatePrice();
+  }
+
+  void _handlePrimaryAction() {
+    if (_step == 0) {
+      if (_pickupLat == null) {
+        setState(() {
+          _mapPickPickup = true;
+          _mapPickDropoff = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tap on the map to place pickup marker')),
+        );
+      } else {
+        setState(() => _step = 1);
+      }
+      return;
+    }
+    if (_step == 1) {
+      if (_dropoffLat == null) {
+        setState(() {
+          _mapPickDropoff = true;
+          _mapPickPickup = false;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Tap on the map to place drop off marker')),
+        );
+      } else {
+        setState(() => _step = 2);
+      }
+      return;
+    }
+    if (_step == 2) {
+      if (_selectedTransportType == null) return;
+      setState(() => _step = 3);
+      return;
+    }
+    if (_step == 3) {
+      if (packageDescriptionController.text.trim().isEmpty) return;
+      _calculatePrice();
+      setState(() => _step = 4);
+      return;
+    }
+    _bookRide();
+  }
+
   @override
   Widget build(BuildContext context) {
+    final initialTarget = _pickupLat != null && _pickupLng != null
+        ? LatLng(_pickupLat!, _pickupLng!)
+        : const LatLng(-17.8252, 31.0335); // Harare fallback
+
+    final markers = <Marker>{
+      if (_pickupLat != null && _pickupLng != null)
+        Marker(
+          markerId: const MarkerId('pickup'),
+          position: LatLng(_pickupLat!, _pickupLng!),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+          infoWindow: const InfoWindow(title: 'Pickup'),
+        ),
+      if (_dropoffLat != null && _dropoffLng != null)
+        Marker(
+          markerId: const MarkerId('dropoff'),
+          position: LatLng(_dropoffLat!, _dropoffLng!),
+          icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
+          infoWindow: const InfoWindow(title: 'Drop off'),
+        ),
+    };
+
     return Scaffold(
       backgroundColor: Colors.white,
       appBar: AppBar(
@@ -386,645 +428,208 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
         ),
       ),
       body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Pickup location (map-only selection)
-              Text(
-                'Pickup Location',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1E40AF),
-                ),
+        child: Column(
+          children: [
+            SizedBox(
+              height: MediaQuery.of(context).size.height * 0.45,
+              width: double.infinity,
+              child: GoogleMap(
+                initialCameraPosition: CameraPosition(target: initialTarget, zoom: 12),
+                onMapCreated: (c) => _mapController = c,
+                onTap: _handleMapTap,
+                markers: markers,
+                polylines: _previewRoutePolylines,
+                myLocationEnabled: true,
+                myLocationButtonEnabled: true,
+                zoomControlsEnabled: false,
+                compassEnabled: true,
               ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
-                ),
-                child: TextField(
-                  controller: pickupController,
-                  readOnly: true,
-                  onTap: () async {
-                    final result = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const LocationPickerScreen(
-                          title: 'Select Pickup Location',
-                        ),
-                      ),
-                    );
-                    if (result != null && mounted) {
-                      setState(() {
-                        pickupController.text = result['address'];
-                        _pickupLat = result['latitude'];
-                        _pickupLng = result['longitude'];
-                      });
-                      _calculatePrice();
-                    }
-                  },
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: const Color(0xFF1E40AF),
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Tap to select pickup on map',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade400,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Icon(
-                        Icons.location_on,
-                        color: Color(0xFF2563EB),
-                        size: 20,
-                      ),
-                    ),
-                    suffixIcon: const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Icon(
-                        Icons.map,
-                        color: Color(0xFF2563EB),
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Dropoff location (map-only selection)
-              Text(
-                'Dropoff Location',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1E40AF),
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
-                ),
-                child: TextField(
-                  controller: dropoffController,
-                  readOnly: true,
-                  onTap: () async {
-                    final result = await Navigator.of(context).push(
-                      MaterialPageRoute(
-                        builder: (_) => const LocationPickerScreen(
-                          title: 'Select Dropoff Location',
-                        ),
-                      ),
-                    );
-                    if (result != null && mounted) {
-                      setState(() {
-                        dropoffController.text = result['address'];
-                        _dropoffLat = result['latitude'];
-                        _dropoffLng = result['longitude'];
-                      });
-                      _calculatePrice();
-                    }
-                  },
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: const Color(0xFF1E40AF),
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Tap to select dropoff on map',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade400,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    prefixIcon: const Padding(
-                      padding: EdgeInsets.all(16),
-                      child: Icon(
-                        Icons.location_on,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                    ),
-                    suffixIcon: const Padding(
-                      padding: EdgeInsets.all(12),
-                      child: Icon(
-                        Icons.map,
-                        color: Color(0xFF2563EB),
-                        size: 20,
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Route preview map (shows pickup → dropoff before sending request)
-              if (_pickupLat != null &&
-                  _pickupLng != null &&
-                  _dropoffLat != null &&
-                  _dropoffLng != null) ...[
-                Text(
-                  'Route Preview',
-                  style: GoogleFonts.inter(
-                    fontSize: 14,
-                    fontWeight: FontWeight.w500,
-                    color: const Color(0xFF1E40AF),
-                  ),
-                ),
-                const SizedBox(height: 8),
-                SizedBox(
-                  height: 200,
-                  child: ClipRRect(
-                    borderRadius: BorderRadius.circular(12),
-                    child: GoogleMap(
-                      initialCameraPosition: CameraPosition(
-                        target: LatLng(
-                          (_pickupLat! + _dropoffLat!) / 2,
-                          (_pickupLng! + _dropoffLng!) / 2,
-                        ),
-                        zoom: 12,
-                      ),
-                      markers: {
-                        Marker(
-                          markerId: const MarkerId('pickup'),
-                          position: LatLng(_pickupLat!, _pickupLng!),
-                          infoWindow: const InfoWindow(title: 'Pickup'),
-                          icon: BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueBlue,
-                          ),
-                        ),
-                        Marker(
-                          markerId: const MarkerId('dropoff'),
-                          position: LatLng(_dropoffLat!, _dropoffLng!),
-                          infoWindow: const InfoWindow(title: 'Dropoff'),
-                          icon: BitmapDescriptor.defaultMarkerWithHue(
-                            BitmapDescriptor.hueRed,
-                          ),
-                        ),
-                      },
-                      polylines: _previewRoutePolylines,
-                      myLocationEnabled: false,
-                      myLocationButtonEnabled: false,
-                      zoomControlsEnabled: true,
-                      compassEnabled: true,
-                    ),
-                  ),
-                ),
-                const SizedBox(height: 20),
-              ],
-
-              // Package Description
-              Text(
-                'Package Description',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1E40AF), // Blue-700
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildTextField(
-                packageDescriptionController,
-                'e.g., 2 boxes of books, fragile item',
-                Icons.description,
-              ),
-              const SizedBox(height: 20),
-              // Transport Type
-              Text(
-                'Transport Type',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1E40AF), // Blue-700
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                padding: const EdgeInsets.all(8),
-                decoration: BoxDecoration(
-                  color: Colors.grey.shade50,
-                  borderRadius: BorderRadius.circular(12),
-                ),
-                child: Wrap(
-                  spacing: 8,
-                  runSpacing: 8,
-                  children: [
-                    _buildTransportTypeOption('bike_express', 'Bike Express', Icons.two_wheeler),
-                    _buildTransportTypeOption('runner', 'Runner', Icons.airport_shuttle),
-                    _buildTransportTypeOption('pickup', 'Pickup', Icons.local_shipping, mass: '1.2t'),
-                    _buildTransportTypeOption('truck_5t', 'Truck', Icons.fire_truck, mass: '5t'),
-                    _buildTransportTypeOption('truck_10t', 'Truck', Icons.fire_truck, mass: '10t'),
-                    _buildTransportTypeOption('truck_20t', 'Truck', Icons.fire_truck, mass: '20t'),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 20),
-              // Weight and Dimensions Row
-              Row(
-                children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Weight (kg) (Optional)',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF1E40AF), // Blue-700
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1,
-                            ),
-                          ),
-                          child: TextField(
-                            controller: weightController,
-                            keyboardType: TextInputType.number,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              color: const Color(0xFF1E40AF), // Blue-700
-                            ),
-                            decoration: InputDecoration(
-                              hintText: '0.0',
-                              hintStyle: GoogleFonts.inter(
-                                color: Colors.grey.shade400,
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(width: 12),
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'Dimensions (cm) (Optional)',
-                          style: GoogleFonts.inter(
-                            fontSize: 14,
-                            fontWeight: FontWeight.w500,
-                            color: const Color(0xFF1E40AF), // Blue-700
-                          ),
-                        ),
-                        const SizedBox(height: 8),
-                        Container(
-                          height: 56,
-                          decoration: BoxDecoration(
-                            color: Colors.white,
-                            borderRadius: BorderRadius.circular(12),
-                            border: Border.all(
-                              color: Colors.grey.shade200,
-                              width: 1,
-                            ),
-                          ),
-                          child: TextField(
-                            controller: dimensionsController,
-                            style: GoogleFonts.inter(
-                              fontSize: 16,
-                              color: const Color(0xFF1E40AF), // Blue-700
-                            ),
-                            decoration: InputDecoration(
-                              hintText: 'LxWxH',
-                              hintStyle: GoogleFonts.inter(
-                                color: Colors.grey.shade400,
-                              ),
-                              border: InputBorder.none,
-                              contentPadding: const EdgeInsets.symmetric(
-                                horizontal: 16,
-                                vertical: 16,
-                              ),
-                            ),
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 20),
-              // Estimated Value
-              Text(
-                'Estimated Value (Optional)',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1E40AF), // Blue-700
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
-                ),
-                child: TextField(
-                  controller: estimatedValueController,
-                  keyboardType: TextInputType.number,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: const Color(0xFF1E40AF), // Blue-700
-                  ),
-                  decoration: InputDecoration(
-                    hintText: '\$0.00',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade400,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        '\$',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          color: const Color(0xFF1E40AF), // Blue-700
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Price Offer
-              Text(
-                'Your Price Offer *',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1E40AF), // Blue-700
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
-                ),
-                child: TextField(
-                  controller: priceController,
-                  keyboardType: TextInputType.numberWithOptions(decimal: true),
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: const Color(0xFF1E40AF), // Blue-700
-                  ),
-                  decoration: InputDecoration(
-                    hintText: '0.00',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade400,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                    prefixIcon: Padding(
-                      padding: const EdgeInsets.all(16),
-                      child: Text(
-                        '\$',
-                        style: GoogleFonts.inter(
-                          fontSize: 16,
-                          color: const Color(0xFF1E40AF), // Blue-700
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              if (_suggestedPrice != null) ...[
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(
-                      Icons.lightbulb_outline,
-                      size: 16,
-                      color: Colors.orange.shade600,
-                    ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            'Recommended price: \$${_suggestedPrice!.toStringAsFixed(2)}',
-                            style: GoogleFonts.inter(
-                              fontSize: 12,
-                              fontWeight: FontWeight.w600,
-                              color: Colors.orange.shade600,
-                            ),
-                          ),
-                          if (_selectedTransportType != null &&
-                              _pickupLat != null &&
-                              _dropoffLat != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              _getPriceInfoText(),
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                          if (_lastEstimatedDistanceKm != null) ...[
-                            const SizedBox(height: 2),
-                            Text(
-                              'Estimated route: ${_lastEstimatedDistanceKm!.toStringAsFixed(1)} km (Google Directions)',
-                              style: GoogleFonts.inter(
-                                fontSize: 10,
-                                color: Colors.grey.shade600,
-                              ),
-                            ),
-                          ],
-                          const SizedBox(height: 2),
-                          Text(
-                            'Minimum offer: \$${PricingService.minimumFloorPrice.toStringAsFixed(2)}',
-                            style: GoogleFonts.inter(
-                              fontSize: 10,
-                              color: Colors.grey.shade600,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                    TextButton(
-                      onPressed: () {
-                        setState(() {
-                          priceController.text = _suggestedPrice!.toStringAsFixed(2);
-                        });
-                      },
-                      child: Text(
-                        'Use recommended',
-                        style: GoogleFonts.inter(
-                          fontSize: 12,
-                          fontWeight: FontWeight.w600,
-                          color: const Color(0xFF2563EB), // Blue-600
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-              const SizedBox(height: 24),
-              // Notes (optional)
-              Text(
-                'Additional Notes (Optional)',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1E40AF), // Blue-700
-                ),
-              ),
-              const SizedBox(height: 8),
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(12),
-                  border: Border.all(
-                    color: Colors.grey.shade200,
-                    width: 1,
-                  ),
-                ),
-                child: TextField(
-                  controller: notesController,
-                  maxLines: 3,
-                  style: GoogleFonts.inter(
-                    fontSize: 16,
-                    color: const Color(0xFF1E40AF), // Blue-700
-                  ),
-                  decoration: InputDecoration(
-                    hintText: 'Any special handling instructions...',
-                    hintStyle: GoogleFonts.inter(
-                      color: Colors.grey.shade400,
-                    ),
-                    border: InputBorder.none,
-                    contentPadding: const EdgeInsets.symmetric(
-                      horizontal: 16,
-                      vertical: 16,
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: 24),
-              // Transporter Payment Method (how sender will pay transporter)
-              Text(
-                'How will you pay the transporter?',
-                style: GoogleFonts.inter(
-                  fontSize: 14,
-                  fontWeight: FontWeight.w500,
-                  color: const Color(0xFF1E40AF),
-                ),
-              ),
-              const SizedBox(height: 8),
-              _buildTransporterPaymentMethodSelector(),
-              const SizedBox(height: 24),
-              // Book ride button
-              SizedBox(
-                width: double.infinity,
-                height: 56,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _bookRide,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF2563EB), // Blue-600
-                    foregroundColor: Colors.white,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(12),
-                    ),
-                    elevation: 0,
-                  ),
-                  child: _isLoading
-                      ? const SizedBox(
-                          width: 20,
-                          height: 20,
-                          child: CircularProgressIndicator(
-                            strokeWidth: 2,
-                            valueColor: AlwaysStoppedAnimation<Color>(
-                              Colors.white,
-                            ),
-                          ),
-                        )
-                      : Text(
-                          'Request Transport',
-                          style: GoogleFonts.inter(
-                            fontSize: 18,
-                            fontWeight: FontWeight.w600,
-                          ),
-                        ),
-                ),
-              ),
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-
-  Widget _buildPackageTypeOption(String value, String label) {
-    final isSelected = _selectedPackageType == value;
-    return GestureDetector(
-      onTap: () {
-        setState(() {
-          _selectedPackageType = value;
-        });
-        _calculatePrice();
-      },
-      child: Container(
-        decoration: BoxDecoration(
-          color: isSelected ? const Color(0xFF2563EB) : Colors.transparent, // Blue-600
-          borderRadius: BorderRadius.circular(9),
-        ),
-        child: Center(
-          child: Text(
-            label,
-            style: GoogleFonts.inter(
-              fontSize: 12,
-              fontWeight: FontWeight.w600,
-              color: isSelected ? Colors.white : const Color(0xFF1E40AF), // Blue-700
             ),
-          ),
+            Expanded(
+              child: SingleChildScrollView(
+                padding: const EdgeInsets.all(16),
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(
+                      'Pickup: ${pickupController.text.isEmpty ? 'Not selected' : pickupController.text}',
+                      style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade700),
+                    ),
+                    const SizedBox(height: 6),
+                    Text(
+                      'Drop off: ${dropoffController.text.isEmpty ? 'Not selected' : dropoffController.text}',
+                      style: GoogleFonts.inter(fontSize: 13, color: Colors.grey.shade700),
+                    ),
+                    const SizedBox(height: 16),
+                    if (_step >= 2) ...[
+                      Text(
+                        'Transport Type',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E40AF),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: Colors.grey.shade50,
+                          borderRadius: BorderRadius.circular(12),
+                        ),
+                        child: Wrap(
+                          spacing: 8,
+                          runSpacing: 8,
+                          children: [
+                            _buildTransportTypeOption('bike_express', 'Bike Express', Icons.two_wheeler),
+                            _buildTransportTypeOption('runner', 'Runner', Icons.airport_shuttle),
+                            _buildTransportTypeOption('pickup', 'Pickup', Icons.local_shipping, mass: '1.2t'),
+                            _buildTransportTypeOption('truck_5t', 'Truck', Icons.fire_truck, mass: '5t'),
+                            _buildTransportTypeOption('truck_10t', 'Truck', Icons.fire_truck, mass: '10t'),
+                            _buildTransportTypeOption('truck_20t', 'Truck', Icons.fire_truck, mass: '20t'),
+                          ],
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+                    if (_step >= 3) ...[
+                      Text(
+                        'Text description of item to collect',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E40AF),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildTextField(
+                        packageDescriptionController,
+                        'e.g., 2 boxes of books, groceries, medicine',
+                        Icons.description,
+                      ),
+                      const SizedBox(height: 18),
+                    ],
+                    if (_step >= 4) ...[
+                      Text(
+                        'Suggested Amount',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E40AF),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        width: double.infinity,
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.orange.shade50,
+                          borderRadius: BorderRadius.circular(10),
+                          border: Border.all(color: Colors.orange.shade100),
+                        ),
+                        child: Text(
+                          _suggestedPrice == null
+                              ? 'Select transport type and route to get a suggestion.'
+                              : 'Recommended price: \$${_suggestedPrice!.toStringAsFixed(2)}',
+                          style: GoogleFonts.inter(
+                            fontSize: 13,
+                            fontWeight: FontWeight.w600,
+                            color: Colors.orange.shade800,
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 12),
+                      Text(
+                        'Your Price Offer *',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E40AF),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      Container(
+                        decoration: BoxDecoration(
+                          color: Colors.white,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.grey.shade200),
+                        ),
+                        child: TextField(
+                          controller: priceController,
+                          keyboardType: const TextInputType.numberWithOptions(decimal: true),
+                          style: GoogleFonts.inter(
+                            fontSize: 16,
+                            color: const Color(0xFF1E40AF),
+                          ),
+                          decoration: InputDecoration(
+                            hintText: '0.00',
+                            hintStyle: GoogleFonts.inter(color: Colors.grey.shade400),
+                            border: InputBorder.none,
+                            contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
+                            prefixIcon: Padding(
+                              padding: const EdgeInsets.all(16),
+                              child: Text(
+                                '\$',
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  color: const Color(0xFF1E40AF),
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 18),
+                      Text(
+                        'How will you pay the transporter?',
+                        style: GoogleFonts.inter(
+                          fontSize: 14,
+                          fontWeight: FontWeight.w600,
+                          color: const Color(0xFF1E40AF),
+                        ),
+                      ),
+                      const SizedBox(height: 8),
+                      _buildTransporterPaymentMethodSelector(),
+                      const SizedBox(height: 18),
+                    ],
+                    SizedBox(
+                      width: double.infinity,
+                      height: 56,
+                      child: ElevatedButton(
+                        onPressed: _isLoading ? null : _handlePrimaryAction,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: const Color(0xFF2563EB),
+                          foregroundColor: Colors.white,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(12),
+                          ),
+                          elevation: 0,
+                        ),
+                        child: _isLoading
+                            ? const SizedBox(
+                                width: 20,
+                                height: 20,
+                                child: CircularProgressIndicator(
+                                  strokeWidth: 2,
+                                  valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                                ),
+                              )
+                            : Text(
+                                _stepButtonLabel(),
+                                textAlign: TextAlign.center,
+                                style: GoogleFonts.inter(
+                                  fontSize: 16,
+                                  fontWeight: FontWeight.w600,
+                                ),
+                              ),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
+                  ],
+                ),
+              ),
+            ),
+          ],
         ),
       ),
     );
@@ -1184,115 +789,6 @@ class _RideBookingScreenState extends State<RideBookingScreen> {
                         fontSize: 14,
                         fontWeight: FontWeight.w600,
                         color: _transporterPaymentMethod == 'ecocash'
-                            ? Colors.white
-                            : Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  Widget _buildSenderPaymentMethodSelector() {
-    return Container(
-      padding: const EdgeInsets.all(8),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade50,
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Row(
-        children: [
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _senderPaymentMethod = 'cash';
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: _senderPaymentMethod == 'cash'
-                      ? Colors.orange
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: _senderPaymentMethod == 'cash'
-                        ? Colors.orange
-                        : Colors.grey.shade300,
-                    width: _senderPaymentMethod == 'cash' ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.money,
-                      color: _senderPaymentMethod == 'cash'
-                          ? Colors.white
-                          : Colors.grey.shade700,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Cash',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _senderPaymentMethod == 'cash'
-                            ? Colors.white
-                            : Colors.grey.shade700,
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: GestureDetector(
-              onTap: () {
-                setState(() {
-                  _senderPaymentMethod = 'ecocash';
-                });
-              },
-              child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 16),
-                decoration: BoxDecoration(
-                  color: _senderPaymentMethod == 'ecocash'
-                      ? Colors.green
-                      : Colors.white,
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(
-                    color: _senderPaymentMethod == 'ecocash'
-                        ? Colors.green
-                        : Colors.grey.shade300,
-                    width: _senderPaymentMethod == 'ecocash' ? 2 : 1,
-                  ),
-                ),
-                child: Row(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  children: [
-                    Icon(
-                      Icons.account_balance_wallet,
-                      color: _senderPaymentMethod == 'ecocash'
-                          ? Colors.white
-                          : Colors.grey.shade700,
-                      size: 24,
-                    ),
-                    const SizedBox(width: 8),
-                    Text(
-                      'EcoCash',
-                      style: GoogleFonts.inter(
-                        fontSize: 16,
-                        fontWeight: FontWeight.w600,
-                        color: _senderPaymentMethod == 'ecocash'
                             ? Colors.white
                             : Colors.grey.shade700,
                       ),

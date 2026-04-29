@@ -574,6 +574,20 @@ class _ActiveRideMapScreenState extends State<ActiveRideMapScreen> {
     double destLng,
     Color color,
   ) async {
+    void addFallbackLine() {
+      polylines.add(
+        Polyline(
+          polylineId: polylineId,
+          points: <LatLng>[
+            LatLng(originLat, originLng),
+            LatLng(destLat, destLng),
+          ],
+          color: color,
+          width: 5,
+        ),
+      );
+    }
+
     try {
       final routingService = RoutingService();
       // Get optimized route with traffic information
@@ -600,6 +614,9 @@ class _ActiveRideMapScreenState extends State<ActiveRideMapScreen> {
             patterns: [PatternItem.dash(20), PatternItem.gap(10)],
           ),
         );
+      } else {
+        // Keep a visible driver-to-destination direction line even if routing is unavailable.
+        addFallbackLine();
       }
 
       // Update state to show the route
@@ -609,7 +626,13 @@ class _ActiveRideMapScreenState extends State<ActiveRideMapScreen> {
         });
       }
     } catch (e) {
-      // If routing fails, do not draw a fallback straight line
+      // If routing fails (network/API/quota), still show a simple direction line.
+      addFallbackLine();
+      if (mounted) {
+        setState(() {
+          _polylines = polylines;
+        });
+      }
     }
   }
 
