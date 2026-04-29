@@ -2,13 +2,21 @@
 # Automatic triggers: push to main/master; PRs (skips markdown/docs-only); merge queue;
 # weekly schedule; still supports manual workflow_dispatch.
 name: Build Android APK
+run-name: Build Android APK • ${{ github.ref_name }} • ${{ github.sha }}
 
 on:
   workflow_dispatch:
+    inputs:
+      reason:
+        description: Why this build is being triggered
+        required: false
+        type: string
   push:
     branches:
       - main
       - master
+    tags:
+      - "v*"
   pull_request:
     branches:
       - main
