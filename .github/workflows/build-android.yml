@@ -1,0 +1,90 @@
+# Release APK on GitHub Actions (artifact: boltlog-apk). Not committed to git.
+# Automatic triggers: push to main/master; PRs (skips markdown/docs-only); merge queue;
+# weekly schedule; still supports manual workflow_dispatch.
+name: Build Android APK
+run-name: Build Android APK • ${{ github.ref_name }} • ${{ github.sha }}
+
+on:
+  workflow_dispatch:
+    inputs:
+      reason:
+        description: Why this build is being triggered
+        required: false
+        type: string
+  push:
+    branches:
+      - main
+      - master
+    tags:
+      - "v*"
+  pull_request:
+    branches:
+      - main
+      - master
+    paths-ignore:
+      - "**/*.md"
+      - "docs/**"
+  merge_group:
+    types: [checks_requested]
+  schedule:
+    # Fresh artifact on main even when there are no new commits (Flutter/deps drift).
+    - cron: "0 6 * * 1"
+
+concurrency:
+  group: build-android-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+  actions: write
+
+jobs:
+  build-android:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - name: Set up Flutter (stable)
+        uses: subosito/flutter-action@v2
+        with:
+          # Pin to a known published SDK version; latest stable label can briefly
+          # point to a not-yet-available patch release in action metadata.
+          flutter-version: "3.41.7"
+          cache: true
+
+      - name: Accept Android SDK licenses
+        run: yes | flutter doctor --android-licenses
+
+      - name: Get Dart & Flutter dependencies
+        run: flutter pub get
+
+      # Maven Central sometimes returns 403 to GitHub runners; repo1 mirror in settings.gradle.kts helps.
+      # Retries cover transient network / rate limits.
+      - name: Build Android release APK
+        run: |
+          set -e
+          for attempt in 1 2 3; do
+            if flutter build apk --release --no-tree-shake-icons; then
+              exit 0
+            fi
+            echo "flutter build failed (attempt $attempt/3)"
+            if [ "$attempt" -lt 3 ]; then sleep 45; fi
+          done
+          exit 1
+
+      - name: Upload APK artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: boltlog-apk
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+          retention-days: 90

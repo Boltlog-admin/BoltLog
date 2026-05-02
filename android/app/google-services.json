@@ -1,0 +1,47 @@
+{
+  "project_info": {
+    "project_number": "28158895372",
+    "firebase_url": "https://boltlog-default-rtdb.firebaseio.com",
+    "project_id": "boltlog",
+    "storage_bucket": "boltlog.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:28158895372:android:68b0b92acbc191e3719529",
+        "android_client_info": {
+          "package_name": "com.example.boltlog"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "28158895372-800iq97isvuhqosnfi6umhkmhhcmprtu.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAuZTJgvpOr20n0yeK0s1OMQfiSSRWGSWI"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "28158895372-800iq97isvuhqosnfi6umhkmhhcmprtu.apps.googleusercontent.com",
+              "client_type": 3
+            },
+            {
+              "client_id": "28158895372-qjtqhkv5hcp5tuq77nvoesnmjl74jr79.apps.googleusercontent.com",
+              "client_type": 2,
+              "ios_info": {
+                "bundle_id": "com.example.boltlog"
+              }
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

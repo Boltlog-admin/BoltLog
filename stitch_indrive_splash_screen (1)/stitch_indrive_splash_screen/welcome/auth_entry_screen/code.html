@@ -1,0 +1,110 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InDrive Clone - Welcome</title>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="font-display bg-background-light dark:bg-background-dark text-gray-900 dark:text-gray-100 antialiased overflow-x-hidden">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark shadow-2xl">
+<!-- Top Bar -->
+<div class="flex items-center justify-between p-4 pt-6 pb-2 z-10">
+<h2 class="text-[#0d1b12] dark:text-white text-2xl font-bold leading-tight tracking-[-0.015em] pl-2">inDrive</h2>
+<div class="flex items-center justify-end">
+<button class="flex items-center gap-1 bg-white dark:bg-[#1a3324] px-3 py-1.5 rounded-full shadow-sm border border-gray-100 dark:border-gray-800">
+<span class="text-[#4c9a66] dark:text-[#13ec5b] text-sm font-bold leading-normal tracking-[0.015em] shrink-0">EN</span>
+<span class="material-symbols-outlined text-[#4c9a66] dark:text-[#13ec5b] text-sm">expand_more</span>
+</button>
+</div>
+</div>
+<!-- Scrollable Content Area -->
+<main class="flex-1 flex flex-col items-center w-full px-4 pt-2 pb-6 overflow-y-auto">
+<!-- Hero Illustration -->
+<div class="w-full px-2 mb-6">
+<div class="w-full bg-center bg-no-repeat aspect-[4/3] bg-cover rounded-xl shadow-sm border border-white/50 dark:border-white/5 relative overflow-hidden" data-alt="Abstract city map illustration with navigation markers" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAMSxPlI_YDX2Uw_K1RPHo1VyrwVnMhvW0QvpLIGrYacrdernGDUumJfX2rqnTQb_efOSfOakBC-X1A2U5tP3Kkx6mkPbQ3PKHcGIQDhZPZbMvuDo-fOJ5_RwZk1eqE0qpuOUPbF2gwn3GraObd0RWlE5OODYmZ1FA7lHBN5t1FMgnwTPDYA6qOsV2W_NzAra67rdsQbBA16yKXIe2Hyk6CTDxVF9YbvDVWHx-Rlfv-yhbiPLOOIwJ4tk_Nni-SGDQeqXsjVCd9z_4");'>
+<!-- Overlay gradient for text readability if needed, though mostly visual here -->
+<div class="absolute inset-0 bg-gradient-to-t from-background-light/10 to-transparent dark:from-background-dark/10"></div>
+</div>
+</div>
+<!-- Headline Text -->
+<div class="w-full text-center space-y-2 mb-6 px-2">
+<h1 class="text-[#0d1b12] dark:text-white tracking-tight text-[32px] font-bold leading-[1.15]">City rides. <br/> Your offer.</h1>
+<p class="text-[#4b5563] dark:text-gray-400 text-base font-normal leading-normal">Choose your price for rides and delivery.</p>
+</div>
+<!-- Segmented Buttons (Role Selector) -->
+<div class="w-full px-2 mb-8">
+<div class="flex h-12 flex-1 items-center justify-center rounded-xl bg-[#e7f3eb] dark:bg-[#1a3324] p-1.5">
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#13ec5b] has-[:checked]:shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-all duration-200">
+<span class="material-symbols-outlined text-lg mr-2 text-[#4c9a66] has-[:checked]:text-[#0d1b12] dark:text-[#5cb87a] dark:has-[:checked]:text-[#0d1b12] group-hover:text-primary">person</span>
+<span class="truncate text-[#4c9a66] dark:text-[#5cb87a] has-[:checked]:text-[#0d1b12] text-sm font-bold leading-normal">Passenger</span>
+<input checked="" class="invisible w-0 peer" name="role_selector" type="radio" value="Passenger"/>
+</label>
+<label class="flex cursor-pointer h-full grow items-center justify-center overflow-hidden rounded-lg px-2 has-[:checked]:bg-white dark:has-[:checked]:bg-[#13ec5b] has-[:checked]:shadow-[0_1px_3px_rgba(0,0,0,0.1)] transition-all duration-200">
+<span class="material-symbols-outlined text-lg mr-2 text-[#4c9a66] has-[:checked]:text-[#0d1b12] dark:text-[#5cb87a] dark:has-[:checked]:text-[#0d1b12]">directions_car</span>
+<span class="truncate text-[#4c9a66] dark:text-[#5cb87a] has-[:checked]:text-[#0d1b12] text-sm font-bold leading-normal">Driver</span>
+<input class="invisible w-0 peer" name="role_selector" type="radio" value="Driver"/>
+</label>
+</div>
+</div>
+<!-- Action Area -->
+<div class="w-full space-y-4 mt-auto px-2">
+<!-- Phone Input Field -->
+<div class="relative">
+<div class="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none border-r border-gray-200 dark:border-gray-700 pr-3 mr-3">
+<span class="text-gray-500 dark:text-gray-400 font-medium text-sm">+1</span>
+<span class="material-symbols-outlined text-gray-400 text-sm ml-1">expand_more</span>
+</div>
+<input class="block w-full rounded-xl border-0 bg-white dark:bg-[#1a3324] text-[#0d1b12] dark:text-white ring-1 ring-inset ring-gray-200 dark:ring-gray-700 py-4 pl-20 pr-4 placeholder:text-gray-400 focus:ring-2 focus:ring-inset focus:ring-primary sm:text-base font-medium shadow-sm" placeholder="(000) 000-0000" type="tel"/>
+</div>
+<!-- Primary Button -->
+<button class="w-full rounded-xl bg-primary py-4 px-4 text-center text-base font-bold text-[#102216] shadow-sm hover:bg-primary/90 focus:outline-none focus:ring-2 focus:ring-primary focus:ring-offset-2 dark:focus:ring-offset-[#102216] transition-transform active:scale-[0.98]">
+                    Join Now
+                </button>
+<!-- Login Link -->
+<div class="text-center py-2">
+<button class="text-sm font-medium text-gray-600 dark:text-gray-400 transition-colors">
+                        Already have an account? <span class="text-[#0d1b12] dark:text-primary font-bold hover:underline">Log in</span>
+</button>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-4 text-center px-4">
+<p class="text-[11px] text-gray-400 dark:text-gray-600 leading-relaxed">
+                    By signing up, you agree to our 
+                    <a class="underline decoration-gray-300 dark:decoration-gray-700 hover:text-gray-600 dark:hover:text-gray-400" href="#">Terms of Service</a> 
+                    and 
+                    <a class="underline decoration-gray-300 dark:decoration-gray-700 hover:text-gray-600 dark:hover:text-gray-400" href="#">Privacy Policy</a>.
+                </p>
+</div>
+</main>
+<!-- Bottom Spacer for Home Indicator on iOS -->
+<div class="h-2 w-full bg-background-light dark:bg-background-dark"></div>
+</div>
+</body></html>

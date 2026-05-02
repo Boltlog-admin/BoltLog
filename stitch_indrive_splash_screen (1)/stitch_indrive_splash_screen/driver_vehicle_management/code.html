@@ -1,0 +1,283 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Vehicle Management</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1A2C20",
+                        "text-main": "#0d1b12",
+                        "text-muted": "#4c9a66",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem", 
+                        "lg": "0.5rem", 
+                        "xl": "0.75rem", 
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Utilities */
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .material-symbols-outlined.filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-main dark:text-gray-100 min-h-screen flex flex-col antialiased selection:bg-primary selection:text-black pb-24">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+<div class="flex items-center justify-between px-4 py-3">
+<button class="flex items-center justify-center w-10 h-10 rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors">
+<span class="material-symbols-outlined text-text-main dark:text-white">arrow_back</span>
+</button>
+<h1 class="text-lg font-bold tracking-tight text-text-main dark:text-white">My Garage</h1>
+<button class="flex items-center justify-center w-10 h-10 rounded-full bg-surface-light dark:bg-surface-dark shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors border border-gray-100 dark:border-gray-700">
+<span class="material-symbols-outlined text-text-main dark:text-white">more_vert</span>
+</button>
+</div>
+</div>
+<!-- Main Content -->
+<main class="flex flex-col flex-1 w-full max-w-md mx-auto p-4 space-y-6">
+<!-- Active Vehicle Section -->
+<section>
+<div class="flex items-center justify-between mb-3 px-1">
+<h2 class="text-xl font-bold text-text-main dark:text-white">Current Vehicle</h2>
+<span class="px-2 py-1 rounded-full bg-primary/20 text-green-700 dark:text-primary text-xs font-bold uppercase tracking-wider">Online</span>
+</div>
+<div class="relative group overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark shadow-[0_2px_12px_-4px_rgba(0,0,0,0.1)] border border-primary/30 transition-all duration-300">
+<!-- Image -->
+<div class="relative h-48 w-full bg-gray-200 dark:bg-gray-800">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Front view of a white Toyota Camry parked on a clean street" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAAvuNwcZ_ZEyGrqUYsFc6muqN09ETY8_T8wmYQMZMi4ZYBp4jwbnyQmy4f7ccZ3qKkEqChAFrWZEyCZZPygw5x2vpPF3h2OpJ4PhE10N5QL4oB01k75a6L7XqF0q-VG38VNeiSB-WH_kAs2R70q4HmQsBRdJQ6SD2bmQnb9pDbR9ePXTCSeo_9fNnpGglqvV3QlNOYUiGPLJVSc1lmu2Yo0dVdHnRxUJWPTBB03aGwW8t7m1g3ylC83yFxEc5e5T3Qj_rrVgkSKTI');"></div>
+<div class="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent"></div>
+<div class="absolute bottom-4 left-4 right-4 flex justify-between items-end">
+<div>
+<p class="text-primary font-medium text-sm mb-0.5">Active for rides</p>
+<h3 class="text-white text-2xl font-bold leading-tight">Toyota Camry</h3>
+<p class="text-gray-300 text-sm">2020 • Silver</p>
+</div>
+</div>
+<button class="absolute top-3 right-3 p-2 bg-white/20 backdrop-blur-md rounded-full text-white hover:bg-white/30 transition">
+<span class="material-symbols-outlined" style="font-size: 20px;">edit</span>
+</button>
+</div>
+<!-- Info Grid -->
+<div class="p-4">
+<div class="flex items-center justify-between mb-4">
+<div class="flex flex-col">
+<span class="text-xs text-text-muted dark:text-gray-400 font-medium uppercase tracking-wide">License Plate</span>
+<span class="text-lg font-bold font-mono text-text-main dark:text-white">ABC-1234</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-xs text-text-muted dark:text-gray-400 font-medium uppercase tracking-wide">Documents</span>
+<div class="flex items-center gap-1 text-primary">
+<span class="material-symbols-outlined text-sm filled">verified</span>
+<span class="text-sm font-bold">Verified</span>
+</div>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-text-main dark:text-white font-semibold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-lg">folder_open</span>
+                            Docs
+                        </button>
+<button class="flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gray-100 dark:bg-gray-800 text-text-main dark:text-white font-semibold text-sm hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-lg">photo_camera</span>
+                            Photos
+                        </button>
+</div>
+</div>
+</div>
+</section>
+<!-- Other Vehicles List -->
+<section>
+<h2 class="text-xl font-bold text-text-main dark:text-white mb-3 px-1">Other Vehicles</h2>
+<div class="flex flex-col gap-3">
+<!-- Vehicle Item 1 -->
+<div class="flex items-center p-3 bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
+<div class="relative w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-gray-100">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Side view of a blue Honda Civic" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuDl0AWpwoHa9pB7QjslBMyKn1yfFClJc3I-93ps3SLkGBC3h3oSnzDQDCOHWwkdfkGt-Y8uZUxK0fXiy4TbPaRFrmNLi5OlYM6vQVcsYYWFLu863cSC81Hq2VuN5neZsvU-MW9FEMgwpYeN8xwIKUS_YB2bAgk47ly0IarPgbroI8EG0dSRG2-bF-8H-7hkD0PkfCXEs5ITzg2-dGe6-h08hA_exerScJqOj7Od7sm6goxcTxCOo2JsI8S2G04hOju00fsxbkc6D6I');"></div>
+</div>
+<div class="flex-1 ml-4 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-base font-bold text-text-main dark:text-white truncate">Honda Civic</h3>
+<span class="material-symbols-outlined text-gray-400 text-lg cursor-pointer hover:text-primary">more_horiz</span>
+</div>
+<p class="text-sm text-text-muted dark:text-gray-400">XYZ-9876 • 2018</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-300">
+                                Pending Review
+                             </span>
+</div>
+</div>
+<div class="ml-2 flex items-center justify-center shrink-0">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined filled text-[28px]">radio_button_unchecked</span>
+</button>
+</div>
+</div>
+<!-- Vehicle Item 2 -->
+<div class="flex items-center p-3 bg-surface-light dark:bg-surface-dark rounded-2xl shadow-sm border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
+<div class="relative w-20 h-20 shrink-0 rounded-xl overflow-hidden bg-gray-100">
+<div class="absolute inset-0 bg-cover bg-center" data-alt="Red motorcycle scooter for delivery" style="background-image: url('https://lh3.googleusercontent.com/aida-public/AB6AXuAzrlcZJl3APPhU96oeVmBC_VH-KZQ44WIh3TzNE3H5Gl44-J8VmeXXsvqze6vtJff8TE5pU6x3jkubiipU44t3mDkvALd85fUEUKVv_QWwtQmchSQkq0_mUGfe8qf1vlLj0OuoZtsJGoiCRT6TjYf53oEDz5OPjIRWSMPd6KCJJGgLjpSIlz4NIGcvGo_XSzx9KM8jZ8mU8f3Xhx5QnZB5Xl46mAZvjlkjUWPRZ5szp3YIMxCcK-fjPw5eoLroPYzl1GbDQCaEmRA');"></div>
+</div>
+<div class="flex-1 ml-4 min-w-0">
+<div class="flex items-center justify-between">
+<h3 class="text-base font-bold text-text-main dark:text-white truncate">Yamaha NMAX</h3>
+<span class="material-symbols-outlined text-gray-400 text-lg cursor-pointer hover:text-primary">more_horiz</span>
+</div>
+<p class="text-sm text-text-muted dark:text-gray-400">B-4521 • 2022</p>
+<div class="mt-2 flex items-center gap-2">
+<span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400">
+                                Insurance Expired
+                             </span>
+</div>
+</div>
+<div class="ml-2 flex items-center justify-center shrink-0">
+<button class="w-10 h-10 rounded-full flex items-center justify-center text-gray-400 hover:text-primary hover:bg-primary/10 transition-colors">
+<span class="material-symbols-outlined filled text-[28px]">radio_button_unchecked</span>
+</button>
+</div>
+</div>
+</div>
+</section>
+<!-- Add New Vehicle Form (Simulating bottom view) -->
+<section class="pt-4">
+<div class="flex items-center justify-between mb-4 px-1">
+<h2 class="text-xl font-bold text-text-main dark:text-white">Add New Vehicle</h2>
+</div>
+<div class="bg-surface-light dark:bg-surface-dark rounded-2xl p-5 shadow-sm border border-gray-100 dark:border-gray-800">
+<!-- Photo Upload -->
+<div class="mb-6">
+<label class="block text-sm font-semibold text-text-main dark:text-gray-200 mb-2">Vehicle Photo</label>
+<div class="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-8 flex flex-col items-center justify-center text-center hover:bg-gray-50 dark:hover:bg-gray-800/50 cursor-pointer transition-colors group">
+<div class="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center mb-3 group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined text-primary text-2xl">add_a_photo</span>
+</div>
+<p class="text-sm font-medium text-text-main dark:text-white">Tap to upload front view</p>
+<p class="text-xs text-gray-500 mt-1">Supports JPG, PNG (Max 5MB)</p>
+</div>
+</div>
+<!-- Form Fields -->
+<div class="space-y-4">
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Make</label>
+<input class="w-full bg-background-light dark:bg-background-dark border-transparent focus:border-primary focus:ring-0 rounded-lg text-text-main dark:text-white font-medium placeholder-gray-400 transition-all h-11" placeholder="e.g. Toyota" type="text"/>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Model</label>
+<input class="w-full bg-background-light dark:bg-background-dark border-transparent focus:border-primary focus:ring-0 rounded-lg text-text-main dark:text-white font-medium placeholder-gray-400 transition-all h-11" placeholder="e.g. Corolla" type="text"/>
+</div>
+</div>
+<div class="grid grid-cols-2 gap-4">
+<div class="space-y-1">
+<label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Year</label>
+<input class="w-full bg-background-light dark:bg-background-dark border-transparent focus:border-primary focus:ring-0 rounded-lg text-text-main dark:text-white font-medium placeholder-gray-400 transition-all h-11" placeholder="2023" type="number"/>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-medium text-gray-500 uppercase tracking-wide">Color</label>
+<div class="relative">
+<select class="w-full bg-background-light dark:bg-background-dark border-transparent focus:border-primary focus:ring-0 rounded-lg text-text-main dark:text-white font-medium transition-all h-11 appearance-none">
+<option>White</option>
+<option>Black</option>
+<option>Silver</option>
+<option>Blue</option>
+<option>Red</option>
+</select>
+<div class="pointer-events-none absolute inset-y-0 right-0 flex items-center px-3 text-gray-500">
+<span class="material-symbols-outlined text-sm">expand_more</span>
+</div>
+</div>
+</div>
+</div>
+<div class="space-y-1">
+<label class="text-xs font-medium text-gray-500 uppercase tracking-wide">License Plate</label>
+<input class="w-full bg-background-light dark:bg-background-dark border-transparent focus:border-primary focus:ring-0 rounded-lg text-text-main dark:text-white font-medium placeholder-gray-400 transition-all h-11 uppercase font-mono" placeholder="ABC-1234" type="text"/>
+</div>
+</div>
+<!-- Documents Section Small -->
+<div class="mt-6 border-t border-gray-100 dark:border-gray-800 pt-5">
+<h3 class="text-sm font-bold text-text-main dark:text-white mb-3">Required Documents</h3>
+<div class="flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all mb-2">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined text-lg">description</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main dark:text-white">Vehicle Registration</span>
+<span class="text-xs text-gray-500">Expires in 12 months</span>
+</div>
+</div>
+<button class="text-primary text-sm font-bold px-3 py-1.5 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors">
+                            Upload
+                        </button>
+</div>
+<div class="flex items-center justify-between p-3 rounded-xl bg-background-light dark:bg-background-dark border border-transparent hover:border-gray-200 dark:hover:border-gray-700 transition-all">
+<div class="flex items-center gap-3">
+<div class="w-8 h-8 rounded-full bg-purple-100 dark:bg-purple-900/40 flex items-center justify-center text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined text-lg">security</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-medium text-text-main dark:text-white">Insurance Policy</span>
+<span class="text-xs text-gray-500">Required</span>
+</div>
+</div>
+<button class="text-primary text-sm font-bold px-3 py-1.5 bg-primary/10 rounded-lg hover:bg-primary/20 transition-colors">
+                            Upload
+                        </button>
+</div>
+</div>
+</div>
+</section>
+</main>
+<!-- Floating Action Button / Sticky Footer -->
+<div class="fixed bottom-0 left-0 w-full bg-surface-light/80 dark:bg-surface-dark/80 backdrop-blur-xl border-t border-gray-200 dark:border-gray-800 p-4 z-40">
+<div class="max-w-md mx-auto flex gap-3">
+<button class="flex-1 bg-primary text-text-main h-14 rounded-xl font-bold text-lg shadow-[0_4px_14px_rgba(19,236,91,0.4)] hover:shadow-[0_6px_20px_rgba(19,236,91,0.6)] hover:-translate-y-0.5 transition-all active:translate-y-0 active:shadow-none flex items-center justify-center gap-2">
+<span class="material-symbols-outlined filled">check</span>
+                Save Vehicle
+            </button>
+</div>
+</div>
+</body></html>

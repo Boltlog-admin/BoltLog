@@ -1,0 +1,11 @@
+{
+  "name": "boltlog-receipt-tools",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "receipt:docx": "node generate_invoice_docx.mjs"
+  },
+  "dependencies": {
+    "docx": "^9.5.1"
+  }
+}

@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Signup - InDrive Clone</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec13",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102210",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<!-- Google Fonts -->
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<style>
+        /* Custom scrollbar hide for cleaner mobile look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-slate-900 dark:text-white font-display antialiased selection:bg-primary selection:text-black">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden max-w-md mx-auto shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-50 flex items-center justify-between px-4 py-3 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors text-slate-900 dark:text-white">
+<span class="material-symbols-outlined text-[24px]">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-[-0.015em] text-center">Create Account</h2>
+<div class="size-10"></div> <!-- Spacer for centering title -->
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col px-5 pb-8 pt-2">
+<!-- Headline -->
+<div class="mb-6">
+<h3 class="text-3xl font-bold tracking-tight text-slate-900 dark:text-white mb-2">Let's get started</h3>
+<p class="text-slate-500 dark:text-slate-400 text-sm">Create an account to start your journey.</p>
+</div>
+<!-- Role Segmented Control -->
+<div class="mb-8">
+<div class="flex h-12 w-full items-center justify-center rounded-xl bg-gray-200 dark:bg-gray-800 p-1 relative">
+<!-- Passenger Option -->
+<label class="relative z-10 flex cursor-pointer h-full flex-1 items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 ease-in-out">
+<input checked="" class="peer sr-only" name="role" type="radio" value="passenger"/>
+<span class="w-full h-full flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 peer-checked:bg-primary peer-checked:text-black peer-checked:shadow-sm">
+                            Passenger
+                        </span>
+</label>
+<!-- Driver Option -->
+<label class="relative z-10 flex cursor-pointer h-full flex-1 items-center justify-center rounded-lg text-sm font-semibold transition-all duration-200 ease-in-out">
+<input class="peer sr-only" name="role" type="radio" value="driver"/>
+<span class="w-full h-full flex items-center justify-center rounded-lg text-slate-500 dark:text-slate-400 peer-checked:bg-primary peer-checked:text-black peer-checked:shadow-sm">
+                            Driver
+                        </span>
+</label>
+</div>
+</div>
+<!-- Form Fields -->
+<form class="flex flex-col gap-5">
+<!-- Full Name -->
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-slate-900 dark:text-slate-200 ml-1">Full Name</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">person</span>
+<input class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 pl-11 py-3.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="Enter your name" type="text"/>
+</div>
+</div>
+<!-- Phone Number -->
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-slate-900 dark:text-slate-200 ml-1">Phone Number</label>
+<div class="flex rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 overflow-hidden focus-within:ring-2 focus-within:ring-primary/50 focus-within:border-primary transition-all">
+<div class="flex items-center px-3 border-r border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800">
+<span class="text-slate-600 dark:text-slate-300 font-medium text-sm flex items-center gap-1 cursor-pointer">
+                                🇺🇸 +1
+                                <span class="material-symbols-outlined text-[16px]">expand_more</span>
+</span>
+</div>
+<input class="flex-1 bg-transparent border-none px-4 py-3.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:ring-0" placeholder="(555) 000-0000" type="tel"/>
+</div>
+</div>
+<!-- City (Initially hidden or shown based on Driver role logic - shown here for completeness of UI) -->
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-slate-900 dark:text-slate-200 ml-1">City</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">location_city</span>
+<input class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 pl-11 py-3.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="New York, NY" type="text"/>
+</div>
+</div>
+<!-- Password -->
+<div class="flex flex-col gap-1.5">
+<label class="text-sm font-medium text-slate-900 dark:text-slate-200 ml-1">Password</label>
+<div class="relative group">
+<span class="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-400 group-focus-within:text-primary transition-colors">lock</span>
+<input class="w-full bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-xl px-4 pl-11 pr-12 py-3.5 text-slate-900 dark:text-white placeholder:text-slate-400 focus:outline-none focus:ring-2 focus:ring-primary/50 focus:border-primary transition-all" placeholder="Create a password" type="password"/>
+<button class="absolute right-4 top-1/2 -translate-y-1/2 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 focus:outline-none" type="button">
+<span class="material-symbols-outlined text-[20px]">visibility</span>
+</button>
+</div>
+</div>
+<!-- Terms Checkbox -->
+<div class="flex items-start gap-3 mt-2 px-1">
+<div class="flex items-center h-5">
+<input class="w-5 h-5 border border-gray-300 rounded bg-gray-50 focus:ring-3 focus:ring-primary/30 dark:bg-gray-700 dark:border-gray-600 dark:focus:ring-primary/60 dark:ring-offset-gray-800 text-primary" id="terms" type="checkbox"/>
+</div>
+<label class="text-sm text-slate-500 dark:text-slate-400 leading-snug" for="terms">
+                        I agree to the <a class="font-semibold text-primary hover:underline" href="#">Terms of Service</a> and <a class="font-semibold text-primary hover:underline" href="#">Privacy Policy</a>.
+                    </label>
+</div>
+<!-- Submit Button -->
+<button class="mt-4 w-full bg-primary hover:bg-green-400 text-black font-bold text-base py-4 rounded-xl shadow-[0_4px_14px_0_rgba(19,236,19,0.39)] transition-all transform active:scale-[0.98]" type="button">
+                    Sign Up
+                </button>
+</form>
+<!-- Divider -->
+<div class="relative flex items-center py-8">
+<div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+<span class="flex-shrink-0 mx-4 text-gray-400 text-xs uppercase tracking-widest font-medium">Or continue with</span>
+<div class="flex-grow border-t border-gray-200 dark:border-gray-700"></div>
+</div>
+<!-- Social Login -->
+<div class="grid grid-cols-3 gap-4">
+<button class="flex items-center justify-center py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors group">
+<!-- Google Icon SVG (Tailwind path generic) -->
+<div class="w-6 h-6 relative" data-alt="Google Logo">
+<svg class="w-full h-full block" viewbox="0 0 48 48" xmlns="http://www.w3.org/2000/svg">
+<path d="M43.611,20.083H42V20H24v8h11.303c-1.649,4.657-6.08,8-11.303,8c-6.627,0-12-5.373-12-12c0-6.627,5.373-12,12-12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C12.955,4,4,12.955,4,24c0,11.045,8.955,20,20,20c11.045,0,20-8.955,20-20C44,22.659,43.862,21.35,43.611,20.083z" fill="#FFC107"></path>
+<path d="M6.306,14.691l6.571,4.819C14.655,15.108,18.961,12,24,12c3.059,0,5.842,1.154,7.961,3.039l5.657-5.657C34.046,6.053,29.268,4,24,4C16.318,4,9.656,8.337,6.306,14.691z" fill="#FF3D00"></path>
+<path d="M24,44c5.166,0,9.86-1.977,13.409-5.192l-6.19-5.238C29.211,35.091,26.715,36,24,36c-5.202,0-9.619-3.317-11.283-7.946l-6.522,5.025C9.505,39.556,16.227,44,24,44z" fill="#4CAF50"></path>
+<path d="M43.611,20.083H42V20H24v8h11.303c-0.792,2.237-2.231,4.166-4.087,5.571c0.001-0.001,0.002-0.001,0.003-0.002l6.19,5.238C36.971,39.205,44,34,44,24C44,22.659,43.862,21.35,43.611,20.083z" fill="#1976D2"></path>
+</svg>
+</div>
+</button>
+<button class="flex items-center justify-center py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-black dark:text-white">
+<!-- Apple Icon SVG -->
+<div class="w-6 h-6 relative" data-alt="Apple Logo">
+<svg class="w-full h-full fill-current" viewbox="0 0 24 24">
+<path d="M17.653 17.508c-.732.993-1.503 1.972-2.708 2.002-1.17.026-1.55-.694-2.906-.694-1.362 0-1.789.673-2.92.723-1.176.046-2.073-1.173-2.822-2.257-1.537-2.219-2.713-5.632-1.134-8.375 0 0 .783-1.365 2.158-1.38 1.077-.01 1.838.71 2.417.71.577 0 1.661-.877 2.793-.748.473.018 1.803.191 2.656 1.438-.066.04-1.587.927-1.571 2.76.017 2.196 1.928 2.926 2.007 2.96-.051.155-.78 2.662-1.177 3.242l.001-.002zm-3.14-11.854c.603-.728 1.01-1.741.899-2.748-1.071.055-2.008.736-2.54 1.708-.543.987-.96 1.782.012 2.725.867.844 1.151.014 1.629-1.685z"></path>
+</svg>
+</div>
+</button>
+<button class="flex items-center justify-center py-3 bg-[#1877F2] border border-transparent rounded-xl hover:bg-[#166fe5] transition-colors text-white">
+<!-- Facebook Icon SVG -->
+<div class="w-6 h-6 relative" data-alt="Facebook Logo">
+<svg class="w-full h-full fill-current" viewbox="0 0 24 24">
+<path d="M12 2.03998C6.5 2.03998 2 6.52998 2 12.06C2 17.06 5.66 21.21 10.44 21.96V14.96H7.9V12.06H10.44V9.84998C10.44 7.33998 11.93 5.95998 14.22 5.95998C15.31 5.95998 16.45 6.14998 16.45 6.14998V8.61998H15.19C13.95 8.61998 13.56 9.38998 13.56 10.18V12.06H16.34L15.89 14.96H13.56V21.96C15.9164 21.5878 18.0622 20.3855 19.6099 18.57C21.1576 16.7546 22.0054 14.4456 22 12.06C22 6.52998 17.5 2.03998 12 2.03998Z"></path>
+</svg>
+</div>
+</button>
+</div>
+<!-- Login Link -->
+<div class="mt-8 text-center pb-6">
+<p class="text-sm text-slate-500 dark:text-slate-400">
+                    Already have an account? 
+                    <a class="font-bold text-primary hover:text-green-400 transition-colors" href="#">Log in</a>
+</p>
+</div>
+</main>
+</div>
+</body></html>

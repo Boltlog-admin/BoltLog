@@ -1,0 +1,38 @@
+# Objective app health: static analysis (errors only) + unit/widget tests.
+# Does not replace manual QA or Firebase/backend checks.
+name: App verify
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [main, master]
+  pull_request:
+    branches: [main, master]
+
+permissions:
+  contents: read
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Flutter version
+        run: flutter --version
+
+      - name: Dependencies
+        run: flutter pub get
+
+      # Fail only on analyzer *errors* (not warnings/infos — see scripts/verify_app.ps1).
+      - name: Analyze (errors fatal)
+        run: flutter analyze --no-fatal-infos --no-fatal-warnings
+
+      - name: Test
+        run: flutter test

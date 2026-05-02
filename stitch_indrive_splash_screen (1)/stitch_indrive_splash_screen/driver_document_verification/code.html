@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Document Verification</title>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-gray-900 dark:text-gray-100 min-h-screen flex flex-col antialiased">
+<!-- Top App Bar -->
+<header class="flex items-center px-4 py-3 bg-white dark:bg-[#1a2e22] shadow-sm sticky top-0 z-20">
+<button class="flex items-center justify-center p-2 -ml-2 rounded-full hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-gray-900 dark:text-gray-100">arrow_back</span>
+</button>
+<h1 class="flex-1 text-center text-lg font-bold text-gray-900 dark:text-gray-100 pr-8">Document Verification</h1>
+</header>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col p-4 gap-6 max-w-md mx-auto w-full">
+<!-- Progress Section -->
+<section class="flex flex-col gap-2">
+<div class="flex justify-between items-end mb-1">
+<div>
+<h2 class="text-lg font-bold text-gray-900 dark:text-gray-100">Complete your profile</h2>
+<p class="text-sm text-gray-500 dark:text-gray-400">2 of 4 documents uploaded</p>
+</div>
+<span class="text-primary font-bold text-lg">50%</span>
+</div>
+<div class="h-2 w-full bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+<div class="h-full bg-primary rounded-full transition-all duration-500" style="width: 50%;"></div>
+</div>
+<p class="text-xs text-gray-500 dark:text-gray-400 mt-1">
+                Please upload clear photos of the original documents to start driving.
+            </p>
+</section>
+<!-- Document List -->
+<section class="flex flex-col gap-4">
+<!-- Document Item: Approved -->
+<div class="bg-white dark:bg-[#1a2e22] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 group cursor-pointer hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400 shrink-0">
+<span class="material-symbols-outlined">badge</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-semibold text-gray-900 dark:text-gray-100">Driver's License</span>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-green-500 text-[16px] icon-filled">check_circle</span>
+<span class="text-sm text-green-600 dark:text-green-400 font-medium">Approved</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</div>
+<!-- Document Item: Rejected -->
+<div class="bg-white dark:bg-[#1a2e22] rounded-xl p-4 shadow-sm border border-red-200 dark:border-red-900/50 flex flex-col gap-3 group cursor-pointer relative overflow-hidden">
+<div class="absolute left-0 top-0 bottom-0 w-1 bg-red-500"></div>
+<div class="flex items-center justify-between gap-4">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-red-100 dark:bg-red-900/30 flex items-center justify-center text-red-600 dark:text-red-400 shrink-0">
+<span class="material-symbols-outlined">directions_car</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-semibold text-gray-900 dark:text-gray-100">Vehicle Registration</span>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-red-500 text-[16px] icon-filled">error</span>
+<span class="text-sm text-red-600 dark:text-red-400 font-medium">Rejected</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-red-400">refresh</span>
+</div>
+<!-- Rejection Reason -->
+<div class="bg-red-50 dark:bg-red-900/10 p-3 rounded-lg flex items-start gap-2">
+<span class="material-symbols-outlined text-red-500 text-sm mt-0.5">info</span>
+<p class="text-xs text-red-700 dark:text-red-300">
+                        Image blurry. Please retake photo ensuring text is readable.
+                    </p>
+</div>
+</div>
+<!-- Document Item: Pending -->
+<div class="bg-white dark:bg-[#1a2e22] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 group cursor-pointer hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-yellow-100 dark:bg-yellow-900/30 flex items-center justify-center text-yellow-600 dark:text-yellow-400 shrink-0">
+<span class="material-symbols-outlined">policy</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-semibold text-gray-900 dark:text-gray-100">Vehicle Insurance</span>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="material-symbols-outlined text-yellow-500 text-[16px] icon-filled">hourglass_top</span>
+<span class="text-sm text-yellow-600 dark:text-yellow-400 font-medium">Pending Review</span>
+</div>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</div>
+<!-- Document Item: To Do -->
+<div class="bg-white dark:bg-[#1a2e22] rounded-xl p-4 shadow-sm border border-gray-100 dark:border-gray-800 flex items-center justify-between gap-4 group cursor-pointer hover:border-primary/50 hover:shadow-md transition-all">
+<div class="flex items-center gap-4">
+<div class="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-800 flex items-center justify-center text-gray-600 dark:text-gray-300 shrink-0">
+<span class="material-symbols-outlined">account_circle</span>
+</div>
+<div class="flex flex-col">
+<span class="text-base font-semibold text-gray-900 dark:text-gray-100">Profile Photo</span>
+<div class="flex items-center gap-1 mt-0.5">
+<span class="text-sm text-gray-500 dark:text-gray-400 font-medium">Required</span>
+</div>
+</div>
+</div>
+<button class="w-8 h-8 rounded-full bg-primary/10 flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-black transition-colors">
+<span class="material-symbols-outlined text-[20px]">add_a_photo</span>
+</button>
+</div>
+</section>
+<!-- Security Notice -->
+<div class="mt-4 p-4 rounded-lg bg-gray-50 dark:bg-white/5 border border-gray-100 dark:border-white/5 flex gap-3 items-center">
+<span class="material-symbols-outlined text-gray-400">lock</span>
+<p class="text-xs text-gray-500 dark:text-gray-400 leading-relaxed">
+                Your data is processed securely. We only use this information for verification purposes in accordance with our Privacy Policy.
+            </p>
+</div>
+</main>
+<!-- Footer Action -->
+<footer class="p-4 bg-white dark:bg-[#1a2e22] border-t border-gray-100 dark:border-gray-800 pb-8 sticky bottom-0 z-10">
+<button class="w-full bg-primary text-[#0d1b12] font-bold text-base py-4 rounded-xl shadow-lg shadow-primary/20 hover:bg-primary/90 hover:shadow-primary/30 active:scale-[0.99] transition-all disabled:opacity-50 disabled:cursor-not-allowed">
+            Submit for Review
+        </button>
+</footer>
+<!-- Bottom Sheet (Hidden by default, represented here visually as if invoked) -->
+<!-- Ideally controlled via JS, but styled here for the design request -->
+<div class="fixed inset-0 bg-black/40 z-40 hidden"></div>
+<div class="fixed bottom-0 left-0 right-0 bg-white dark:bg-[#1a2e22] rounded-t-2xl z-50 p-6 hidden flex-col gap-4 animate-slide-up shadow-[0_-4px_20px_rgba(0,0,0,0.1)]">
+<div class="w-12 h-1 bg-gray-200 dark:bg-gray-700 rounded-full mx-auto mb-2"></div>
+<h3 class="text-lg font-bold text-center mb-2 dark:text-white">Upload Profile Photo</h3>
+<button class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-primary text-2xl">photo_camera</span>
+<div class="flex flex-col items-start">
+<span class="font-semibold dark:text-white">Take a Photo</span>
+<span class="text-xs text-gray-500">Use your camera</span>
+</div>
+</button>
+<button class="flex items-center gap-4 p-4 rounded-xl bg-gray-50 dark:bg-white/5 hover:bg-gray-100 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-primary text-2xl">image</span>
+<div class="flex flex-col items-start">
+<span class="font-semibold dark:text-white">Choose from Gallery</span>
+<span class="text-xs text-gray-500">Select an existing file</span>
+</div>
+</button>
+<button class="mt-2 text-center text-gray-500 dark:text-gray-400 font-medium py-2">Cancel</button>
+</div>
+</body></html>

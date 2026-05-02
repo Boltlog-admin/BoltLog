@@ -1,0 +1,626 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+    // Helper functions
+    function isAuthenticated() {
+      return request.auth != null;
+    }
+
+    // BoltLog admin web (custom claim set only via Firebase Admin SDK — see functions/scripts/set-admin-claim.js)
+    function isBoltAdmin() {
+      return isAuthenticated() && request.auth.token.admin == true;
+    }
+
+    function isOwner(userId) {
+      return isAuthenticated() && request.auth.uid == userId;
+    }
+
+    function authUserData() {
+      return get(/databases/$(database)/documents/users/$(request.auth.uid)).data;
+    }
+
+    function roleIsDriverLike(role) {
+      return role == 'Driver' ||
+        role == 'driver' ||
+        role == 'Transporter' ||
+        role == 'transporter';
+    }
+
+    function authIsDriver() {
+      return isAuthenticated() &&
+        exists(/databases/$(database)/documents/users/$(request.auth.uid)) &&
+        roleIsDriverLike(authUserData().role);
+    }
+
+    function isValidUserData() {
+      return request.resource.data.keys().hasAll(['uid', 'email', 'createdAt']) &&
+             request.resource.data.uid == request.auth.uid;
+    }
+
+    function isValidRideData() {
+      return request.resource.data.keys().hasAll(['userId', 'pickupLocation', 'dropoffLocation', 'status', 'createdAt']) &&
+             request.resource.data.userId == request.auth.uid;
+    }
+
+    // Sender must not change transporter live GPS fields on the ride doc (written by driver app).
+    function senderNotTamperingDriverLiveLocation() {
+      // For `update`, `request.resource.data.*` may not include fields that aren't
+      // being written. So we rely on `request.writeFields` to detect tampering.
+      return !request.writeFields.hasAll(['driverLiveLat']) &&
+             !request.writeFields.hasAll(['driverLiveLng']) &&
+             !request.writeFields.hasAll(['driverLocationUpdatedAt']);
+    }
+
+    function rideDoc(rideId) {
+      return get(/databases/$(database)/documents/rides/$(rideId));
+    }
+
+    // True if [field] is the given Firebase Auth UID, whether stored as a string UID
+    // or as a DocumentReference to /users/{uid} (legacy / import / console edits).
+    function userDocPathForUid(uid) {
+      return /databases/$(database)/documents/users/$(uid);
+    }
+
+    function uidFieldEquals(field, uid) {
+      // String-first avoids any odd coercion between string and path types.
+      return (field is string && field == uid) || field == userDocPathForUid(uid);
+    }
+
+    // Two ride fields that may each be string UID or /users/{uid} reference.
+    function uidFieldSameAsOther(a, b) {
+      return a != null && b != null && (
+        (a is string && b is string && a == b) ||
+        (a is string && b == userDocPathForUid(a)) ||
+        (b is string && a == userDocPathForUid(b)) ||
+        a == b
+      );
+    }
+
+    function hasNonEmptyAwaitingTransporter(r) {
+      return r.awaitingSenderConfirmDriverId != null &&
+        (!(r.awaitingSenderConfirmDriverId is string) ||
+          r.awaitingSenderConfirmDriverId.size() > 0);
+    }
+
+    function isUidRideParticipant(ride, uid) {
+      return uidFieldEquals(ride.userId, uid) ||
+        uidFieldEquals(ride.driverId, uid) ||
+        uidFieldEquals(ride.acceptedTransporterId, uid) ||
+        uidFieldEquals(ride.negotiatingTransporterId, uid) ||
+        uidFieldEquals(ride.awaitingSenderConfirmDriverId, uid);
+    }
+
+    // True when driverId values are equivalent (null vs '' vs missing all mean "slot open").
+    function driverIdsRepresentSameSlot(r, w) {
+      return r.driverId == w.driverId ||
+        (rideDriverSlotOpen(r) && rideDriverSlotOpen(w));
+    }
+
+    // True when ride is still in a state where a transporter may commit.
+    // Use a denylist: legacy/variant status strings (e.g. different casing) must not block here;
+    // the client transaction already enforces open/pending negotiation.
+    function rideStatusAllowsTransporterCommit(r) {
+      return r.status != 'cancelled' &&
+        r.status != 'in_progress' &&
+        r.status != 'parcel_collected' &&
+        r.status != 'completed';
+    }
+
+    // Transporter commits; sender must confirm before driverId / in_progress (client: transporterRequestSenderConfirmation).
+    // Note: On updates, request.resource.data may only contain changed fields. Do not require
+    // driverIdsRepresentSameSlot(r, w) — w.driverId can be missing while r still has the real slot state.
+    //
+    function transporterMayRequestSenderConfirmation() {
+      let r = resource.data;
+      let w = request.resource.data;
+      let uid = request.auth.uid;
+      // Do not use rideDriverSlotOpen(r) here: if driverId is stored as a DocumentReference (or
+      // non-string), rideDriverSlotOpen returns false and this path never allows — permanent
+      // permission-denied. Enforce "no new driver assignment" by equality on before/after merge.
+      return isAuthenticated() &&
+        !uidFieldEquals(r.userId, uid) &&
+        driverIdsRepresentSameSlot(r, w) &&
+        w.status == 'pending' &&
+        rideStatusAllowsTransporterCommit(r) &&
+        uidFieldEquals(w.awaitingSenderConfirmDriverId, uid) &&
+        uidFieldEquals(w.negotiatingTransporterId, uid);
+    }
+
+    // Sender confirms transporter → in_progress + driverId; clears awaitingSenderConfirmDriverId.
+    function senderMayConfirmTransporterStart() {
+      let r = resource.data;
+      let w = request.resource.data;
+      return uidFieldEquals(r.userId, request.auth.uid) &&
+        hasNonEmptyAwaitingTransporter(r) &&
+        uidFieldSameAsOther(r.awaitingSenderConfirmDriverId, w.driverId) &&
+        w.status == 'in_progress' &&
+        !('awaitingSenderConfirmDriverId' in w);
+    }
+
+    // Sender declines committed transporter → reopen (open) and clear negotiation fields.
+    function senderMayDeclineTransporterCommit() {
+      let r = resource.data;
+      let w = request.resource.data;
+      return uidFieldEquals(r.userId, request.auth.uid) &&
+        hasNonEmptyAwaitingTransporter(r) &&
+        w.status == 'open' &&
+        !('awaitingSenderConfirmDriverId' in w);
+    }
+
+    // True when no real driver is assigned (null, '', whitespace-only, common placeholders).
+    // Must match [RideModel.isDriverSlotOpen] / [rideDriverSlotOpenFromField]: literal "null" means open.
+    function rideDriverSlotOpen(ride) {
+      return ride.driverId == null ||
+        ride.driverId == '' ||
+        (ride.driverId is int && ride.driverId == 0) ||
+        (ride.driverId is float && ride.driverId == 0.0) ||
+        ride.driverId == 'unassigned' ||
+        ride.driverId == 'Unassigned' ||
+        ride.driverId == 'none' ||
+        ride.driverId == 'None' ||
+        ride.driverId == 'null' ||
+        ride.driverId == 'Null' ||
+        ride.driverId == 'NULL' ||
+        (ride.driverId is string &&
+          (ride.driverId.size() == 0 || ride.driverId.matches('^[ \\t\\n\\r]+$')));
+    }
+
+    // Transporter-only: live GPS on the ride doc (driver, accepted transporter, or pending+negotiating).
+    function transporterMayWriteOnlyDriverLiveLocation() {
+      let ride = resource.data;
+      return request.writeFields.hasOnly(['driverLiveLat', 'driverLiveLng', 'driverLocationUpdatedAt']) &&
+        (
+          request.auth.uid == ride.driverId ||
+          request.auth.uid == ride.acceptedTransporterId ||
+          (ride.status == 'pending' && request.auth.uid == ride.negotiatingTransporterId)
+        );
+    }
+
+    function notificationHasRequiredKeys() {
+      return request.resource.data.keys().hasAll([
+        'userId',
+        'type',
+        'title',
+        'message',
+        'isRead',
+        'createdAt'
+      ]);
+    }
+
+    function canCreateRideParticipantNotification() {
+      return request.resource.data.userId != request.auth.uid &&
+        request.resource.data.rideId is string &&
+        request.resource.data.rideId.size() > 0 &&
+        rideDoc(request.resource.data.rideId).exists &&
+        isUidRideParticipant(rideDoc(request.resource.data.rideId).data, request.auth.uid) &&
+        isUidRideParticipant(rideDoc(request.resource.data.rideId).data, request.resource.data.userId);
+    }
+
+    // Sender notifies nearby drivers (recipient is not yet on the ride doc as participant).
+    function senderBroadcastNewRequestNearby() {
+      return request.resource.data.type == 'new_request_nearby' &&
+        request.resource.data.userId != request.auth.uid &&
+        request.resource.data.rideId is string &&
+        request.resource.data.rideId.size() > 0 &&
+        rideDoc(request.resource.data.rideId).exists &&
+        rideDoc(request.resource.data.rideId).data.userId == request.auth.uid &&
+        exists(/databases/$(database)/documents/users/$(request.resource.data.userId)) &&
+        roleIsDriverLike(get(/databases/$(database)/documents/users/$(request.resource.data.userId)).data.role);
+    }
+
+    // Subcollections under rides/{rideId}: true if signed-in user may tear down docs (same people as ride delete).
+    function isAuthParticipantOnRideId(rideId) {
+      return rideDoc(rideId).exists &&
+        isUidRideParticipant(rideDoc(rideId).data, request.auth.uid);
+    }
+
+    // Soft cancel: any ride participant sets status to cancelled (no hard-delete required).
+    function participantMaySoftCancelRide() {
+      let before = resource.data;
+      let after = request.resource.data;
+      return after.status == 'cancelled' &&
+        before.status != 'cancelled' &&
+        isUidRideParticipant(before, request.auth.uid) &&
+        senderNotTamperingDriverLiveLocation();
+    }
+
+    // Sender acknowledges pickup (after transporter markPickedUp). Separate from negotiation edits
+    // so rides with priceStatus == 'accepted' are not blocked by the counter-offer sender branch.
+    function senderMayConfirmPickup() {
+      return resource.data.userId == request.auth.uid &&
+        senderNotTamperingDriverLiveLocation() &&
+        request.writeFields.hasOnly(['pickupConfirmedBySenderAt', 'updatedAt']);
+    }
+
+    // Sender completes trip after transporter markDelivered.
+    function senderMayConfirmDeliveryComplete() {
+      return resource.data.userId == request.auth.uid &&
+        senderNotTamperingDriverLiveLocation() &&
+        resource.data.status == 'parcel_collected' &&
+        resource.data.deliveryMarkedByDriverAt != null &&
+        request.resource.data.status == 'completed' &&
+        request.writeFields.hasOnly(['status', 'completedAt', 'deliveryConfirmedBySenderAt', 'updatedAt']);
+    }
+
+    // Transporter accepts an open request or a sender-approved pending job (client: [RideService.acceptRide]).
+    // For pending + priceStatus == 'accepted', only the sender-chosen or negotiating transporter may claim it.
+    function transporterMayAcceptAssignment() {
+      let ride = resource.data;
+      return isAuthenticated() &&
+        request.auth.uid != ride.userId &&
+        ride.status != 'cancelled' &&
+        (ride.status == null ||
+          ride.status == 'open' ||
+          (
+            ride.status == 'pending' &&
+            ride.priceStatus == 'accepted' &&
+            (
+              ride.acceptedTransporterId == request.auth.uid ||
+              ride.negotiatingTransporterId == request.auth.uid
+            )
+          )) &&
+        request.resource.data.driverId == request.auth.uid &&
+        request.resource.data.status == 'in_progress' &&
+        (rideDriverSlotOpen(ride) || ride.driverId == request.auth.uid);
+    }
+
+    // Negotiating or sender-chosen transporter sets driverId + in_progress (covers pending/open edge cases).
+    function transporterChosenPartyAcceptsJob() {
+      let ride = resource.data;
+      return isAuthenticated() &&
+        request.auth.uid != ride.userId &&
+        ride.status != 'cancelled' &&
+        rideDriverSlotOpen(ride) &&
+        request.resource.data.driverId == request.auth.uid &&
+        request.resource.data.status == 'in_progress' &&
+        (ride.acceptedTransporterId == request.auth.uid ||
+          ride.negotiatingTransporterId == request.auth.uid);
+    }
+
+    // [RideService.createOrUpdateOffer] updates only priceOffer + updatedAt. If the offer doc still has
+    // status == 'selected' from an old round, the main offer update branches can all deny — allow this path
+    // while the ride has no driver yet.
+    function transporterMayRefreshOwnOfferPrice(rideId) {
+      let ride = get(/databases/$(database)/documents/rides/$(rideId)).data;
+      return resource.data.transporterId == request.auth.uid &&
+        request.resource.data.transporterId == resource.data.transporterId &&
+        rideDriverSlotOpen(ride) &&
+        (
+          request.writeFields.hasOnly(['priceOffer', 'updatedAt']) ||
+          request.resource.data.diff(resource.data).affectedKeys()
+            .hasOnly(['priceOffer', 'updatedAt'])
+        );
+    }
+
+    // Users collection
+    match /users/{userId} {
+      // - Own profile
+      // - Any Driver profile (senders browse nearby drivers; ratings)
+      // - Passenger profiles readable by Drivers (call / contact sender on an active trip)
+      //   Note: this allows any Driver to read any Passenger doc; tighten later with a contacts subcollection if needed.
+      allow read: if isAuthenticated() && (
+        isOwner(userId) ||
+        roleIsDriverLike(resource.data.role) ||
+        (authIsDriver() && resource.data.role == 'Passenger')
+      );
+
+      // Users can only write their own data
+      allow create: if isAuthenticated() && isValidUserData();
+      allow update: if isAuthenticated() && isOwner(userId);
+      allow delete: if isAuthenticated() && isOwner(userId);
+    }
+
+    // Rides collection
+    match /rides/{rideId} {
+      // Anyone authenticated can read rides
+      allow read: if isAuthenticated();
+
+      // Only the sender can create their own rides
+      allow create: if isAuthenticated() && isValidRideData();
+
+      // Sender updates: cannot set/change driverLiveLat, driverLiveLng, driverLocationUpdatedAt (transporter-only).
+      // Transporter: assigned driver, or during open/pending negotiation.
+      //
+      // Also enforce: when accepting a counter-offer (priceStatus -> 'accepted'),
+      // the accepted price must match the current ride counterOffer, and
+      // counterOffer must be cleared in the same update.
+      allow update: if isAuthenticated() && (
+        (
+          resource.data.userId == request.auth.uid &&
+          senderNotTamperingDriverLiveLocation() &&
+          (
+            request.resource.data.priceStatus != 'accepted' ||
+            (
+              resource.data.counterOffer != null &&
+              request.resource.data.counterOffer == null &&
+              request.resource.data.price == resource.data.counterOffer &&
+              request.resource.data.finalPrice == resource.data.counterOffer &&
+              request.resource.data.acceptedTransporterId ==
+                request.resource.data.negotiatingTransporterId
+            )
+          )
+        ) ||
+        (
+          // Transporter assigns themselves as driver (move ride forward).
+          // Some legacy docs store "unassigned" as empty string instead of null.
+          request.resource.data.driverId == request.auth.uid &&
+          (
+            rideDriverSlotOpen(resource.data) ||
+            resource.data.driverId == request.auth.uid
+          )
+        ) ||
+        transporterMayAcceptAssignment() ||
+        transporterChosenPartyAcceptsJob() ||
+        transporterMayRequestSenderConfirmation() ||
+        senderMayConfirmTransporterStart() ||
+        senderMayDeclineTransporterCommit() ||
+        (
+          // Transporter updates negotiation fields while the ride is open/pending.
+          resource.data.status in ['open', 'pending'] &&
+          resource.data.userId != request.auth.uid &&
+          (
+            // Submit a transporter counter-offer.
+            (request.resource.data.lastCounterOfferBy == 'transporter' &&
+             request.resource.data.negotiatingTransporterId == request.auth.uid) ||
+            // Accept the current counter-offer.
+            (
+              request.resource.data.priceStatus == 'accepted' &&
+              resource.data.counterOffer != null &&
+              request.resource.data.counterOffer == null &&
+              request.resource.data.price == resource.data.counterOffer &&
+              request.resource.data.finalPrice == resource.data.counterOffer &&
+              request.resource.data.acceptedTransporterId ==
+                request.resource.data.negotiatingTransporterId &&
+              request.auth.uid == resource.data.negotiatingTransporterId
+            ) ||
+            // Decline/reopen the request.
+            (request.resource.data.status == 'open')
+          )
+        ) ||
+        transporterMayWriteOnlyDriverLiveLocation() ||
+        participantMaySoftCancelRide() ||
+        senderMayConfirmPickup() ||
+        senderMayConfirmDeliveryComplete()
+      );
+
+      // Hard-delete only if needed (legacy / admin tools). Normal cancel uses status = cancelled.
+      allow delete: if isAuthenticated() && (
+                       resource.data.userId == request.auth.uid ||
+                       resource.data.driverId == request.auth.uid ||
+                       resource.data.acceptedTransporterId == request.auth.uid ||
+                       resource.data.negotiatingTransporterId == request.auth.uid
+                     );
+
+      // Offers subcollection
+      match /offers/{offerId} {
+        // Anyone authenticated can read offers for a ride
+        allow read: if isAuthenticated();
+
+        // Transporters can create their own offers
+        allow create: if isAuthenticated() &&
+                         request.resource.data.transporterId == request.auth.uid;
+
+        // Update offers:
+        // - Transporter can update their own offer.
+        // - Sender can update any offer.
+        // - During counter-offer acceptance, the negotiating transporter must
+        //   be able to reject the other offers (not just their own).
+        allow update: if isAuthenticated() && (
+          (
+            // Selecting a specific counter-offer: only the current one may be selected.
+            request.resource.data.status == 'selected' &&
+            (
+              // Counter-offer acceptance: only the currently-negotiated offer may be selected.
+              (
+                get(/databases/$(database)/documents/rides/$(rideId)).data.priceStatus == 'pending' &&
+                get(/databases/$(database)/documents/rides/$(rideId)).data.counterOffer == resource.data.priceOffer &&
+                get(/databases/$(database)/documents/rides/$(rideId)).data.negotiatingTransporterId == resource.data.transporterId &&
+                (
+                  get(/databases/$(database)/documents/rides/$(rideId)).data.userId == request.auth.uid ||
+                  get(/databases/$(database)/documents/rides/$(rideId)).data.negotiatingTransporterId == request.auth.uid
+                )
+              ) ||
+              // Direct acceptance: the assigned driver can mark the selected offer.
+              (
+                get(/databases/$(database)/documents/rides/$(rideId)).data.driverId == request.auth.uid &&
+                resource.data.transporterId == request.auth.uid
+              ) ||
+              // Re-negotiation after a previous selection:
+              // The transporter's offer may still be `selected`, but during a new
+              // negotiation round we allow them to update only `priceOffer`
+              // (and related timestamp fields) without changing `status`.
+              (
+                get(/databases/$(database)/documents/rides/$(rideId)).data.priceStatus == 'pending' &&
+                get(/databases/$(database)/documents/rides/$(rideId)).data.negotiatingTransporterId == request.auth.uid &&
+                resource.data.transporterId == request.auth.uid &&
+                request.writeFields.hasAll(['priceOffer']) &&
+                !request.writeFields.hasAll(['status'])
+              )
+            )
+          ) ||
+          (
+            // Non-selection updates: apply ownership/state-based permissions.
+            request.resource.data.status != 'selected' && (
+              // Transporter can update their own offer.
+              (resource.data.transporterId == request.auth.uid &&
+               request.resource.data.transporterId == resource.data.transporterId) ||
+              // Sender can update any offer.
+              get(/databases/$(database)/documents/rides/$(rideId)).data.userId == request.auth.uid ||
+              // Negotiating transporter can reject other offers while countering/accepting.
+              (
+                get(/databases/$(database)/documents/rides/$(rideId)).data.negotiatingTransporterId == request.auth.uid &&
+                get(/databases/$(database)/documents/rides/$(rideId)).data.priceStatus == 'pending' &&
+                request.resource.data.status in ['rejected', 'pending']
+              ) ||
+              // After direct acceptance, the assigned driver can set selected/rejected statuses.
+              (
+                get(/databases/$(database)/documents/rides/$(rideId)).data.driverId == request.auth.uid &&
+                request.resource.data.status in ['selected', 'rejected']
+              )
+            )
+          ) ||
+          transporterMayRefreshOwnOfferPrice(rideId)
+        );
+
+        // Sender/transporter cleanup and full ride cancel (app deletes every offer doc before deleting ride).
+        allow delete: if isAuthenticated() && isAuthParticipantOnRideId(rideId);
+      }
+
+      // Messages subcollection
+      match /messages/{messageId} {
+        // Only sender and driver of the ride can read messages
+        allow read: if isAuthenticated() && (
+          resource.data.senderId == request.auth.uid ||
+          resource.data.receiverId == request.auth.uid
+        );
+
+        // Users can create messages where they are sender or receiver.
+        // (Transporter also needs to be able to create messages after accepting a counter-offer.)
+        allow create: if isAuthenticated() && (
+          request.resource.data.senderId == request.auth.uid ||
+          request.resource.data.receiverId == request.auth.uid
+        );
+
+        // Users can update their own messages (mark as read).
+        // Both sender and receiver should be able to mark messages as read.
+        allow update: if isAuthenticated() && (
+          resource.data.senderId == request.auth.uid ||
+          resource.data.receiverId == request.auth.uid
+        );
+
+        // Full ride cancel deletes all chat docs; restrict to same people who may delete the ride.
+        allow delete: if isAuthenticated() && isAuthParticipantOnRideId(rideId);
+      }
+
+      // Viewers subcollection
+      match /viewers/{viewerId} {
+        allow read: if isAuthenticated() && (
+          viewerId == request.auth.uid ||
+          isAuthParticipantOnRideId(rideId)
+        );
+        allow create, update: if isAuthenticated() && viewerId == request.auth.uid;
+        allow delete: if isAuthenticated() && (
+          viewerId == request.auth.uid ||
+          isAuthParticipantOnRideId(rideId)
+        );
+      }
+    }
+
+    // Ratings collection
+    match /ratings/{ratingId} {
+      // Users can read ratings for any user
+      allow read: if isAuthenticated();
+
+      // Users can create ratings
+      allow create: if isAuthenticated() &&
+                       request.resource.data.fromUserId == request.auth.uid;
+
+      // Users can only update their own ratings
+      allow update: if isAuthenticated() &&
+                       resource.data.fromUserId == request.auth.uid;
+    }
+
+    // Saved locations collection
+    match /savedLocations/{locationId} {
+      // Users can only read their own saved locations
+      allow read: if isAuthenticated() &&
+                     resource.data.userId == request.auth.uid;
+
+      // Users can create their own saved locations
+      allow create: if isAuthenticated() &&
+                       request.resource.data.userId == request.auth.uid;
+
+      // Users can only update/delete their own saved locations
+      allow update, delete: if isAuthenticated() &&
+                               resource.data.userId == request.auth.uid;
+    }
+
+    // Notifications collection
+    match /notifications/{notificationId} {
+      // Users can only read their own notifications
+      allow read: if isAuthenticated() &&
+                     resource.data.userId == request.auth.uid;
+
+      // Self inbox rows, ride-participant messages, or sender → driver "new request nearby".
+      allow create: if isAuthenticated() &&
+        notificationHasRequiredKeys() &&
+        (
+          request.resource.data.userId == request.auth.uid ||
+          canCreateRideParticipantNotification() ||
+          senderBroadcastNewRequestNearby()
+        );
+
+      // System can create notifications (via Cloud Functions)
+      // Users can update their own notifications (mark as read)
+      allow update: if isAuthenticated() &&
+                       resource.data.userId == request.auth.uid;
+    }
+
+    // Transporter commit queue (Cloud Function onCreate processes request and writes result).
+    match /transporterCommitRequests/{requestId} {
+      allow create: if isAuthenticated() &&
+        request.resource.data.keys().hasAll([
+          'rideId', 'transporterId', 'requesterUid', 'status', 'createdAt', 'updatedAt'
+        ]) &&
+        request.resource.data.rideId is string &&
+        request.resource.data.rideId.size() > 0 &&
+        request.resource.data.transporterId is string &&
+        request.resource.data.transporterId == request.auth.uid &&
+        request.resource.data.requesterUid is string &&
+        request.resource.data.requesterUid == request.auth.uid &&
+        request.resource.data.status == 'pending';
+
+      allow read: if isAuthenticated() &&
+        resource.data.requesterUid == request.auth.uid;
+
+      // Only backend should write result fields.
+      allow update, delete: if false;
+    }
+
+    // Payment methods (saved cards / mobile money) — owned per user
+    match /paymentMethods/{methodId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll(['userId', 'type', 'isDefault', 'createdAt']);
+      allow update, delete: if isAuthenticated() && resource.data.userId == request.auth.uid;
+    }
+
+    // Ride / wallet payments
+    match /payments/{paymentId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'userId', 'rideId', 'amount', 'paymentMethod', 'status', 'createdAt'
+        ]);
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Transporter wallet top-ups and related records
+    match /walletTransactions/{txId} {
+      allow read: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow create: if isAuthenticated() &&
+        request.resource.data.userId == request.auth.uid &&
+        request.resource.data.keys().hasAll([
+          'userId', 'type', 'amount', 'status', 'reference', 'createdAt'
+        ]);
+      allow update: if isAuthenticated() && resource.data.userId == request.auth.uid;
+      allow delete: if false;
+    }
+
+    // Bug reports collection
+    match /bugReports/{reportId} {
+      // Users can create bug reports
+      allow create: if isAuthenticated();
+
+      allow read: if isBoltAdmin();
+    }
+
+    // Full read/write for Firebase Auth users with custom claim admin:true (BoltLog admin web only).
+    match /{document=**} {
+      allow read, write: if isBoltAdmin();
+    }
+  }
+}

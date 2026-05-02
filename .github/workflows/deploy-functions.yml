@@ -1,0 +1,136 @@
+# Deploy Firebase Cloud Functions on push to main (when functions/ or config change) or on manual run.
+# Keyless auth via GitHub OIDC + Workload Identity Federation.
+# Required repo secrets:
+# - GCP_WORKLOAD_IDENTITY_PROVIDER
+# - GCP_SERVICE_ACCOUNT_EMAIL
+#
+# If deploy fails with: Missing permission iam.serviceAccounts.ActAs on boltlog@appspot.gserviceaccount.com
+# then a project Owner must grant that service account roles/iam.serviceAccountUser on that SA — see docs/FIREBASE_CI.md
+name: Deploy Cloud Functions
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - main
+      - master
+    paths:
+      - 'functions/**'
+      - 'firebase.json'
+      - '.firebaserc'
+
+env:
+  GCP_PROJECT: boltlog
+  GCP_PROJECT_NUMBER: "28158895372"
+  # Pin major; bump when upgrading CLI. Avoids stale hash-only deploys skipping upload (see functions/DEPLOY_TROUBLESHOOTING.md).
+  FIREBASE_TOOLS_VERSION: "15"
+
+permissions:
+  contents: read
+  id-token: write
+
+jobs:
+  deploy-functions:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Check WIF secrets
+        id: has-wif
+        run: |
+          if [ -n "${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}" ] && [ -n "${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}" ]; then
+            echo "defined=true" >> $GITHUB_OUTPUT
+          else
+            echo "defined=false" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Authenticate to Google Cloud (WIF)
+        if: steps.has-wif.outputs.defined == 'true'
+        uses: google-github-actions/auth@v2
+        with:
+          workload_identity_provider: ${{ secrets.GCP_WORKLOAD_IDENTITY_PROVIDER }}
+          service_account: ${{ secrets.GCP_SERVICE_ACCOUNT_EMAIL }}
+
+      - name: Set up Cloud SDK
+        if: steps.has-wif.outputs.defined == 'true'
+        uses: google-github-actions/setup-gcloud@v2
+        with:
+          project_id: ${{ env.GCP_PROJECT }}
+
+      - name: Grant Storage + Artifact + Logs + Run to Cloud Build
+        if: steps.has-wif.outputs.defined == 'true'
+        run: |
+          COMPUTE_SA="${GCP_PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+          BUILD_SA="${GCP_PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+          for sa in "$COMPUTE_SA" "$BUILD_SA"; do
+            gcloud projects add-iam-policy-binding $GCP_PROJECT --member="serviceAccount:$sa" --role="roles/storage.objectViewer" --quiet || true
+          done
+          gcloud projects add-iam-policy-binding $GCP_PROJECT --member="serviceAccount:$BUILD_SA" --role="roles/artifactregistry.writer" --quiet || true
+          gcloud projects add-iam-policy-binding $GCP_PROJECT --member="serviceAccount:$BUILD_SA" --role="roles/logging.logWriter" --quiet || true
+          gcloud projects add-iam-policy-binding $GCP_PROJECT --member="serviceAccount:$BUILD_SA" --role="roles/run.builder" --quiet || true
+          echo "IAM applied."
+
+      # Cloud Build must be able to act as the default SAs used when building/pushing
+      # the function image; missing this often surfaces as code 13 / opaque build failures.
+      - name: Grant Cloud Build serviceAccountUser on default SAs
+        if: steps.has-wif.outputs.defined == 'true'
+        run: |
+          BUILD_SA="${GCP_PROJECT_NUMBER}@cloudbuild.gserviceaccount.com"
+          APPSPOT_SA="${GCP_PROJECT}@appspot.gserviceaccount.com"
+          COMPUTE_SA="${GCP_PROJECT_NUMBER}-compute@developer.gserviceaccount.com"
+          for TARGET in "$APPSPOT_SA" "$COMPUTE_SA"; do
+            gcloud iam service-accounts add-iam-policy-binding "$TARGET" \
+              --member="serviceAccount:$BUILD_SA" \
+              --role="roles/iam.serviceAccountUser" \
+              --project="$GCP_PROJECT" \
+              --quiet || true
+          done
+          echo "Cloud Build serviceAccountUser on App Engine + Compute default SAs applied."
+      # Do NOT delete gs://us.artifacts.PROJECT.appspot.com — that bucket backs Artifact
+      # Registry for Cloud Functions builds; wiping it causes flaky or failing Cloud Build.
+
+      - name: Wait for IAM propagation
+        if: steps.has-wif.outputs.defined == 'true'
+        run: echo "Waiting 15s for IAM propagation..." && sleep 15
+
+      # firebase-tools directly: newer CLI than w9jds/firebase-action image, clearer errors.
+      - name: Set up Node (Firebase CLI)
+        if: steps.has-wif.outputs.defined == 'true'
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Install functions dependencies (Linux rebuild)
+        if: steps.has-wif.outputs.defined == 'true'
+        run: |
+          npm ci --prefix functions
+
+      - name: Fix firebase-functions binary execute bit
+        if: steps.has-wif.outputs.defined == 'true'
+        run: |
+          chmod +x functions/node_modules/.bin/firebase-functions || true
+
+      - name: Deploy Cloud Functions
+        if: steps.has-wif.outputs.defined == 'true'
+        run: |
+          npx --yes firebase-tools@${{ env.FIREBASE_TOOLS_VERSION }} deploy \
+            --only functions:transporterCommitRide,functions:onTransporterCommitRequestCreated,functions:onNotificationCreated \
+            --project ${{ env.GCP_PROJECT }} \
+            --non-interactive \
+            --debug
+
+      - name: Print firebase-debug log on failure
+        if: failure() && steps.has-wif.outputs.defined == 'true'
+        run: |
+          echo "==== firebase-debug.log (repo root) ===="
+          if [ -f firebase-debug.log ]; then cat firebase-debug.log; else echo "firebase-debug.log not found in repo root"; fi
+          echo "==== firebase-debug.log (~) ===="
+          if [ -f "$HOME/firebase-debug.log" ]; then cat "$HOME/firebase-debug.log"; else echo "firebase-debug.log not found in HOME"; fi
+
+      - name: Missing WIF secrets (deploy blocked)
+        if: steps.has-wif.outputs.defined == 'false'
+        run: |
+          echo "::error::Missing WIF secrets."
+          echo "Add GCP_WORKLOAD_IDENTITY_PROVIDER and GCP_SERVICE_ACCOUNT_EMAIL under Settings → Secrets → Actions."
+          exit 1

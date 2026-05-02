@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>InDrive Splash Screen</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@200..800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased">
+<div class="relative flex h-screen w-full flex-col items-center justify-between overflow-hidden bg-background-light dark:bg-background-dark transition-colors duration-300">
+<!-- Top Spacer for balance -->
+<div class="flex-1"></div>
+<!-- Central Branding Area -->
+<div class="flex flex-col items-center justify-center gap-6 z-10 animate-fade-in-up">
+<!-- Logo Icon Container -->
+<div class="relative flex items-center justify-center">
+<!-- Decorative background blob -->
+<div class="absolute w-32 h-32 bg-primary/20 rounded-full blur-2xl dark:bg-primary/10"></div>
+<!-- Logo Image -->
+<div class="w-24 h-24 bg-center bg-no-repeat bg-contain z-10" data-alt="InDrive green shield logo icon" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuAvaMxUvP9VDmZKrGoWu9U7w2JnNCi6jqaIYw-Kxh0sA98o9M5PH4paoXMr1_xFYJTBkB83spY6bKk1bmEIv-bMYVQOxG2YYnZzzonBc7BGwgUUybOnHytHss1TdIj5wnFiPQSLotSlXgbElxRK9syCJ0Yox0BI2gRvl6CPfcxbQ4ciJjxrFrDMMrkDUL369FTcDhmNyUTC8U_1PizsDn3Ar08iqWkvNIaVxMIkqpEAAglC89ppbqt5WJbgABOYRJA0paTdDhZXMdQ");'>
+</div>
+</div>
+<!-- Brand Name & Tagline -->
+<div class="text-center space-y-1">
+<h1 class="text-[#0d1b12] dark:text-white tracking-tighter text-[40px] font-extrabold leading-tight">
+                    inDrive
+                </h1>
+<p class="text-[#4c9a66] dark:text-[#6dbb87] text-lg font-medium tracking-wide">
+                    Offer Your Price
+                </p>
+</div>
+</div>
+<!-- Bottom Area: Loader & Version -->
+<div class="flex-1 flex flex-col justify-end w-full pb-12 px-12 gap-6 z-10">
+<!-- Loading Indicator -->
+<div class="w-full max-w-[200px] mx-auto flex flex-col gap-2">
+<div class="h-1.5 w-full rounded-full bg-[#cfe7d7] dark:bg-[#1f3a29] overflow-hidden">
+<div class="h-full rounded-full bg-primary w-1/3 animate-[pulse_1.5s_ease-in-out_infinite]"></div>
+</div>
+<p class="text-[#4c9a66] dark:text-[#6dbb87] text-xs font-medium text-center uppercase tracking-wider">
+                    Loading resources...
+                </p>
+</div>
+<!-- Version Meta -->
+<p class="text-[#8ba896] dark:text-[#4a6b56] text-xs font-normal text-center pt-4">
+                v 2.4.0 (Build 302)
+            </p>
+</div>
+<!-- Decorative Background Elements (Abstract) -->
+<div class="absolute top-[-10%] right-[-10%] w-64 h-64 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+<div class="absolute bottom-[-5%] left-[-5%] w-48 h-48 bg-primary/5 rounded-full blur-3xl pointer-events-none"></div>
+</div>
+<style>
+        /* Custom Keyframe for smooth entrance */
+        @keyframes fadeInUp {
+            from {
+                opacity: 0;
+                transform: translateY(20px);
+            }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+        .animate-fade-in-up {
+            animation: fadeInUp 0.8s ease-out forwards;
+        }
+    </style>
+</body></html>

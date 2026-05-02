@@ -1,0 +1,51 @@
+# Build release APK on GitHub (Linux) — avoids Windows Gradle cache issues.
+# After push: Actions → this workflow → Run workflow → download "boltlog-app-release" artifact,
+#   OR tag v1.0.1 etc. to get a Release page with the APK for easy phone download.
+name: Build Android APK
+
+on:
+  workflow_dispatch:
+  push:
+    tags:
+      - "v*"
+
+permissions:
+  contents: write
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "17"
+
+      - uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Accept Android licenses
+        run: yes | sdkmanager --licenses || true
+
+      - run: flutter pub get
+
+      - run: flutter build apk --release --android-skip-build-dependency-validation
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: boltlog-app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
+          if-no-files-found: error
+
+      - name: Attach APK to GitHub Release (tags only)
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          files: build/app/outputs/flutter-apk/app-release.apk
+          generate_release_notes: true
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

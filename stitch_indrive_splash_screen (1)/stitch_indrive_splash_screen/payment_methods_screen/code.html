@@ -1,0 +1,178 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Payment Methods</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            colors: {
+              "primary": "#13ec5b",
+              "background-light": "#f6f8f6",
+              "background-dark": "#102216",
+              "surface-light": "#ffffff",
+              "surface-dark": "#1a2c20",
+              "text-main": "#0d1b12",
+              "text-secondary": "#4c9a66",
+            },
+            fontFamily: {
+              "display": ["Plus Jakarta Sans", "sans-serif"]
+            },
+            borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+          },
+        },
+      }
+    </script>
+<style>/* Custom Radio Button Style to match design */
+.custom-radio:checked {
+    background-image: url(https://lh3.googleusercontent.com/aida-public/AB6AXuBGw0KKZ-NywQjlEWov2YJLPb-cHv1_WF8ok1awyArr4kk4liog2KNeGUxhKmorglTG1GICFbxUCpnBBEkq2ddpgq_Uu2h8B74HLi8F5tgcU7gudn5DkKPdk5Iv15SIHvASNkKIm-ekui7aVvyoIvPq37pmEtMHLlHjMhsclGfTbU9lywynKc6KxUGryWDxrXO7lXS-0qxGycCQ3GPWzMyVcDuoU3AkFjnJzHBh4Nbo0OmdxX_xiCLLW_0RtzvTyEsYKkv71f6KzhY);
+    border-color: #13ec5b
+    }
+.material-symbols-outlined {
+    font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24
+    }</style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-gray-100 font-display min-h-screen flex flex-col items-center">
+<!-- Main Container (Mobile Form Factor) -->
+<div class="w-full max-w-md bg-background-light dark:bg-background-dark h-full min-h-screen relative flex flex-col">
+<!-- Top App Bar -->
+<header class="flex items-center p-4 pb-2 justify-between sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm">
+<button class="text-text-main dark:text-white flex size-12 shrink-0 items-center justify-start hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined text-2xl">arrow_back</span>
+</button>
+<h2 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-12">
+                Payment Methods
+            </h2>
+</header>
+<!-- Main Content Scroll Area -->
+<main class="flex-1 overflow-y-auto pb-8">
+<!-- Wallet Section -->
+<section class="mt-2">
+<div class="px-4 pb-2 pt-4 flex justify-between items-baseline">
+<h3 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">InDrive Wallet</h3>
+</div>
+<div class="px-4">
+<div class="flex items-center gap-4 bg-surface-light dark:bg-surface-dark p-4 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800">
+<!-- Icon Box -->
+<div class="flex items-center justify-center rounded-xl bg-[#e7f3eb] dark:bg-green-900/30 shrink-0 size-12 text-[#0d1b12] dark:text-primary">
+<span class="material-symbols-outlined">account_balance_wallet</span>
+</div>
+<!-- Text Info -->
+<div class="flex flex-col flex-1 justify-center">
+<p class="text-text-main dark:text-white text-base font-semibold leading-normal">Personal Account</p>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-medium leading-normal">$12.50</p>
+</div>
+<!-- Top Up Button -->
+<button class="flex min-w-[84px] cursor-pointer items-center justify-center overflow-hidden rounded-lg h-9 px-4 bg-primary hover:bg-green-400 text-[#0d1b12] text-sm font-bold leading-normal transition-colors">
+<span>Top up</span>
+</button>
+</div>
+</div>
+</section>
+<!-- Payment Options Section -->
+<section class="mt-6">
+<div class="px-4 pb-2 pt-2">
+<h3 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em]">Payment Options</h3>
+</div>
+<div class="flex flex-col gap-3 px-4 mt-2">
+<!-- Option: Cash -->
+<label class="group flex items-center gap-4 rounded-xl border border-transparent bg-surface-light dark:bg-surface-dark p-4 cursor-pointer transition-all hover:border-primary/30 shadow-sm relative overflow-hidden">
+<!-- Icon -->
+<div class="flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 shrink-0 size-10 text-gray-600 dark:text-gray-300">
+<span class="material-symbols-outlined text-[24px]">payments</span>
+</div>
+<!-- Text -->
+<div class="flex grow flex-col">
+<p class="text-text-main dark:text-white text-base font-semibold leading-normal">Cash</p>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-medium leading-normal">Default method</p>
+</div>
+<!-- Radio Input -->
+<div class="shrink-0 relative">
+<input checked="" class="custom-radio peer h-6 w-6 appearance-none rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-all checked:border-primary focus:outline-none focus:ring-0 focus:ring-offset-0" name="payment_method" type="radio"/>
+</div>
+</label>
+<!-- Option: Visa -->
+<label class="group flex items-center gap-4 rounded-xl border border-transparent bg-surface-light dark:bg-surface-dark p-4 cursor-pointer transition-all hover:border-primary/30 shadow-sm relative overflow-hidden">
+<!-- Icon -->
+<div class="flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 shrink-0 size-10 text-[#1A1F71] dark:text-blue-300">
+<!-- Using material symbol as proxy for logo -->
+<span class="material-symbols-outlined text-[24px]">credit_card</span>
+</div>
+<!-- Text -->
+<div class="flex grow flex-col">
+<p class="text-text-main dark:text-white text-base font-semibold leading-normal">Visa •••• 4242</p>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-medium leading-normal">Expires 10/26</p>
+</div>
+<!-- Radio Input -->
+<div class="shrink-0 relative">
+<input class="custom-radio peer h-6 w-6 appearance-none rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-all checked:border-primary focus:outline-none focus:ring-0 focus:ring-offset-0" name="payment_method" type="radio"/>
+</div>
+</label>
+<!-- Option: Apple Pay -->
+<label class="group flex items-center gap-4 rounded-xl border border-transparent bg-surface-light dark:bg-surface-dark p-4 cursor-pointer transition-all hover:border-primary/30 shadow-sm relative overflow-hidden">
+<!-- Icon -->
+<div class="flex items-center justify-center rounded-lg bg-gray-100 dark:bg-gray-800 shrink-0 size-10 text-black dark:text-white">
+<span class="material-symbols-outlined text-[24px]">contactless</span>
+</div>
+<!-- Text -->
+<div class="flex grow flex-col">
+<p class="text-text-main dark:text-white text-base font-semibold leading-normal">Apple Pay</p>
+<p class="text-text-secondary dark:text-gray-400 text-sm font-medium leading-normal">Linked</p>
+</div>
+<!-- Radio Input -->
+<div class="shrink-0 relative">
+<input class="custom-radio peer h-6 w-6 appearance-none rounded-full border-2 border-gray-300 dark:border-gray-600 bg-transparent transition-all checked:border-primary focus:outline-none focus:ring-0 focus:ring-offset-0" name="payment_method" type="radio"/>
+</div>
+</label>
+</div>
+</section>
+<!-- Add New Method -->
+<section class="mt-6 px-4">
+<button class="w-full group flex items-center gap-4 rounded-xl border border-dashed border-gray-300 dark:border-gray-700 bg-transparent p-4 cursor-pointer transition-all hover:bg-gray-50 dark:hover:bg-gray-800/50">
+<!-- Icon -->
+<div class="flex items-center justify-center rounded-lg bg-transparent shrink-0 size-10 text-primary">
+<span class="material-symbols-outlined text-[28px]">add_circle</span>
+</div>
+<!-- Text -->
+<div class="flex grow flex-col items-start">
+<p class="text-text-main dark:text-white text-base font-bold leading-normal">Add debit/credit card</p>
+</div>
+<!-- Chevron -->
+<div class="shrink-0 text-gray-400">
+<span class="material-symbols-outlined">chevron_right</span>
+</div>
+</button>
+</section>
+<!-- Footer / Security -->
+<div class="mt-12 mb-6 flex flex-col items-center justify-center gap-2 opacity-60">
+<div class="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined text-sm">lock</span>
+<span>Payments are processed securely</span>
+</div>
+<!-- Logos Row (Abstract representation) -->
+<div class="flex gap-3 grayscale opacity-50">
+<div class="h-4 w-8 rounded bg-gray-300 dark:bg-gray-700"></div>
+<div class="h-4 w-8 rounded bg-gray-300 dark:bg-gray-700"></div>
+<div class="h-4 w-8 rounded bg-gray-300 dark:bg-gray-700"></div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

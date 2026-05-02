@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Wallet</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2e22",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .hide-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .hide-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-[#0d1b12] dark:text-white font-display min-h-screen flex flex-col antialiased selection:bg-primary selection:text-[#0d1b12]">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm p-4 flex items-center justify-between border-b border-gray-200/50 dark:border-white/5">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">arrow_back</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center">My Earnings</h2>
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">help_outline</span>
+</button>
+</div>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col w-full max-w-md mx-auto">
+<!-- Balance Section -->
+<div class="px-6 pt-6 pb-2 text-center">
+<p class="text-gray-500 dark:text-gray-400 text-sm font-medium mb-1">Current Balance</p>
+<h1 class="text-[40px] font-extrabold leading-tight tracking-tight text-[#0d1b12] dark:text-white">$1,240.50</h1>
+<div class="mt-3 inline-flex items-center gap-2 px-4 py-1.5 rounded-full bg-surface-light dark:bg-surface-dark border border-gray-100 dark:border-white/10 shadow-sm">
+<span class="material-symbols-outlined text-primary text-[18px]">schedule</span>
+<span class="text-xs font-medium text-gray-600 dark:text-gray-300">Pending Payouts: $45.00</span>
+</div>
+</div>
+<!-- Action Buttons -->
+<div class="px-6 py-8">
+<div class="flex gap-4">
+<button class="flex-1 h-14 bg-primary hover:bg-[#0fdc52] text-[#0d1b12] font-bold rounded-xl flex items-center justify-center gap-2 shadow-lg shadow-primary/20 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">payments</span>
+<span>Withdraw</span>
+</button>
+<button class="flex-1 h-14 bg-surface-light dark:bg-surface-dark hover:bg-gray-50 dark:hover:bg-white/5 text-[#0d1b12] dark:text-white font-semibold rounded-xl flex items-center justify-center gap-2 border border-gray-200 dark:border-white/10 transition-all active:scale-[0.98]">
+<span class="material-symbols-outlined">add_card</span>
+<span>Top Up</span>
+</button>
+</div>
+</div>
+<!-- Payout Methods -->
+<div class="px-6 mb-6">
+<div class="flex items-center justify-between mb-3">
+<h3 class="text-base font-bold text-[#0d1b12] dark:text-white">Payout Methods</h3>
+<button class="text-primary text-sm font-semibold hover:underline">Manage</button>
+</div>
+<div class="flex gap-3 overflow-x-auto hide-scrollbar pb-2 -mx-6 px-6">
+<!-- Method 1: Bank -->
+<div class="min-w-[240px] p-4 rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-white/5 shadow-sm flex flex-col justify-between h-[110px] relative group cursor-pointer transition-colors hover:border-primary/50">
+<div class="flex justify-between items-start">
+<div class="size-10 rounded-full bg-blue-600 flex items-center justify-center text-white font-bold text-xs">CHASE</div>
+<span class="material-symbols-outlined text-gray-400" style="font-size: 20px;">more_horiz</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-[#0d1b12] dark:text-white">Chase Bank</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Checking •••• 8829</p>
+</div>
+<div class="absolute top-4 right-4 opacity-0 group-hover:opacity-100 transition-opacity">
+<span class="material-symbols-outlined text-primary" style="font-size: 20px;">check_circle</span>
+</div>
+</div>
+<!-- Method 2: Wallet -->
+<div class="min-w-[240px] p-4 rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-white/5 shadow-sm flex flex-col justify-between h-[110px] relative group cursor-pointer transition-colors hover:border-primary/50">
+<div class="flex justify-between items-start">
+<div class="size-10 rounded-full bg-purple-600 flex items-center justify-center text-white">
+<span class="material-symbols-outlined" style="font-size: 20px;">account_balance_wallet</span>
+</div>
+<span class="material-symbols-outlined text-gray-400" style="font-size: 20px;">more_horiz</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-[#0d1b12] dark:text-white">Instant Wallet</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">ID: driver_0293</p>
+</div>
+</div>
+<!-- Add New -->
+<button class="min-w-[80px] rounded-xl border-2 border-dashed border-gray-300 dark:border-white/20 flex flex-col items-center justify-center gap-2 hover:bg-gray-50 dark:hover:bg-white/5 transition-colors">
+<span class="material-symbols-outlined text-gray-400">add</span>
+<span class="text-xs font-medium text-gray-500">Add</span>
+</button>
+</div>
+</div>
+<!-- Transaction History -->
+<div class="flex-1 bg-surface-light dark:bg-surface-dark rounded-t-[32px] shadow-[0_-4px_20px_rgba(0,0,0,0.03)] dark:shadow-none border-t border-gray-100 dark:border-white/5">
+<div class="p-6 pb-2">
+<h3 class="text-lg font-bold text-[#0d1b12] dark:text-white mb-4">Transaction History</h3>
+<!-- Filters -->
+<div class="flex gap-2 overflow-x-auto hide-scrollbar mb-6">
+<button class="px-4 py-2 rounded-full bg-[#0d1b12] dark:bg-white text-white dark:text-[#0d1b12] text-sm font-medium whitespace-nowrap">All Activity</button>
+<button class="px-4 py-2 rounded-full bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 text-sm font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">Earnings</button>
+<button class="px-4 py-2 rounded-full bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 text-sm font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">Withdrawals</button>
+<button class="px-4 py-2 rounded-full bg-gray-100 dark:bg-white/5 text-gray-600 dark:text-gray-300 text-sm font-medium whitespace-nowrap hover:bg-gray-200 dark:hover:bg-white/10 transition-colors">Commissions</button>
+</div>
+<!-- List -->
+<div class="flex flex-col gap-1">
+<!-- Item 1: Ride -->
+<div class="flex items-center justify-between py-3 group">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 20px;">directions_car</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-[#0d1b12] dark:text-white">Trip to Downtown</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Today, 2:30 PM • Ride #4829</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">+$15.20</p>
+<p class="text-[10px] text-gray-400">Completed</p>
+</div>
+</div>
+<!-- Item 2: Commission (Negative) -->
+<div class="flex items-center justify-between py-3 group">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-white/5 flex items-center justify-center text-gray-500 dark:text-gray-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">percent</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-[#0d1b12] dark:text-white">Platform Commission</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Today, 2:31 PM • Fee</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-[#0d1b12] dark:text-white">-$2.50</p>
+</div>
+</div>
+<!-- Item 3: Ride -->
+<div class="flex items-center justify-between py-3 group">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 20px;">local_shipping</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-[#0d1b12] dark:text-white">Delivery: 2 Packages</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Today, 11:15 AM • Order #9921</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">+$28.00</p>
+<p class="text-[10px] text-gray-400">Completed</p>
+</div>
+</div>
+<!-- Item 4: Withdrawal -->
+<div class="flex items-center justify-between py-3 group">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">account_balance</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-[#0d1b12] dark:text-white">Withdrawal to Chase</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Yesterday, 6:00 PM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-[#0d1b12] dark:text-white">-$500.00</p>
+<p class="text-[10px] text-green-600 dark:text-primary">Processed</p>
+</div>
+</div>
+<!-- Item 5: Ride -->
+<div class="flex items-center justify-between py-3 group">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-primary/10 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined" style="font-size: 20px;">directions_car</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-[#0d1b12] dark:text-white">Trip to Airport</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Yesterday, 4:45 PM • Ride #4820</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">+$45.50</p>
+<p class="text-[10px] text-gray-400">Completed</p>
+</div>
+</div>
+<!-- Item 6: Top Up -->
+<div class="flex items-center justify-between py-3 group">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-purple-50 dark:bg-purple-900/20 flex items-center justify-center text-purple-600 dark:text-purple-400">
+<span class="material-symbols-outlined" style="font-size: 20px;">add_card</span>
+</div>
+<div>
+<p class="text-sm font-semibold text-[#0d1b12] dark:text-white">Wallet Top Up</p>
+<p class="text-xs text-gray-500 dark:text-gray-400">Sep 20, 9:00 AM</p>
+</div>
+</div>
+<div class="text-right">
+<p class="text-sm font-bold text-emerald-600 dark:text-emerald-400">+$100.00</p>
+<p class="text-[10px] text-gray-400">Success</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Security Badge -->
+<div class="pb-8 pt-4 flex justify-center items-center gap-2 text-gray-400 dark:text-gray-500">
+<span class="material-symbols-outlined text-[16px]">lock</span>
+<span class="text-xs font-medium">Secured by Stripe</span>
+</div>
+</div>
+</main>
+</body></html>

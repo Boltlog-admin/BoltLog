@@ -1,0 +1,216 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver General Settings</title>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Google Fonts & Icons -->
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Theme Configuration -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a3825",
+                        "text-light": "#0d1b12",
+                        "text-dark": "#e0e6e2",
+                        "text-secondary-light": "#6b7280",
+                        "text-secondary-dark": "#9ca3af",
+                        "divider-light": "#e5e7eb",
+                        "divider-dark": "#2d4a35",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Switch Styling */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #13ec5b;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #13ec5b;
+        }
+        
+        /* Hide scrollbar for clean look */
+        ::-webkit-scrollbar {
+            width: 0px;
+            background: transparent;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-text-light dark:text-text-dark transition-colors duration-200">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto overflow-x-hidden shadow-2xl bg-background-light dark:bg-background-dark">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light dark:bg-background-dark p-4 pb-2 justify-between border-b border-divider-light dark:border-divider-dark/20 backdrop-blur-md bg-opacity-90 dark:bg-opacity-90">
+<button class="text-text-light dark:text-text-dark flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors">
+<span class="material-symbols-outlined text-[24px]">arrow_back_ios_new</span>
+</button>
+<h2 class="text-text-light dark:text-text-dark text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center pr-10">General Settings</h2>
+</div>
+<!-- Scrollable Content -->
+<div class="flex-1 overflow-y-auto pb-10">
+<!-- Section: Navigation -->
+<div class="mt-4">
+<h3 class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-bold uppercase tracking-wider px-6 pb-2 pt-2">Navigation</h3>
+<div class="bg-surface-light dark:bg-surface-dark mx-4 rounded-xl shadow-sm border border-divider-light/50 dark:border-divider-dark overflow-hidden">
+<!-- Default Nav App -->
+<button class="w-full flex items-center gap-4 px-4 min-h-[56px] justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-colors group">
+<div class="flex items-center gap-3 overflow-hidden">
+<span class="material-symbols-outlined text-primary">near_me</span>
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal flex-1 truncate">Default Navigation App</p>
+</div>
+<div class="shrink-0 flex items-center gap-2">
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-normal">Google Maps</p>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark text-[20px]">chevron_right</span>
+</div>
+</button>
+<div class="h-[1px] bg-divider-light dark:bg-divider-dark mx-4"></div>
+<!-- Auto-start Navigation -->
+<div class="flex items-center gap-4 px-4 min-h-[56px] justify-between">
+<div class="flex flex-col">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal">Auto-start Navigation</p>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-0.5">Start navigation immediately upon accepting</p>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-2 peer-focus:ring-primary/20 dark:peer-focus:ring-primary/40 rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Notifications & Sound -->
+<div class="mt-6">
+<h3 class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-bold uppercase tracking-wider px-6 pb-2">Notifications &amp; Sound</h3>
+<div class="bg-surface-light dark:bg-surface-dark mx-4 rounded-xl shadow-sm border border-divider-light/50 dark:border-divider-dark overflow-hidden">
+<!-- Sound Selection -->
+<button class="w-full flex items-center gap-4 px-4 min-h-[56px] justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">notifications_active</span>
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal flex-1 truncate">New Order Sound</p>
+</div>
+<div class="shrink-0 flex items-center gap-2">
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-normal">Standard</p>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark text-[20px]">chevron_right</span>
+</div>
+</button>
+<div class="h-[1px] bg-divider-light dark:bg-divider-dark mx-4"></div>
+<!-- Vibration -->
+<div class="flex items-center gap-4 px-4 min-h-[56px] justify-between">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal flex-1 truncate">Vibration</p>
+<div class="shrink-0">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<div class="h-[1px] bg-divider-light dark:bg-divider-dark mx-4"></div>
+<!-- Voice Guidance -->
+<div class="flex items-center gap-4 px-4 min-h-[56px] justify-between">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal flex-1 truncate">Voice Guidance</p>
+<div class="shrink-0">
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Display -->
+<div class="mt-6">
+<h3 class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-bold uppercase tracking-wider px-6 pb-2">Display &amp; Interface</h3>
+<div class="bg-surface-light dark:bg-surface-dark mx-4 rounded-xl shadow-sm border border-divider-light/50 dark:border-divider-dark overflow-hidden">
+<!-- Night Mode -->
+<button class="w-full flex items-center gap-4 px-4 min-h-[56px] justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">dark_mode</span>
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal flex-1 truncate">Night Mode</p>
+</div>
+<div class="shrink-0 flex items-center gap-2">
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-normal">System Default</p>
+<span class="material-symbols-outlined text-text-secondary-light dark:text-text-secondary-dark text-[20px]">chevron_right</span>
+</div>
+</button>
+<div class="h-[1px] bg-divider-light dark:bg-divider-dark mx-4"></div>
+<!-- Keep Screen On -->
+<div class="flex items-center gap-4 px-4 min-h-[56px] justify-between">
+<div class="flex flex-col">
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal">Keep Screen On</p>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-xs mt-0.5">Prevents screen from sleeping while online</p>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+</div>
+</div>
+<!-- Section: Data & Storage -->
+<div class="mt-6 mb-8">
+<h3 class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-bold uppercase tracking-wider px-6 pb-2">Data &amp; Storage</h3>
+<div class="bg-surface-light dark:bg-surface-dark mx-4 rounded-xl shadow-sm border border-divider-light/50 dark:border-divider-dark overflow-hidden">
+<!-- Download via Wi-Fi -->
+<div class="flex items-center gap-4 px-4 min-h-[56px] justify-between">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">wifi</span>
+<p class="text-text-light dark:text-text-dark text-base font-medium leading-normal flex-1 truncate">Download Maps via Wi-Fi only</p>
+</div>
+<div class="shrink-0">
+<label class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all dark:border-gray-600 peer-checked:bg-primary"></div>
+</label>
+</div>
+</div>
+<div class="h-[1px] bg-divider-light dark:bg-divider-dark mx-4"></div>
+<!-- Clear Cache -->
+<button class="w-full flex items-center gap-4 px-4 min-h-[56px] justify-between hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-red-500">delete</span>
+<p class="text-red-500 text-base font-medium leading-normal flex-1 text-left">Clear App Cache</p>
+</div>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-xs font-normal">45 MB</p>
+</button>
+</div>
+</div>
+<!-- Reset Defaults Action -->
+<div class="mx-4 mb-8">
+<button class="w-full py-3 rounded-xl bg-transparent border-2 border-divider-light dark:border-divider-dark text-text-secondary-light dark:text-text-secondary-dark font-semibold text-sm hover:bg-black/5 dark:hover:bg-white/5 transition-colors">
+                    Reset all settings to default
+                </button>
+</div>
+</div>
+</div>
+</body></html>

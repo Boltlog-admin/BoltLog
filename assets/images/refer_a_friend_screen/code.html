@@ -1,0 +1,186 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Refer a Friend</title>
+<!-- Fonts -->
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:ital,wght@0,200..800;1,200..800&amp;family=Noto+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<!-- Material Symbols -->
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<!-- Tailwind CSS -->
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<!-- Tailwind Config -->
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a3322",
+                        "text-main": "#0d1b12",
+                        "text-secondary": "#4c9a66",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"],
+                        "body": ["Noto Sans", "sans-serif"],
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main dark:text-white font-display antialiased selection:bg-primary selection:text-text-main">
+<div class="relative flex h-full min-h-screen w-full flex-col overflow-x-hidden pb-24">
+<!-- TopAppBar -->
+<div class="sticky top-0 z-10 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm p-4 pb-2 justify-between border-b border-gray-100 dark:border-gray-800 transition-colors">
+<div class="text-text-main dark:text-white flex size-12 shrink-0 items-center justify-start cursor-pointer hover:opacity-70 transition-opacity">
+<span class="material-symbols-outlined">arrow_back</span>
+</div>
+<h2 class="text-text-main dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] flex-1 text-center">Refer a Friend</h2>
+<div class="flex w-12 items-center justify-end cursor-pointer hover:opacity-70 transition-opacity">
+<p class="text-primary dark:text-primary text-base font-bold leading-normal tracking-[0.015em] shrink-0">History</p>
+</div>
+</div>
+<!-- Header Hero Section -->
+<div class="@container w-full p-4">
+<div class="relative w-full overflow-hidden rounded-2xl bg-surface-light dark:bg-surface-dark shadow-sm">
+<!-- Illustration/Image -->
+<div class="bg-cover bg-center h-[220px] w-full relative" data-alt="3D illustration of a gift box and referral ticket floating in green space" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDDrsGqcjVhzP2iyakAFDDYAmZDcKJQOOaKKU11wP7PSZGn947pmZaqnOml-L8PIraIWmozMRU4jsauS7hOlf0qcTzmNaAGyx7uEvdKlAM5idsVd_yVxp-lm9KoVl2qUdnvM2Q3ONaqKBm2us59LejBdynM3N_GrCW7JvXZEDGWeNIbxcwDs5TDHAvIasHShgxkcm4fHZoeODaC1BxLY45BugdizkXFXSreKfxp0sW_bng8PU1pyF1H22024HM4GpWOmp-GyWPB0uk");'>
+<div class="absolute inset-0 bg-gradient-to-t from-black/70 to-transparent"></div>
+<div class="absolute bottom-0 left-0 p-6 w-full">
+<p class="text-white tracking-tight text-3xl font-extrabold leading-tight mb-1">Give $10, Get $10</p>
+<p class="text-white/90 text-sm font-medium">Earn unlimited rewards for every friend.</p>
+</div>
+</div>
+</div>
+</div>
+<!-- Explanation Text -->
+<div class="px-6 py-2">
+<p class="text-gray-600 dark:text-gray-300 text-base font-normal leading-relaxed text-center">
+                Send a promo code to a friend. They get a discount on their first ride, and you get a reward when they finish it!
+            </p>
+</div>
+<!-- Referral Code Section -->
+<div class="flex flex-col items-center justify-center px-4 py-6 w-full max-w-md mx-auto">
+<div class="w-full bg-surface-light dark:bg-surface-dark rounded-xl p-6 shadow-sm border border-gray-100 dark:border-gray-800 flex flex-col items-center gap-4">
+<span class="text-xs font-bold tracking-wider text-gray-400 dark:text-gray-500 uppercase">Your Invite Code</span>
+<div class="flex items-center gap-3 w-full justify-center">
+<!-- Code Display -->
+<div class="relative group cursor-pointer">
+<div class="absolute -inset-1 bg-gradient-to-r from-primary to-[#8bfba4] rounded-lg blur opacity-25 group-hover:opacity-50 transition duration-200"></div>
+<div class="relative px-8 py-3 bg-background-light dark:bg-surface-dark rounded-lg border-2 border-dashed border-primary/50 flex items-center justify-center">
+<span class="text-2xl font-black text-text-main dark:text-white tracking-widest font-mono">IND-8829</span>
+</div>
+</div>
+</div>
+<!-- Copy Button -->
+<button class="flex w-full items-center justify-center gap-2 rounded-lg h-12 px-6 bg-primary hover:bg-primary/90 text-text-main font-bold transition-all active:scale-95 shadow-md shadow-primary/20">
+<span class="material-symbols-outlined text-[20px]">content_copy</span>
+<span>Copy Code</span>
+</button>
+</div>
+</div>
+<!-- Social Share Grid -->
+<div class="w-full px-4 mb-2">
+<p class="text-center text-sm font-semibold text-gray-500 dark:text-gray-400 mb-4">Share via</p>
+<div class="grid grid-cols-4 gap-4 max-w-sm mx-auto">
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-14 rounded-full bg-[#25D366]/10 dark:bg-[#25D366]/20 flex items-center justify-center group-hover:bg-[#25D366]/20 transition-colors">
+<!-- Using a generic chat icon to represent WhatsApp without brand assets -->
+<span class="material-symbols-outlined text-[#25D366] text-2xl">chat</span>
+</div>
+<span class="text-xs font-medium text-gray-600 dark:text-gray-300">WhatsApp</span>
+</button>
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-14 rounded-full bg-[#0088cc]/10 dark:bg-[#0088cc]/20 flex items-center justify-center group-hover:bg-[#0088cc]/20 transition-colors">
+<span class="material-symbols-outlined text-[#0088cc] text-2xl">send</span>
+</div>
+<span class="text-xs font-medium text-gray-600 dark:text-gray-300">Telegram</span>
+</button>
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-gray-600 dark:text-gray-300 text-2xl">sms</span>
+</div>
+<span class="text-xs font-medium text-gray-600 dark:text-gray-300">SMS</span>
+</button>
+<button class="flex flex-col items-center gap-2 group">
+<div class="size-14 rounded-full bg-gray-100 dark:bg-gray-800 flex items-center justify-center group-hover:bg-gray-200 dark:group-hover:bg-gray-700 transition-colors">
+<span class="material-symbols-outlined text-gray-600 dark:text-gray-300 text-2xl">ios_share</span>
+</div>
+<span class="text-xs font-medium text-gray-600 dark:text-gray-300">More</span>
+</button>
+</div>
+</div>
+<div class="h-4"></div>
+<!-- How It Works Section -->
+<div class="px-4 py-6 bg-surface-light dark:bg-surface-dark mt-4 rounded-t-3xl shadow-[0_-4px_6px_-1px_rgba(0,0,0,0.05)] border-t border-gray-100 dark:border-gray-800">
+<h3 class="text-lg font-bold text-text-main dark:text-white mb-6 px-2">How it works</h3>
+<div class="flex flex-col gap-6">
+<!-- Step 1 -->
+<div class="flex items-start gap-4 px-2">
+<div class="relative shrink-0">
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">1</div>
+<div class="absolute top-10 left-1/2 w-0.5 h-8 bg-gray-200 dark:bg-gray-700 -translate-x-1/2"></div>
+</div>
+<div class="pt-1">
+<h4 class="text-base font-bold text-text-main dark:text-white leading-none mb-1">Send your link</h4>
+<p class="text-sm text-gray-500 dark:text-gray-400">Share your exclusive code with friends via any app.</p>
+</div>
+</div>
+<!-- Step 2 -->
+<div class="flex items-start gap-4 px-2">
+<div class="relative shrink-0">
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center text-primary font-bold">2</div>
+<div class="absolute top-10 left-1/2 w-0.5 h-8 bg-gray-200 dark:bg-gray-700 -translate-x-1/2"></div>
+</div>
+<div class="pt-1">
+<h4 class="text-base font-bold text-text-main dark:text-white leading-none mb-1">Friend takes a ride</h4>
+<p class="text-sm text-gray-500 dark:text-gray-400">Your friend signs up and completes their first trip.</p>
+</div>
+</div>
+<!-- Step 3 -->
+<div class="flex items-start gap-4 px-2">
+<div class="shrink-0">
+<div class="size-10 rounded-full bg-primary text-text-main flex items-center justify-center font-bold shadow-lg shadow-primary/30">
+<span class="material-symbols-outlined text-[20px]">check</span>
+</div>
+</div>
+<div class="pt-1">
+<h4 class="text-base font-bold text-text-main dark:text-white leading-none mb-1">You get $10</h4>
+<p class="text-sm text-gray-500 dark:text-gray-400">The credit is automatically applied to your wallet.</p>
+</div>
+</div>
+</div>
+<!-- Terms Link -->
+<div class="mt-8 text-center">
+<a class="text-xs text-primary font-medium hover:underline" href="#">Terms &amp; Conditions Apply</a>
+</div>
+</div>
+<!-- Sticky Bottom Action -->
+<div class="fixed bottom-0 left-0 right-0 p-4 bg-background-light/90 dark:bg-background-dark/90 backdrop-blur-md border-t border-gray-200 dark:border-gray-800">
+<button class="w-full h-12 bg-text-main dark:bg-white text-white dark:text-text-main rounded-xl font-bold text-base shadow-lg active:scale-[0.99] transition-transform flex items-center justify-center gap-2">
+<span class="material-symbols-outlined">share</span>
+                Invite Friends
+            </button>
+</div>
+</div>
+</body></html>

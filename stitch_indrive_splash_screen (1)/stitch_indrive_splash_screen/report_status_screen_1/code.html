@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Report Status Screen</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }.no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased min-h-screen flex flex-col transition-colors duration-200">
+<header class="sticky top-0 z-50 bg-background-light dark:bg-background-dark/95 backdrop-blur-sm border-b border-slate-200 dark:border-slate-800">
+<div class="flex items-center justify-between px-4 py-3">
+<button class="flex size-10 items-center justify-center rounded-full active:bg-slate-200 dark:active:bg-slate-800 text-slate-900 dark:text-white transition-colors">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h1 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-[-0.015em] text-center flex-1">
+                My Reports
+            </h1>
+<button class="flex h-10 items-center justify-center px-2 rounded-lg active:bg-primary/10 transition-colors">
+<span class="text-primary text-sm font-bold leading-normal tracking-[0.015em]">New Report</span>
+</button>
+</div>
+</header>
+<div class="bg-background-light dark:bg-background-dark px-4 pt-4 pb-2 sticky top-[60px] z-40 space-y-3 shadow-sm border-b border-slate-200 dark:border-slate-800/50">
+<div class="flex gap-3">
+<div class="relative flex-1">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-400 text-[20px]">search</span>
+<input class="w-full bg-white dark:bg-slate-800 border-none rounded-xl py-2.5 pl-10 pr-4 text-sm text-slate-900 dark:text-white placeholder:text-slate-400 shadow-sm focus:ring-1 focus:ring-primary/50" placeholder="Search issues..." type="text"/>
+</div>
+<button class="flex items-center gap-2 bg-white dark:bg-slate-800 px-3.5 rounded-xl shadow-sm active:bg-slate-50 dark:active:bg-slate-700 transition-colors">
+<span class="material-symbols-outlined text-slate-700 dark:text-slate-300 text-[20px]">sort</span>
+<span class="text-xs font-semibold text-slate-700 dark:text-slate-300 whitespace-nowrap hidden sm:block">Sort</span>
+</button>
+</div>
+<div class="flex gap-2 overflow-x-auto no-scrollbar pb-1">
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-slate-900 dark:bg-white text-white dark:text-slate-900 shrink-0 transition-colors">
+<span class="text-xs font-semibold">All</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shrink-0 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+<span class="text-xs font-medium">Pending Review</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shrink-0 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+<span class="text-xs font-medium">In Progress</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shrink-0 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+<span class="text-xs font-medium">Resolved</span>
+</button>
+<button class="flex items-center gap-1.5 px-3 py-1.5 rounded-full bg-white dark:bg-slate-800 border border-slate-200 dark:border-slate-700 text-slate-600 dark:text-slate-300 shrink-0 hover:border-slate-300 dark:hover:border-slate-600 transition-colors">
+<span class="text-xs font-medium">Closed</span>
+</button>
+</div>
+<div class="flex justify-between items-center pt-1 pb-1">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">5 reports found</p>
+<div class="flex items-center gap-1 text-slate-500 dark:text-slate-400 cursor-pointer">
+<span class="text-xs">Newest first</span>
+<span class="material-symbols-outlined text-[16px]">keyboard_arrow_down</span>
+</div>
+</div>
+</div>
+<main class="flex-1 w-full flex flex-col gap-4 px-4 py-4 pb-8">
+<article class="group relative flex flex-col gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700/50 active:scale-[0.99] transition-all duration-200 cursor-pointer">
+<div class="flex justify-between items-start gap-3">
+<div class="flex items-start gap-4 flex-1">
+<div class="flex items-center justify-center rounded-full bg-orange-100 dark:bg-orange-900/20 shrink-0 size-12 text-orange-600 dark:text-orange-400">
+<span class="material-symbols-outlined">local_taxi</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-slate-900 dark:text-white text-base font-bold leading-tight mb-1">Driver did not arrive</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">Oct 24, 2023 • 10:30 AM</p>
+<p class="text-slate-600 dark:text-slate-300 text-sm leading-snug line-clamp-1">Driver was 15 mins late and stopped responding to calls.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 text-[20px] mt-1">chevron_right</span>
+</div>
+<div class="h-px w-full bg-slate-100 dark:bg-slate-700"></div>
+<div class="flex justify-between items-center">
+<p class="text-orange-600 dark:text-orange-400 text-xs font-medium">Investigating</p>
+<div class="px-2.5 py-1 rounded-full bg-orange-100 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800">
+<p class="text-orange-700 dark:text-orange-300 text-xs font-bold uppercase tracking-wide">Pending Review</p>
+</div>
+</div>
+</article>
+<article class="group relative flex flex-col gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700/50 active:scale-[0.99] transition-all duration-200 cursor-pointer">
+<div class="flex justify-between items-start gap-3">
+<div class="flex items-start gap-4 flex-1">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-12 text-green-700 dark:text-primary">
+<span class="material-symbols-outlined">payments</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-slate-900 dark:text-white text-base font-bold leading-tight mb-1">Refund request: Trip #4920</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">Oct 20, 2023 • 02:15 PM</p>
+<p class="text-slate-600 dark:text-slate-300 text-sm leading-snug line-clamp-1">Refund processed to your wallet.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 text-[20px] mt-1">chevron_right</span>
+</div>
+<div class="h-px w-full bg-slate-100 dark:bg-slate-700"></div>
+<div class="flex justify-between items-center">
+<p class="text-green-600 dark:text-green-400 text-xs font-medium">Funds returned</p>
+<div class="px-2.5 py-1 rounded-full bg-primary/20 dark:bg-primary/10 border border-primary/30 dark:border-primary/20">
+<p class="text-green-800 dark:text-primary text-xs font-bold uppercase tracking-wide">Resolved</p>
+</div>
+</div>
+</article>
+<article class="group relative flex flex-col gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700/50 active:scale-[0.99] transition-all duration-200 cursor-pointer opacity-80 hover:opacity-100">
+<div class="flex justify-between items-start gap-3">
+<div class="flex items-start gap-4 flex-1">
+<div class="flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-700 shrink-0 size-12 text-slate-600 dark:text-slate-400">
+<span class="material-symbols-outlined">credit_card</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-slate-900 dark:text-white text-base font-bold leading-tight mb-1">Incorrect charge</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">Sep 15, 2023 • 08:45 AM</p>
+<p class="text-slate-600 dark:text-slate-300 text-sm leading-snug line-clamp-1">Case closed after verification.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 text-[20px] mt-1">chevron_right</span>
+</div>
+<div class="h-px w-full bg-slate-100 dark:bg-slate-700"></div>
+<div class="flex justify-between items-center">
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium">No action taken</p>
+<div class="px-2.5 py-1 rounded-full bg-slate-100 dark:bg-slate-700 border border-slate-200 dark:border-slate-600">
+<p class="text-slate-600 dark:text-slate-400 text-xs font-bold uppercase tracking-wide">Closed</p>
+</div>
+</div>
+</article>
+<article class="group relative flex flex-col gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700/50 active:scale-[0.99] transition-all duration-200 cursor-pointer">
+<div class="flex justify-between items-start gap-3">
+<div class="flex items-start gap-4 flex-1">
+<div class="flex items-center justify-center rounded-full bg-primary/10 dark:bg-primary/20 shrink-0 size-12 text-green-700 dark:text-primary">
+<span class="material-symbols-outlined">package_2</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-slate-900 dark:text-white text-base font-bold leading-tight mb-1">Package damaged</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">Aug 02, 2023 • 06:20 PM</p>
+<p class="text-slate-600 dark:text-slate-300 text-sm leading-snug line-clamp-1">Insurance claim approved.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 text-[20px] mt-1">chevron_right</span>
+</div>
+<div class="h-px w-full bg-slate-100 dark:bg-slate-700"></div>
+<div class="flex justify-between items-center">
+<p class="text-green-600 dark:text-green-400 text-xs font-medium">Coupon issued</p>
+<div class="px-2.5 py-1 rounded-full bg-primary/20 dark:bg-primary/10 border border-primary/30 dark:border-primary/20">
+<p class="text-green-800 dark:text-primary text-xs font-bold uppercase tracking-wide">Resolved</p>
+</div>
+</div>
+</article>
+<article class="group relative flex flex-col gap-3 bg-white dark:bg-slate-800 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-700/50 active:scale-[0.99] transition-all duration-200 cursor-pointer opacity-80 hover:opacity-100">
+<div class="flex justify-between items-start gap-3">
+<div class="flex items-start gap-4 flex-1">
+<div class="flex items-center justify-center rounded-full bg-red-50 dark:bg-red-900/10 shrink-0 size-12 text-red-500 dark:text-red-400">
+<span class="material-symbols-outlined">person_off</span>
+</div>
+<div class="flex flex-col">
+<h3 class="text-slate-900 dark:text-white text-base font-bold leading-tight mb-1">Driver rude behavior</h3>
+<p class="text-slate-500 dark:text-slate-400 text-xs font-medium mb-1">Jul 12, 2023 • 11:15 AM</p>
+<p class="text-slate-600 dark:text-slate-300 text-sm leading-snug line-clamp-1">Insufficient evidence provided.</p>
+</div>
+</div>
+<span class="material-symbols-outlined text-slate-400 dark:text-slate-600 text-[20px] mt-1">chevron_right</span>
+</div>
+<div class="h-px w-full bg-slate-100 dark:bg-slate-700"></div>
+<div class="flex justify-between items-center">
+<p class="text-red-600 dark:text-red-400 text-xs font-medium">Request denied</p>
+<div class="px-2.5 py-1 rounded-full bg-red-100 dark:bg-red-900/30 border border-red-200 dark:border-red-800">
+<p class="text-red-700 dark:text-red-300 text-xs font-bold uppercase tracking-wide">Rejected</p>
+</div>
+</div>
+</article>
+</main>
+<div class="pb-8 text-center px-8">
+<p class="text-slate-400 dark:text-slate-600 text-xs">Showing 5 of 5 reports</p>
+</div>
+
+</body></html>

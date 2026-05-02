@@ -1,0 +1,167 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Saved Places</title>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;family=Noto+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0ea641", // Darker shade for text/borders
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "2xl": "1rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom scrollbar hiding for cleaner look */
+        .no-scrollbar::-webkit-scrollbar {
+            display: none;
+        }
+        .no-scrollbar {
+            -ms-overflow-style: none;
+            scrollbar-width: none;
+        }
+        
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        
+        .icon-filled {
+            font-variation-settings: 'FILL' 1, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-50 antialiased selection:bg-primary selection:text-slate-900">
+<div class="relative flex h-full min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden border-x border-slate-200 dark:border-slate-800 shadow-2xl">
+<!-- Header -->
+<header class="sticky top-0 z-10 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm p-4 pb-2 justify-between border-b border-slate-200/50 dark:border-slate-800/50">
+<button class="flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-slate-800 transition-colors">
+<span class="material-symbols-outlined text-slate-900 dark:text-white" style="font-size: 24px;">arrow_back_ios_new</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight tracking-tight flex-1 text-center">Saved Places</h2>
+<button class="flex w-12 items-center justify-end group">
+<span class="text-primary-dark dark:text-primary text-base font-bold leading-normal group-hover:opacity-80 transition-opacity">Edit</span>
+</button>
+</header>
+<!-- Main Content -->
+<main class="flex-1 px-4 py-6 flex flex-col gap-6">
+<!-- Add New Section -->
+<section>
+<button class="w-full group flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-primary/50 dark:hover:border-primary/50 transition-all active:scale-[0.99]">
+<div class="flex items-center justify-center rounded-full bg-primary/20 text-primary-dark dark:text-primary shrink-0 size-10 group-hover:bg-primary group-hover:text-slate-900 transition-colors duration-300">
+<span class="material-symbols-outlined" style="font-size: 24px;">add</span>
+</div>
+<div class="flex-1 text-left">
+<p class="text-slate-900 dark:text-white text-base font-bold leading-normal">Add a new place</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal">Save a frequent destination</p>
+</div>
+<div class="shrink-0 text-slate-400 dark:text-slate-500 group-hover:translate-x-1 transition-transform">
+<span class="material-symbols-outlined" style="font-size: 20px;">chevron_right</span>
+</div>
+</button>
+</section>
+<!-- Saved Lists -->
+<section class="flex flex-col gap-3">
+<h3 class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider pl-2">Favorites</h3>
+<!-- Home Item -->
+<div class="group relative flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer">
+<div class="flex items-center justify-center rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 shrink-0 size-12">
+<span class="material-symbols-outlined icon-filled" style="font-size: 24px;">home</span>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Home</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal truncate">123 Green Street, Apt 4B</p>
+</div>
+<button class="shrink-0 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_horiz</span>
+</button>
+</div>
+<!-- Work Item -->
+<div class="group relative flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer">
+<div class="flex items-center justify-center rounded-full bg-amber-50 dark:bg-amber-900/20 text-amber-600 dark:text-amber-400 shrink-0 size-12">
+<span class="material-symbols-outlined icon-filled" style="font-size: 24px;">work</span>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Work</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal truncate">45 Tech Park Blvd, Suite 200</p>
+</div>
+<button class="shrink-0 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_horiz</span>
+</button>
+</div>
+</section>
+<!-- Other Lists -->
+<section class="flex flex-col gap-3">
+<h3 class="text-slate-500 dark:text-slate-400 text-xs font-bold uppercase tracking-wider pl-2">Other Places</h3>
+<!-- Gym Item -->
+<div class="group relative flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer">
+<div class="flex items-center justify-center rounded-full bg-rose-50 dark:bg-rose-900/20 text-rose-600 dark:text-rose-400 shrink-0 size-12">
+<span class="material-symbols-outlined icon-filled" style="font-size: 24px;">fitness_center</span>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Gym</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal truncate">88 Fitness Ave</p>
+</div>
+<button class="shrink-0 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_horiz</span>
+</button>
+</div>
+<!-- Custom Place Item -->
+<div class="group relative flex items-center gap-4 bg-white dark:bg-slate-900 p-4 rounded-xl shadow-sm border border-slate-100 dark:border-slate-800 hover:border-slate-300 dark:hover:border-slate-600 transition-all cursor-pointer">
+<div class="flex items-center justify-center rounded-full bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-400 shrink-0 size-12">
+<span class="material-symbols-outlined" style="font-size: 24px;">star</span>
+</div>
+<div class="flex flex-col justify-center flex-1 min-w-0">
+<p class="text-slate-900 dark:text-white text-base font-semibold leading-normal truncate">Sarah's Place</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-normal leading-normal truncate">90210 Beverly Hills, CA</p>
+</div>
+<button class="shrink-0 p-2 rounded-full hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-900 dark:hover:text-white transition-colors">
+<span class="material-symbols-outlined" style="font-size: 24px;">more_horiz</span>
+</button>
+</div>
+</section>
+</main>
+<!-- Bottom Action / Map Preview Hint -->
+<div class="p-6 mt-auto">
+<div class="relative w-full h-32 rounded-2xl overflow-hidden shadow-inner group cursor-pointer border border-slate-200 dark:border-slate-700">
+<!-- Abstract Map Background -->
+<div class="absolute inset-0 bg-slate-200 dark:bg-slate-800" data-alt="Abstract map pattern showing street grids in light gray" data-location="City Map" style="https://placeholder.pics/svg/300">
+<!-- CSS Pattern for map-like effect -->
+<div class="w-full h-full opacity-30" style="background-image: radial-gradient(#94a3b8 1px, transparent 1px); background-size: 20px 20px;"></div>
+<div class="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full h-1 bg-primary/20 -rotate-12"></div>
+<div class="absolute top-1/3 left-1/4 w-1 h-full bg-primary/20 rotate-45"></div>
+</div>
+<div class="absolute inset-0 bg-gradient-to-t from-background-light via-transparent to-transparent dark:from-background-dark"></div>
+<div class="absolute bottom-3 left-4 right-4 flex justify-between items-end">
+<div>
+<p class="text-xs font-semibold text-slate-500 dark:text-slate-400 uppercase tracking-wide">Current Location</p>
+<p class="text-sm font-bold text-slate-900 dark:text-white truncate">5th Avenue, New York</p>
+</div>
+<div class="flex size-8 items-center justify-center rounded-full bg-primary text-slate-900 shadow-lg">
+<span class="material-symbols-outlined" style="font-size: 18px;">my_location</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+</body></html>

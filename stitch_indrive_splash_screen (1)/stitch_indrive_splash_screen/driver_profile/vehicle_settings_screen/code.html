@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Driver Profile &amp; Settings</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "primary-dark": "#0eb545",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#162b1e",
+                        "surface-dark-highlight": "#1e3626",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "2xl": "1rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        /* Custom Toggle Switch Styles */
+        .toggle-checkbox:checked {
+            right: 0;
+            border-color: #13ec5b;
+        }
+        .toggle-checkbox:checked + .toggle-label {
+            background-color: #13ec5b;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="antialiased text-slate-900 dark:text-white bg-background-light dark:bg-background-dark font-display selection:bg-primary selection:text-background-dark">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden pb-10">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 flex items-center bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-md p-4 justify-between border-b border-gray-200 dark:border-gray-800 transition-colors duration-300">
+<button class="text-slate-900 dark:text-white flex size-10 shrink-0 items-center justify-center rounded-full hover:bg-slate-200 dark:hover:bg-surface-dark-highlight transition-colors">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h2 class="text-slate-900 dark:text-white text-lg font-bold leading-tight flex-1 text-center">Profile &amp; Settings</h2>
+<button class="flex w-12 items-center justify-end text-primary dark:text-primary hover:text-primary-dark transition-colors text-base font-bold">
+                Save
+            </button>
+</div>
+<!-- Profile Header -->
+<div class="flex flex-col items-center gap-4 pt-6 pb-6 px-4">
+<div class="relative group">
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full h-28 w-28 border-4 border-white dark:border-surface-dark shadow-lg dark:shadow-black/20" data-alt="Portrait of Alex Driver looking confident" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuDqdaS29XsQWZTYAZNvzWca1MnIIfr_DVnPR_X2XqNaJ423PxIlsa1Hx6OcUyUfuC7TCpCXKjNXU9dOOdn7SqWq8jw6PAr6On4mwyGxfNcpUE0cRlYzpAgkc4iwcy5MZ5YlN1WwPQ7yyvsewXP8-6E1k_XSG1nnztlSmpxNJl873HVDSngWwWapBmvxWd2iCh9JOcHCgb-x8O5R6Fv_bXMONczKuTCH24F9LpMa0sP3ym1wCnemtTn3_zPo708guBylkCsaFv7gMqk");'>
+</div>
+<button class="absolute bottom-0 right-0 bg-primary text-background-dark rounded-full p-2 border-4 border-background-light dark:border-background-dark cursor-pointer hover:bg-white hover:text-primary transition-colors shadow-sm">
+<span class="material-symbols-outlined text-sm font-bold block">edit</span>
+</button>
+</div>
+<div class="flex flex-col items-center">
+<h1 class="text-slate-900 dark:text-white text-2xl font-bold tracking-tight">Alex Driver</h1>
+<div class="flex items-center gap-3 mt-2">
+<span class="text-slate-500 dark:text-slate-400 text-sm font-medium bg-slate-100 dark:bg-surface-dark px-3 py-1 rounded-full">Member since 2021</span>
+<span class="flex items-center gap-1 text-slate-900 dark:text-white text-sm font-bold bg-yellow-100 dark:bg-yellow-900/30 px-3 py-1 rounded-full border border-yellow-200 dark:border-yellow-800">
+<span class="material-symbols-outlined text-yellow-500 text-sm fill-current" style="font-variation-settings: 'FILL' 1;">star</span> 4.9
+                     </span>
+</div>
+</div>
+</div>
+<!-- Active Vehicle Section -->
+<div class="flex flex-col gap-3 px-4 mt-2">
+<div class="flex items-center justify-between">
+<h3 class="text-slate-900 dark:text-white text-xl font-bold leading-tight">Active Vehicle</h3>
+</div>
+<div class="flex flex-col rounded-2xl bg-surface-light dark:bg-surface-dark shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-transparent dark:border-surface-dark-highlight overflow-hidden">
+<div class="relative h-48 w-full bg-center bg-cover bg-no-repeat" data-alt="White Toyota Camry parked on a city street side view" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuBtRfZw20uya5h9MM_c8dE2keK1d3corWspvCMN6IoL84ncfA8SiwFro3lCoyqXmpWlKexftZfBxBKdb4zO1l3DPD_3RqgNP7cTJ1-R5pJXwgR8WiEinKcTMBimpHJvYRWJoFzAvBZQvyOZdEQOGqmic0iDXCj9uE5KH6J-w_k_ex8y3olbFoKPESMznEnaMoeXk_NFonn3Gk30Ki4dVF8t0iQESMXuxzjla-sAfgpsDeXuOdsuxF2J2PBGvmgn8Frg7F-DSvm6KWA");'>
+<div class="absolute top-3 right-3">
+<span class="bg-primary/90 backdrop-blur text-background-dark text-xs font-bold px-3 py-1 rounded-full shadow-sm flex items-center gap-1">
+<span class="w-2 h-2 rounded-full bg-background-dark animate-pulse"></span>
+                            ACTIVE
+                         </span>
+</div>
+</div>
+<div class="p-4 flex flex-col gap-4">
+<div class="flex items-start justify-between">
+<div>
+<p class="text-slate-900 dark:text-white text-lg font-bold leading-tight">Toyota Camry (White)</p>
+<p class="text-slate-500 dark:text-slate-400 text-sm font-medium mt-1">License Plate: <span class="text-slate-900 dark:text-white font-mono bg-slate-100 dark:bg-black/20 px-1 rounded">ABC-1234</span></p>
+</div>
+</div>
+<button class="w-full flex items-center justify-center gap-2 rounded-xl h-11 px-4 bg-slate-100 dark:bg-surface-dark-highlight text-slate-900 dark:text-white text-sm font-bold hover:bg-slate-200 dark:hover:bg-[#253f2e] transition-colors">
+<span class="material-symbols-outlined text-lg">directions_car</span>
+                        Manage Vehicles
+                    </button>
+</div>
+</div>
+</div>
+<!-- Documents Section -->
+<div class="flex flex-col gap-3 px-4 mt-8">
+<h3 class="text-slate-900 dark:text-white text-xl font-bold leading-tight px-1">Documents</h3>
+<div class="flex flex-col rounded-2xl bg-surface-light dark:bg-surface-dark shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-transparent dark:border-surface-dark-highlight divide-y divide-gray-100 dark:divide-gray-800">
+<!-- Document Item: Verified -->
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-surface-dark-highlight transition-colors">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 flex items-center justify-center">
+<span class="material-symbols-outlined">badge</span>
+</div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white font-semibold">Driver's License</span>
+<span class="text-slate-500 dark:text-slate-400 text-xs">Expires Dec 2025</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-primary text-sm font-bold hidden sm:block">Verified</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="material-symbols-outlined text-gray-400 text-lg">chevron_right</span>
+</div>
+</div>
+<!-- Document Item: Warning -->
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-surface-dark-highlight transition-colors">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-orange-50 dark:bg-orange-900/20 text-orange-600 dark:text-orange-400 flex items-center justify-center">
+<span class="material-symbols-outlined">gpp_maybe</span>
+</div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white font-semibold">Vehicle Insurance</span>
+<span class="text-orange-600 dark:text-orange-400 text-xs font-medium">Expires in 3 days</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="size-2 rounded-full bg-orange-500 animate-pulse"></span>
+<span class="material-symbols-outlined text-gray-400 text-lg">chevron_right</span>
+</div>
+</div>
+<!-- Document Item: Verified -->
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-surface-dark-highlight transition-colors">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 flex items-center justify-center">
+<span class="material-symbols-outlined">car_repair</span>
+</div>
+<div class="flex flex-col">
+<span class="text-slate-900 dark:text-white font-semibold">Vehicle Inspection</span>
+<span class="text-slate-500 dark:text-slate-400 text-xs">Verified on Jan 10</span>
+</div>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-primary text-sm font-bold hidden sm:block">Verified</span>
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">check_circle</span>
+<span class="material-symbols-outlined text-gray-400 text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- App Settings Section -->
+<div class="flex flex-col gap-3 px-4 mt-8">
+<h3 class="text-slate-900 dark:text-white text-xl font-bold leading-tight px-1">App Settings</h3>
+<div class="flex flex-col rounded-2xl bg-surface-light dark:bg-surface-dark shadow-[0_2px_8px_rgba(0,0,0,0.04)] dark:shadow-none border border-transparent dark:border-surface-dark-highlight divide-y divide-gray-100 dark:divide-gray-800">
+<!-- Setting Item: Toggle -->
+<div class="p-4 flex items-center justify-between">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-gray-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+<span class="material-symbols-outlined">notifications</span>
+</div>
+<span class="text-slate-900 dark:text-white font-semibold">Push Notifications</span>
+</div>
+<div class="relative inline-block w-12 mr-2 align-middle select-none transition duration-200 ease-in">
+<input checked="" class="toggle-checkbox absolute block w-6 h-6 rounded-full bg-white border-4 appearance-none cursor-pointer border-gray-300 dark:border-gray-600 checked:right-0 checked:border-primary transition-all duration-300 outline-none" id="toggle-notif" name="toggle" type="checkbox"/>
+<label class="toggle-label block overflow-hidden h-6 rounded-full bg-gray-300 dark:bg-gray-700 cursor-pointer peer-checked:bg-primary transition-colors duration-300" for="toggle-notif"></label>
+</div>
+</div>
+<!-- Setting Item: Navigation -->
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-surface-dark-highlight transition-colors">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-gray-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+<span class="material-symbols-outlined">navigation</span>
+</div>
+<span class="text-slate-900 dark:text-white font-semibold">Navigation App</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-slate-500 dark:text-slate-400 text-sm">Google Maps</span>
+<span class="material-symbols-outlined text-gray-400 text-lg">chevron_right</span>
+</div>
+</div>
+<!-- Setting Item: Language -->
+<div class="p-4 flex items-center justify-between group cursor-pointer hover:bg-gray-50 dark:hover:bg-surface-dark-highlight transition-colors">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-gray-800 text-slate-700 dark:text-slate-300 flex items-center justify-center">
+<span class="material-symbols-outlined">language</span>
+</div>
+<span class="text-slate-900 dark:text-white font-semibold">Language</span>
+</div>
+<div class="flex items-center gap-2">
+<span class="text-slate-500 dark:text-slate-400 text-sm">English (US)</span>
+<span class="material-symbols-outlined text-gray-400 text-lg">chevron_right</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Footer -->
+<div class="mt-8 mb-6 flex flex-col items-center gap-4 px-4">
+<button class="w-full rounded-xl h-12 flex items-center justify-center text-red-600 dark:text-red-400 font-bold bg-red-50 dark:bg-red-900/10 hover:bg-red-100 dark:hover:bg-red-900/20 transition-colors">
+                Log Out
+             </button>
+<p class="text-xs text-slate-400 dark:text-slate-600">Version 2.4.0 (Build 3492)</p>
+</div>
+</div>
+<!-- Bottom Padding Div for scrolling clearance -->
+<div class="h-6"></div>
+</body></html>

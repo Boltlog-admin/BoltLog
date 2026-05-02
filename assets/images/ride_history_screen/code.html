@@ -1,0 +1,293 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Ride History</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1a2c20",
+                        "text-primary-light": "#0d1b12",
+                        "text-primary-dark": "#e7f3eb",
+                        "text-secondary-light": "#4c9a66",
+                        "text-secondary-dark": "#8cbda0",
+                    },
+                    fontFamily: {
+                        "display": ["Plus Jakarta Sans", "sans-serif"]
+                    },
+                    borderRadius: {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings:
+            'FILL' 0,
+            'wght' 400,
+            'GRAD' 0,
+            'opsz' 24
+        }
+        /* Custom timeline line */
+        .timeline-line {
+            position: absolute;
+            left: 7px; /* center of the 16px dot */
+            top: 24px;
+            bottom: 24px;
+            width: 2px;
+            background: #e5e7eb; 
+            z-index: 0;
+        }
+        .dark .timeline-line {
+            background: #2d3748;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark font-display antialiased transition-colors duration-200">
+<div class="relative flex min-h-screen w-full flex-col max-w-md mx-auto bg-background-light dark:bg-background-dark overflow-x-hidden border-x border-gray-100 dark:border-gray-800 shadow-xl">
+<!-- Top App Bar -->
+<header class="sticky top-0 z-10 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 px-4 pt-12 pb-3">
+<div class="flex items-center justify-between">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-text-primary-light dark:text-text-primary-dark">
+<span class="material-symbols-outlined">arrow_back</span>
+</button>
+<h1 class="text-xl font-bold text-text-primary-light dark:text-text-primary-dark">My Rides</h1>
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-black/5 dark:hover:bg-white/10 transition-colors text-text-primary-light dark:text-text-primary-dark">
+<span class="material-symbols-outlined">filter_list</span>
+</button>
+</div>
+</header>
+<!-- Tabs -->
+<div class="px-4 py-2 bg-background-light dark:bg-background-dark">
+<div class="flex p-1 bg-gray-200 dark:bg-gray-800 rounded-xl relative">
+<!-- Active Tab Background -->
+<div class="w-1/2 absolute left-1 top-1 bottom-1 bg-white dark:bg-surface-dark rounded-lg shadow-sm transition-transform duration-300"></div>
+<button class="flex-1 relative z-10 py-2 text-sm font-bold text-text-primary-light dark:text-text-primary-dark text-center">
+                    Rides
+                </button>
+<button class="flex-1 relative z-10 py-2 text-sm font-medium text-text-secondary-light dark:text-gray-400 text-center hover:text-text-primary-light dark:hover:text-text-primary-dark transition-colors">
+                    Freight
+                </button>
+</div>
+</div>
+<!-- Content List -->
+<main class="flex-1 px-4 py-4 space-y-4">
+<!-- Ride Card: Completed -->
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 active:scale-[0.98] transition-transform cursor-pointer">
+<!-- Header Row -->
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Today</span>
+<span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">10:23 AM</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">$15.50</span>
+<div class="flex items-center gap-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Finished</span>
+</div>
+</div>
+</div>
+<!-- Route Section -->
+<div class="relative py-2 pl-6 space-y-4">
+<div class="timeline-line"></div>
+<!-- Pickup -->
+<div class="relative z-10">
+<div class="absolute -left-6 top-1 size-3.5 rounded-full border-[3px] border-primary bg-background-light dark:bg-background-dark box-border"></div>
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark line-clamp-1">7825 McCallum Blvd</p>
+</div>
+<!-- Dropoff -->
+<div class="relative z-10">
+<div class="absolute -left-6 top-1 size-3.5 rounded-full bg-primary box-border"></div>
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark line-clamp-1">Dallas Ft Worth Intl Airport</p>
+</div>
+</div>
+<!-- Footer Row -->
+<div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-gray-500 text-lg">directions_car</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-text-primary-light dark:text-text-primary-dark">Toyota Camry</span>
+<span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">White • ABC 1234</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</div>
+</div>
+<!-- Ride Card: Completed -->
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 active:scale-[0.98] transition-transform cursor-pointer">
+<!-- Header Row -->
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Yesterday</span>
+<span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">06:45 PM</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">$12.00</span>
+<div class="flex items-center gap-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Finished</span>
+</div>
+</div>
+</div>
+<!-- Route Section -->
+<div class="relative py-2 pl-6 space-y-4">
+<div class="timeline-line"></div>
+<!-- Pickup -->
+<div class="relative z-10">
+<div class="absolute -left-6 top-1 size-3.5 rounded-full border-[3px] border-primary bg-background-light dark:bg-background-dark box-border"></div>
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark line-clamp-1">Galleria Dallas</p>
+</div>
+<!-- Dropoff -->
+<div class="relative z-10">
+<div class="absolute -left-6 top-1 size-3.5 rounded-full bg-primary box-border"></div>
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark line-clamp-1">Highland Park Village</p>
+</div>
+</div>
+<!-- Footer Row -->
+<div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-gray-500 text-lg">directions_car</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-text-primary-light dark:text-text-primary-dark">Honda Civic</span>
+<span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">Grey • HND 9988</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</div>
+</div>
+<!-- Ride Card: Canceled -->
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 opacity-75 active:scale-[0.98] transition-transform cursor-pointer grayscale-[0.5]">
+<!-- Header Row -->
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Yesterday</span>
+<span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">08:00 AM</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-gray-400 dark:text-gray-500 line-through decoration-gray-400">$8.50</span>
+<div class="flex items-center gap-1 text-xs font-medium text-red-500 bg-red-50 dark:bg-red-900/20 px-2 py-0.5 rounded-full">
+<span class="material-symbols-outlined text-[14px]">close</span>
+<span>Canceled</span>
+</div>
+</div>
+</div>
+<!-- Route Section -->
+<div class="relative py-2 pl-6 space-y-4">
+<div class="timeline-line !bg-gray-200 dark:!bg-gray-700"></div>
+<!-- Pickup -->
+<div class="relative z-10">
+<div class="absolute -left-6 top-1 size-3.5 rounded-full border-[3px] border-gray-300 dark:border-gray-600 bg-background-light dark:bg-background-dark box-border"></div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 line-clamp-1">Starbucks Coffee</p>
+</div>
+<!-- Dropoff -->
+<div class="relative z-10">
+<div class="absolute -left-6 top-1 size-3.5 rounded-full bg-gray-300 dark:bg-gray-600 box-border"></div>
+<p class="text-sm font-medium text-gray-500 dark:text-gray-400 line-clamp-1">University of Texas</p>
+</div>
+</div>
+<!-- Footer Row -->
+<div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<p class="text-xs font-medium text-gray-500 italic">Driver canceled the ride</p>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</div>
+</div>
+<!-- Ride Card: Completed (Older) -->
+<div class="bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 active:scale-[0.98] transition-transform cursor-pointer">
+<!-- Header Row -->
+<div class="flex justify-between items-start mb-3">
+<div class="flex flex-col">
+<span class="text-xs font-semibold text-text-secondary-light dark:text-text-secondary-dark uppercase tracking-wider">Oct 24</span>
+<span class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark">2:15 PM</span>
+</div>
+<div class="flex flex-col items-end">
+<span class="text-lg font-bold text-text-primary-light dark:text-text-primary-dark">$24.00</span>
+<div class="flex items-center gap-1 text-xs font-medium text-primary">
+<span class="material-symbols-outlined text-[16px]">check_circle</span>
+<span>Finished</span>
+</div>
+</div>
+</div>
+<!-- Route Section -->
+<div class="relative py-2 pl-6 space-y-4">
+<div class="timeline-line"></div>
+<!-- Pickup -->
+<div class="relative z-10">
+<div class="absolute -left-6 top-1 size-3.5 rounded-full border-[3px] border-primary bg-background-light dark:bg-background-dark box-border"></div>
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark line-clamp-1">Downtown Station</p>
+</div>
+<!-- Dropoff -->
+<div class="relative z-10">
+<div class="absolute -left-6 top-1 size-3.5 rounded-full bg-primary box-border"></div>
+<p class="text-sm font-medium text-text-primary-light dark:text-text-primary-dark line-clamp-1">Suburban Home</p>
+</div>
+</div>
+<!-- Footer Row -->
+<div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex justify-between items-center">
+<div class="flex items-center gap-2">
+<div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700 flex items-center justify-center overflow-hidden">
+<span class="material-symbols-outlined text-gray-500 text-lg">directions_car</span>
+</div>
+<div class="flex flex-col">
+<span class="text-xs font-bold text-text-primary-light dark:text-text-primary-dark">Ford Focus</span>
+<span class="text-[10px] text-text-secondary-light dark:text-text-secondary-dark">Blue • FRD 5555</span>
+</div>
+</div>
+<span class="material-symbols-outlined text-gray-400">chevron_right</span>
+</div>
+</div>
+<!-- Loading State (Skeleton) -->
+<div class="animate-pulse bg-surface-light dark:bg-surface-dark p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+<div class="flex justify-between items-start mb-3">
+<div class="space-y-1">
+<div class="h-3 w-12 bg-gray-200 dark:bg-gray-700 rounded"></div>
+<div class="h-4 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+</div>
+<div class="flex flex-col items-end space-y-1">
+<div class="h-5 w-14 bg-gray-200 dark:bg-gray-700 rounded"></div>
+<div class="h-3 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+</div>
+</div>
+<div class="py-2 pl-6 space-y-4">
+<div class="h-3 w-3/4 bg-gray-200 dark:bg-gray-700 rounded"></div>
+<div class="h-3 w-2/3 bg-gray-200 dark:bg-gray-700 rounded"></div>
+</div>
+<div class="mt-4 pt-3 border-t border-gray-100 dark:border-gray-700 flex items-center gap-2">
+<div class="size-8 rounded-full bg-gray-200 dark:bg-gray-700"></div>
+<div class="space-y-1">
+<div class="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+<div class="h-2 w-16 bg-gray-200 dark:bg-gray-700 rounded"></div>
+</div>
+</div>
+</div>
+</main>
+</div>
+</body></html>

@@ -1,0 +1,230 @@
+<!DOCTYPE html>
+
+<html class="light" lang="en"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Safety Center</title>
+<link href="https://fonts.googleapis.com" rel="preconnect"/>
+<link crossorigin="" href="https://fonts.gstatic.com" rel="preconnect"/>
+<link href="https://fonts.googleapis.com/css2?family=Public+Sans:wght@400;500;700&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#13ec5b",
+                        "background-light": "#f6f8f6",
+                        "background-dark": "#102216",
+                        "surface-light": "#ffffff",
+                        "surface-dark": "#1c3024",
+                        "text-main-light": "#0d1b12",
+                        "text-main-dark": "#ffffff",
+                        "text-secondary-light": "#4c9a66",
+                        "text-secondary-dark": "#a3cfb3",
+                    },
+                    fontFamily: {
+                        "display": ["Public Sans", "sans-serif"]
+                    },
+                    borderRadius: {"DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px"},
+                },
+            },
+        }
+    </script>
+<style>
+        body {
+            font-family: "Public Sans", sans-serif;
+        }
+    </style>
+<style>
+    body {
+      min-height: max(884px, 100dvh);
+    }
+  </style>
+  </head>
+<body class="bg-background-light dark:bg-background-dark text-text-main-light dark:text-text-main-dark transition-colors duration-200">
+<div class="relative flex h-auto min-h-screen w-full flex-col overflow-x-hidden font-display pb-20">
+<!-- Top App Bar -->
+<div class="sticky top-0 z-50 bg-background-light/95 dark:bg-background-dark/95 backdrop-blur-sm border-b border-gray-200 dark:border-gray-800 transition-colors">
+<div class="flex items-center p-4 justify-between">
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors text-text-main-light dark:text-text-main-dark">
+<span class="material-symbols-outlined">arrow_back_ios_new</span>
+</button>
+<h2 class="text-lg font-bold leading-tight tracking-tight flex-1 text-center">Safety Center</h2>
+<button class="flex size-10 items-center justify-center rounded-full hover:bg-gray-200 dark:hover:bg-gray-800 transition-colors text-text-main-light dark:text-text-main-dark">
+<span class="material-symbols-outlined">headset_mic</span>
+</button>
+</div>
+</div>
+<!-- Emergency Help Card -->
+<div class="p-4 w-full">
+<div class="flex flex-col overflow-hidden rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 bg-surface-light dark:bg-surface-dark transition-colors">
+<div class="relative w-full h-40 bg-gray-200 dark:bg-gray-700">
+<div class="absolute inset-0 bg-gradient-to-t from-surface-light dark:from-surface-dark to-transparent opacity-40"></div>
+<div class="w-full h-full bg-cover bg-center" data-alt="Abstract map illustration with a safety shield overlay" data-location="Current Location" style='background-image: url("https://placeholder.pics/svg/300");'>
+</div>
+<div class="absolute top-3 right-3 bg-red-500 text-white text-xs font-bold px-2 py-1 rounded-full animate-pulse shadow-lg">
+                        SOS READY
+                     </div>
+</div>
+<div class="flex w-full flex-col gap-3 p-5">
+<div class="flex items-center gap-2">
+<span class="material-symbols-outlined text-red-500">local_police</span>
+<h3 class="text-xl font-bold leading-tight">Emergency Help</h3>
+</div>
+<p class="text-text-secondary-light dark:text-text-secondary-dark text-sm font-normal leading-relaxed">
+                        Pressing the button below will immediately connect you to local 911 services. We will share your live location details.
+                    </p>
+<button class="flex w-full cursor-pointer items-center justify-center gap-2 rounded-xl h-12 px-6 bg-[#ff3b30] hover:bg-[#ff2419] text-white text-base font-bold shadow-lg shadow-red-500/20 active:scale-[0.98] transition-all mt-2">
+<span class="material-symbols-outlined">sos</span>
+<span>Call 911</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Safety Toolkit Grid -->
+<div class="px-4 pt-2">
+<h3 class="text-lg font-bold leading-tight mb-3 px-1">Safety Toolkit</h3>
+<div class="grid grid-cols-2 gap-3">
+<!-- Share Location -->
+<button class="group flex flex-col gap-3 rounded-xl border border-primary/30 bg-primary/5 p-4 items-start hover:bg-primary/10 transition-colors text-left">
+<div class="p-2 rounded-lg bg-primary/20 text-primary-dark group-hover:bg-primary group-hover:text-[#0d1b12] transition-colors">
+<span class="material-symbols-outlined">share_location</span>
+</div>
+<div>
+<h2 class="text-base font-bold leading-tight">Share Ride</h2>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Send live status</p>
+</div>
+</button>
+<!-- Record Audio -->
+<button class="group flex flex-col gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark p-4 items-start hover:border-primary/50 transition-colors text-left shadow-sm">
+<div class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-text-main-light dark:text-text-main-dark group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">mic</span>
+</div>
+<div>
+<h2 class="text-base font-bold leading-tight">Record Audio</h2>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Save conversation</p>
+</div>
+</button>
+<!-- Ambulance -->
+<button class="group flex flex-col gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark p-4 items-start hover:border-primary/50 transition-colors text-left shadow-sm">
+<div class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-text-main-light dark:text-text-main-dark group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">medical_services</span>
+</div>
+<div>
+<h2 class="text-base font-bold leading-tight">Ambulance</h2>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">Request medical</p>
+</div>
+</button>
+<!-- ADT/Security Partner -->
+<button class="group flex flex-col gap-3 rounded-xl border border-gray-200 dark:border-gray-700 bg-surface-light dark:bg-surface-dark p-4 items-start hover:border-primary/50 transition-colors text-left shadow-sm">
+<div class="p-2 rounded-lg bg-gray-100 dark:bg-gray-800 text-text-main-light dark:text-text-main-dark group-hover:bg-primary/20 transition-colors">
+<span class="material-symbols-outlined">security</span>
+</div>
+<div>
+<h2 class="text-base font-bold leading-tight">ADT Help</h2>
+<p class="text-xs text-text-secondary-light dark:text-text-secondary-dark mt-1">24/7 Monitoring</p>
+</div>
+</button>
+</div>
+</div>
+<!-- Trusted Contacts -->
+<div class="px-4 pt-6">
+<div class="flex items-center justify-between mb-3 px-1">
+<h3 class="text-lg font-bold leading-tight">Trusted Contacts</h3>
+<button class="text-sm font-medium text-primary hover:text-primary/80">Manage</button>
+</div>
+<div class="flex flex-col gap-3">
+<!-- Auto Share Toggle Card -->
+<div class="flex items-center justify-between p-4 rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-blue-50 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
+<span class="material-symbols-outlined">autorenew</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Auto-share ride details</span>
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">With all trusted contacts</span>
+</div>
+</div>
+<label class="relative inline-flex items-center cursor-pointer">
+<input class="sr-only peer" type="checkbox" value=""/>
+<div class="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer dark:bg-gray-700 peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</label>
+</div>
+<!-- Contact List -->
+<div class="flex flex-col rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm divide-y divide-gray-100 dark:divide-gray-800">
+<!-- Contact 1 -->
+<div class="flex items-center justify-between p-4">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-gray-100 dark:bg-gray-700 overflow-hidden bg-center bg-cover" data-alt="Profile picture of Sarah M." style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuA6Osp36Eu55GE2vvhEV0W0ibhs4EB9hi13GuY2slX5-IXyq6MlgUKWLWeBbuWsZIllPUu_jyE77xwdJMdtyxhobY8ZB3xAnGfVf2Dnf_WQJNCl4dS6fLVVStDD-5VEdO_aSXf-mxG2_u3buIqmqk395JWsiNI2JT_QZkifW0PQ1qjD8IqofyC_n0Dh75vMcl_x8N1Xjsh_KrzDRJ2t1qhGpCKzrhU8DEJpjp0QaTNpnts3S49iyTpZHNiMN_wC3O9RZWhojG_t3dI");'>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-bold">Sarah M.</span>
+<span class="text-xs text-text-secondary-light dark:text-text-secondary-dark">Sister • +1 555-0123</span>
+</div>
+</div>
+<button class="p-2 text-gray-400 hover:text-red-500 transition-colors">
+<span class="material-symbols-outlined">delete</span>
+</button>
+</div>
+<!-- Add Contact Button inside list -->
+<button class="flex items-center gap-3 p-4 w-full hover:bg-gray-50 dark:hover:bg-gray-800/50 transition-colors rounded-b-xl text-left group">
+<div class="size-10 rounded-full border-2 border-dashed border-primary flex items-center justify-center text-primary group-hover:bg-primary group-hover:text-[#0d1b12] transition-colors">
+<span class="material-symbols-outlined">add</span>
+</div>
+<span class="text-sm font-medium text-primary group-hover:text-primary/80">Add Trusted Contact</span>
+</button>
+</div>
+</div>
+</div>
+<!-- Safety Guidelines / Accordion -->
+<div class="px-4 pt-6 pb-6">
+<h3 class="text-lg font-bold leading-tight mb-3 px-1">Safety Guidelines</h3>
+<div class="flex flex-col gap-2">
+<details class="group rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+<summary class="flex cursor-pointer items-center justify-between p-4 font-medium text-text-main-light dark:text-text-main-dark focus:outline-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">verified_user</span>
+<span>Community Guidelines</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="border-t border-gray-100 dark:border-gray-800 p-4 text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">
+                        Treat everyone with respect. We have a zero-tolerance policy for discrimination and harassment.
+                    </div>
+</details>
+<details class="group rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+<summary class="flex cursor-pointer items-center justify-between p-4 font-medium text-text-main-light dark:text-text-main-dark focus:outline-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">directions_car</span>
+<span>Ride Safety Tips</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="border-t border-gray-100 dark:border-gray-800 p-4 text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">
+                        Always verify the car license plate and driver photo before entering the vehicle. Share your trip status with loved ones.
+                    </div>
+</details>
+<details class="group rounded-xl bg-surface-light dark:bg-surface-dark border border-gray-200 dark:border-gray-800 shadow-sm overflow-hidden">
+<summary class="flex cursor-pointer items-center justify-between p-4 font-medium text-text-main-light dark:text-text-main-dark focus:outline-none">
+<div class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">visibility</span>
+<span>Privacy &amp; Data</span>
+</div>
+<span class="material-symbols-outlined transition-transform duration-200 group-open:rotate-180">expand_more</span>
+</summary>
+<div class="border-t border-gray-100 dark:border-gray-800 p-4 text-sm text-text-secondary-light dark:text-text-secondary-dark leading-relaxed">
+                        Your location is only shared with emergency services when you trigger the SOS button, or with contacts you explicitly choose.
+                    </div>
+</details>
+</div>
+</div>
+</div>
+<!-- Floating support action -->
+<button class="fixed bottom-6 right-6 size-14 bg-primary text-[#0d1b12] rounded-full shadow-xl flex items-center justify-center hover:scale-105 active:scale-95 transition-transform z-50">
+<span class="material-symbols-outlined" style="font-size: 28px;">chat</span>
+</button>
+</body></html>
