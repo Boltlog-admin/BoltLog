@@ -1,5 +1,6 @@
 import 'dart:async';
 import 'package:flutter/material.dart';
+import 'package:geolocator/geolocator.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import '../models/ride_model.dart';
@@ -45,6 +46,34 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
         // No-op: just trigger a rebuild; data comes from live Firestore streams
       });
     });
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      unawaited(_syncTransporterGpsToProfile());
+    });
+  }
+
+  /// Writes live GPS to Firestore so the home map and nearby filters use real coordinates.
+  Future<void> _syncTransporterGpsToProfile() async {
+    final user = _auth.currentUser;
+    if (user == null || !mounted) return;
+    try {
+      var perm = await Geolocator.checkPermission();
+      if (perm == LocationPermission.denied) {
+        perm = await Geolocator.requestPermission();
+      }
+      if (perm == LocationPermission.denied ||
+          perm == LocationPermission.deniedForever) {
+        return;
+      }
+      final pos = await Geolocator.getCurrentPosition();
+      if (!mounted) return;
+      await _userService.updateDriverProfile(
+        uid: user.uid,
+        currentLat: pos.latitude,
+        currentLng: pos.longitude,
+      );
+    } catch (_) {
+      // Map still works with myLocationEnabled when permission is granted.
+    }
   }
 
   @override
@@ -237,24 +266,27 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                         final deliveries = deliveriesSnapshot.data ?? [];
                         final completedRides = completedDeliveriesSnapshot.data ?? [];
 
-                        // Only show requests that match this transporter's vehicle type (when order has a type selected)
+                        // Vehicle match for inbox; map shows all of these (pins at real pickup/dropoff).
+                        // List-style "nearby only" uses radius; map must not hide farther requests.
                         final allAvailableRides = availableRidesSnapshot.data ?? [];
-                        List<RideModel> availableRides = allAvailableRides
+                        final availableRidesMatching = allAvailableRides
                             .where((ride) {
                               final orderType = ride.transportType;
                               final driverTruckType = userModel?.truckType;
-                              if (orderType == null || orderType.isEmpty)
+                              if (orderType == null || orderType.isEmpty) {
                                 return true;
+                              }
                               return driverTruckType != null &&
                                   driverTruckType.isNotEmpty &&
                                   orderType == driverTruckType;
                             })
                             .toList();
-                        availableRides = filterAndSortRidesByDistance(
-                          availableRides,
+                        final availableRidesForMap =
+                            filterAndSortRidesByDistance(
+                          List<RideModel>.from(availableRidesMatching),
                           driverLat: userModel?.currentLat,
                           driverLng: userModel?.currentLng,
-                          maxRadiusKm: defaultMaxRadiusKm,
+                          applyRadiusFilter: false,
                         );
 
                         // Calculate earnings from completed rides
@@ -345,7 +377,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                               child: ClipRRect(
                                 borderRadius: BorderRadius.circular(AppRadii.lg),
                                 child: ActiveDeliveriesMapWidget(
-                                  deliveries: availableRides,
+                                  deliveries: availableRidesForMap,
                                   height:
                                       MediaQuery.of(context).size.height * 0.5,
                                   currentLat: userModel?.currentLat,
@@ -366,7 +398,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                             ),
                             const SizedBox(height: 18),
                             Text(
-                              'Tap a pickup marker to open request details and accept quickly.',
+                              'Pins show every open request that matches your vehicle type (by pickup location). Tap a blue pickup marker for details.',
                               style: GoogleFonts.inter(
                                 fontSize: 13,
                                 color: Colors.grey.shade600,

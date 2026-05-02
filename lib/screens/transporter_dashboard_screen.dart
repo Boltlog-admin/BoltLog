@@ -32,6 +32,8 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
   /// Accept-in-progress for a specific ride id (list card actions).
   String? _busyRideId;
   final Set<String> _skippedRideIds = <String>{};
+  /// Invalidates in-flight [_updateMapMarkers] so stale async results do not overwrite the map.
+  int _mapMarkersGeneration = 0;
 
   @override
   void initState() {
@@ -164,14 +166,14 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
 
                 // QA mode: bypass request narrowing so transporters can test end-to-end
                 // acceptance even when profile/location metadata is incomplete.
-                List<RideModel> filteredRides;
+                List<RideModel> filteredRidesForList;
+                List<RideModel> filteredRidesForMap;
                 if (TestingFlags.relaxTransporterVerification) {
-                  filteredRides = rides;
+                  filteredRidesForList = rides;
+                  filteredRidesForMap = rides;
                 } else {
-                  // Only show requests that match this transporter's vehicle type
-                  // (when order has a type selected).
                   final driverTruckType = userModel?.truckType;
-                  filteredRides = rides
+                  final vehicleMatched = rides
                       .where((ride) {
                         final orderType = ride.transportType;
                         if (orderType == null || orderType.isEmpty) {
@@ -182,18 +184,31 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                             orderType == driverTruckType;
                       })
                       .toList();
-                  // inDrive-style: only nearby requests, sorted by distance to pickup.
-                  filteredRides = filterAndSortRidesByDistance(
-                    filteredRides,
+                  // List: nearby only. Map: all matching requests so pins show real pickup/dropoff.
+                  filteredRidesForList = filterAndSortRidesByDistance(
+                    List<RideModel>.from(vehicleMatched),
                     driverLat: userModel?.currentLat,
                     driverLng: userModel?.currentLng,
                     maxRadiusKm: defaultMaxRadiusKm,
+                    applyRadiusFilter: true,
+                  );
+                  filteredRidesForMap = filterAndSortRidesByDistance(
+                    List<RideModel>.from(vehicleMatched),
+                    driverLat: userModel?.currentLat,
+                    driverLng: userModel?.currentLng,
+                    applyRadiusFilter: false,
                   );
                 }
 
-                filteredRides = filteredRides
-                    .where((ride) => !_skippedRideIds.contains(ride.id))
-                    .toList();
+                bool skipId(RideModel r) =>
+                    r.id != null && _skippedRideIds.contains(r.id);
+                filteredRidesForList =
+                    filteredRidesForList.where((r) => !skipId(r)).toList();
+                filteredRidesForMap =
+                    filteredRidesForMap.where((r) => !skipId(r)).toList();
+
+                final filteredRides =
+                    _isMapView ? filteredRidesForMap : filteredRidesForList;
                 _rides = filteredRides;
 
                 Widget content;
@@ -645,8 +660,20 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
     double? driverLat,
     double? driverLng,
   }) async {
+    final generation = ++_mapMarkersGeneration;
     final Set<Marker> markers = {};
     final Set<Polyline> polylines = {};
+
+    void openSheet(RideModel ride) {
+      if (!context.mounted) return;
+      _showMapRequestSheet(
+        context,
+        ride,
+        transporterId,
+        driverLat: driverLat,
+        driverLng: driverLng,
+      );
+    }
 
     for (int i = 0; i < rides.length; i++) {
       final ride = rides[i];
@@ -654,66 +681,60 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
       final pickupLng = ride.pickupLng;
       final dropoffLat = ride.dropoffLat;
       final dropoffLng = ride.dropoffLng;
+      final hasPickup = pickupLat != null && pickupLng != null;
+      final hasDropoff = dropoffLat != null && dropoffLng != null;
 
-      if (pickupLat != null && pickupLng != null && dropoffLat != null && dropoffLng != null) {
+      double? toPickupKmVal;
+      if (driverLat != null && driverLng != null && hasPickup) {
+        toPickupKmVal = distanceToPickupKm(ride, driverLat, driverLng);
+      }
+      final pickupDistanceSnippet = toPickupKmVal != null
+          ? '~${toPickupKmVal.toStringAsFixed(1)} km from you'
+          : 'Enable location for distance';
+
+      if (hasPickup && hasDropoff) {
         final legKm = pickupToDropoffKm(ride);
         final legSnippet = legKm != null
             ? '~${legKm.toStringAsFixed(1)} km from pickup'
             : 'Open details for address';
 
-        double? toPickupKmVal;
-        if (driverLat != null && driverLng != null) {
-          toPickupKmVal = distanceToPickupKm(ride, driverLat, driverLng);
-        }
-        final pickupSnippet = toPickupKmVal != null
-            ? '~${toPickupKmVal.toStringAsFixed(1)} km from you'
-            : 'Enable location for distance';
-
-        // Add pickup marker (blue) — tap opens same accept/details flow as list cards.
         markers.add(
           Marker(
             markerId: MarkerId('pickup_${ride.id}_$i'),
-            position: LatLng(pickupLat, pickupLng),
+            position: LatLng(pickupLat!, pickupLng!),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
             infoWindow: InfoWindow(
               title: 'Pickup point',
-              snippet: pickupSnippet,
+              snippet: pickupDistanceSnippet,
             ),
-            onTap: () {
-              if (!context.mounted) return;
-              _showMapRequestSheet(
-                context,
-                ride,
-                transporterId,
-                driverLat: driverLat,
-                driverLng: driverLng,
-              );
-            },
+            onTap: () => openSheet(ride),
           ),
         );
 
-        // Add dropoff marker (red)
         markers.add(
           Marker(
             markerId: MarkerId('dropoff_${ride.id}_$i'),
-            position: LatLng(dropoffLat, dropoffLng),
+            position: LatLng(dropoffLat!, dropoffLng!),
             icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
             infoWindow: InfoWindow(
               title: 'Drop-off point',
               snippet: legSnippet,
             ),
+            onTap: () => openSheet(ride),
           ),
         );
 
-        // Add route polyline between pickup and dropoff (actual road route)
         try {
           final routingService = RoutingService();
           final route = await routingService.getRoute(
-            originLat: pickupLat,
-            originLng: pickupLng,
-            destLat: dropoffLat,
-            destLng: dropoffLng,
+            originLat: pickupLat!,
+            originLng: pickupLng!,
+            destLat: dropoffLat!,
+            destLng: dropoffLng!,
           );
+          if (!mounted || generation != _mapMarkersGeneration) {
+            return;
+          }
           if (route != null) {
             polylines.add(
               Polyline(
@@ -727,10 +748,40 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
         } catch (e) {
           // If routing fails, skip drawing the route for this ride
         }
+      } else if (hasPickup) {
+        final snippet = '$pickupDistanceSnippet · Drop-off pin when coords available';
+        markers.add(
+          Marker(
+            markerId: MarkerId('pickup_${ride.id}_$i'),
+            position: LatLng(pickupLat!, pickupLng!),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
+            infoWindow: InfoWindow(
+              title: 'Pickup point',
+              snippet: snippet,
+            ),
+            onTap: () => openSheet(ride),
+          ),
+        );
+      } else if (hasDropoff) {
+        markers.add(
+          Marker(
+            markerId: MarkerId('dropoff_${ride.id}_$i'),
+            position: LatLng(dropoffLat!, dropoffLng!),
+            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
+            infoWindow: InfoWindow(
+              title: 'Drop-off point',
+              snippet: 'Pickup coordinates missing — open details',
+            ),
+            onTap: () => openSheet(ride),
+          ),
+        );
       }
     }
 
-    // Fit bounds to show all markers
+    if (!mounted || generation != _mapMarkersGeneration) {
+      return;
+    }
+
     if (markers.isNotEmpty && _mapController != null) {
       final bounds = _calculateBounds(markers);
       _mapController!.animateCamera(
@@ -738,7 +789,9 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
       );
     }
 
-    if (!mounted) return;
+    if (!mounted || generation != _mapMarkersGeneration) {
+      return;
+    }
     setState(() {
       _markers = markers;
       _polylines = polylines;

@@ -4,7 +4,8 @@ import 'dart:math';
 import '../models/ride_model.dart';
 import '../services/routing_service.dart';
 
-/// Shows "No deliveries" when list is empty, or a map of accepted deliveries (pickup/dropoff markers and routes).
+/// Map of rides with pickup (blue) and drop-off (red) pins, optional route polylines,
+/// and transporter position when [currentLat]/[currentLng] are set.
 class ActiveDeliveriesMapWidget extends StatefulWidget {
   final List<RideModel> deliveries;
   final double? height;
@@ -34,40 +35,35 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
   Set<Marker> _markers = {};
   Set<Polyline> _polylines = {};
 
+  LatLng _initialCameraTarget() {
+    if (widget.currentLat != null && widget.currentLng != null) {
+      return LatLng(widget.currentLat!, widget.currentLng!);
+    }
+    if (widget.deliveries.isNotEmpty) {
+      final first = widget.deliveries.first;
+      if (first.pickupLat != null && first.pickupLng != null) {
+        return LatLng(first.pickupLat!, first.pickupLng!);
+      }
+    }
+    return const LatLng(-19.4500, 29.8167);
+  }
+
   @override
   void didUpdateWidget(ActiveDeliveriesMapWidget oldWidget) {
     super.didUpdateWidget(oldWidget);
-    if (oldWidget.deliveries != widget.deliveries) {
+    final deliveriesChanged = oldWidget.deliveries != widget.deliveries;
+    final locationChanged = oldWidget.currentLat != widget.currentLat ||
+        oldWidget.currentLng != widget.currentLng;
+    if (deliveriesChanged || locationChanged) {
       _updateMapMarkers(widget.deliveries);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    if (widget.deliveries.isEmpty) {
-      return SizedBox(
-        height: widget.height,
-        child: Center(
-          child: Text(
-            'No deliveries',
-            style: TextStyle(
-              fontSize: 16,
-              color: Colors.grey.shade600,
-            ),
-          ),
-        ),
-      );
-    }
-
-    LatLng? initialPosition;
-    final first = widget.deliveries.first;
-    if (first.pickupLat != null && first.pickupLng != null) {
-      initialPosition = LatLng(first.pickupLat!, first.pickupLng!);
-    }
-
     Widget map = GoogleMap(
       initialCameraPosition: CameraPosition(
-        target: initialPosition ?? const LatLng(-19.4500, 29.8167),
+        target: _initialCameraTarget(),
         zoom: 12,
       ),
       onMapCreated: (controller) {
@@ -84,7 +80,43 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
     );
 
     if (widget.height != null) {
-      map = SizedBox(height: widget.height, child: ClipRRect(borderRadius: BorderRadius.circular(12), child: map));
+      map = SizedBox(
+        height: widget.height,
+        child: ClipRRect(
+          borderRadius: BorderRadius.circular(12),
+          child: map,
+        ),
+      );
+    }
+
+    if (widget.deliveries.isEmpty) {
+      return Stack(
+        fit: StackFit.expand,
+        children: [
+          map,
+          Positioned(
+            left: 12,
+            right: 12,
+            bottom: 12,
+            child: Material(
+              color: Colors.white.withOpacity(0.95),
+              elevation: 2,
+              borderRadius: BorderRadius.circular(10),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                child: Text(
+                  'No open requests to show yet. Enable location so your position appears; pickup pins appear when requests match your area and vehicle.',
+                  style: TextStyle(
+                    fontSize: 12,
+                    height: 1.35,
+                    color: Colors.grey.shade800,
+                  ),
+                ),
+              ),
+            ),
+          ),
+        ],
+      );
     }
 
     return map;
@@ -197,16 +229,29 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
       }
     }
 
-    if (markers.isNotEmpty && _mapController != null) {
-      final bounds = _bounds(markers);
-      _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 100));
-    }
+    _fitCamera(markers);
 
     if (mounted) {
       setState(() {
         _markers = markers;
         _polylines = polylines;
       });
+    }
+  }
+
+  void _fitCamera(Set<Marker> markers) {
+    if (_mapController == null || markers.isEmpty) return;
+    if (markers.length == 1) {
+      final p = markers.first.position;
+      _mapController!.animateCamera(CameraUpdate.newLatLngZoom(p, 13));
+      return;
+    }
+    try {
+      final bounds = _bounds(markers);
+      _mapController!.animateCamera(CameraUpdate.newLatLngBounds(bounds, 72));
+    } catch (_) {
+      final p = markers.first.position;
+      _mapController!.animateCamera(CameraUpdate.newLatLngZoom(p, 12));
     }
   }
 

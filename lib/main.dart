@@ -8,6 +8,7 @@ import 'package:firebase_crashlytics/firebase_crashlytics.dart';
 import 'firebase_options.dart';
 import 'screens/app_initializer.dart';
 import 'services/notification_service.dart';
+import 'services/app_presence_service.dart';
 import 'services/app_resume_service.dart';
 import 'services/connectivity_service.dart';
 import 'services/theme_service.dart';
@@ -81,6 +82,8 @@ Future<void> main() async {
     } catch (e) {
       debugPrint('Connectivity service initialization error: $e');
     }
+
+    AppPresenceService.instance.start();
   } catch (e) {
     // If Firebase initialization fails, log the error
     debugPrint('Firebase initialization error: $e');

@@ -40,15 +40,14 @@ double? pickupToDropoffKm(RideModel ride) {
   );
 }
 
-/// Filter rides to those within maxRadiusKm of driver, then rank by:
-/// 1) distance to pickup (closest first),
-/// 2) fresh negotiation activity (newer request first as responsiveness proxy).
-/// Rides without pickup coords are included at the end.
+/// Rank by distance to pickup (closest first), then recency. Optionally drop rides
+/// farther than [maxRadiusKm] (inDrive-style nearby feed).
 List<RideModel> filterAndSortRidesByDistance(
   List<RideModel> rides, {
   required double? driverLat,
   required double? driverLng,
   double maxRadiusKm = defaultMaxRadiusKm,
+  bool applyRadiusFilter = true,
 }) {
   if (driverLat == null || driverLng == null) return rides;
   final withDistance = <(RideModel, double?)>[];
@@ -56,6 +55,21 @@ List<RideModel> filterAndSortRidesByDistance(
     final d = distanceToPickupKm(r, driverLat, driverLng);
     withDistance.add((r, d));
   }
+
+  if (!applyRadiusFilter) {
+    withDistance.sort((a, b) {
+      int byRecency() => b.$1.createdAt.compareTo(a.$1.createdAt);
+      final da = a.$2;
+      final db = b.$2;
+      if (da == null && db == null) return byRecency();
+      if (da == null) return 1;
+      if (db == null) return -1;
+      final distanceCmp = da.compareTo(db);
+      return distanceCmp != 0 ? distanceCmp : byRecency();
+    });
+    return withDistance.map((e) => e.$1).toList();
+  }
+
   withDistance.sort((a, b) {
     int byRecency() {
       return b.$1.createdAt.compareTo(a.$1.createdAt);

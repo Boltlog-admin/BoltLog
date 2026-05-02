@@ -310,6 +310,12 @@ service cloud.firestore {
       allow delete: if isAuthenticated() && isOwner(userId);
     }
 
+    // App presence heartbeats (live monitor in Console or BoltLog admin web).
+    match /app_sessions/{uid} {
+      allow read: if isAuthenticated() && (isOwner(uid) || isBoltAdmin());
+      allow write: if isAuthenticated() && isOwner(uid);
+    }
+
     // Rides collection
     match /rides/{rideId} {
       // Anyone authenticated can read rides
