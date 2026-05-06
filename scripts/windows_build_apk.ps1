@@ -29,11 +29,27 @@ function Find-Flutter {
 }
 
 function Add-DefenderPaths {
-    Add-MpPreference -ExclusionPath $gradleHome
-    Add-MpPreference -ExclusionPath $repo
-    Write-Host "Defender exclusions added for:" -ForegroundColor Green
-    Write-Host "  $gradleHome"
-    Write-Host "  $repo"
+    $added = @()
+    $failed = @()
+
+    foreach ($path in @($gradleHome, $repo)) {
+        try {
+            Add-MpPreference -ExclusionPath $path -ErrorAction Stop
+            $added += $path
+        } catch {
+            $failed += "$path :: $($_.Exception.Message)"
+        }
+    }
+
+    if ($added.Count -gt 0) {
+        Write-Host "Defender exclusions added for:" -ForegroundColor Green
+        $added | ForEach-Object { Write-Host "  $_" }
+    }
+
+    if ($failed.Count -gt 0) {
+        Write-Warning "Could not add one or more Defender exclusions."
+        $failed | ForEach-Object { Write-Warning "  $_" }
+    }
 }
 
 if (-not $SkipDefender) {

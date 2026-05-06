@@ -1,5 +1,6 @@
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/material.dart';
+import 'dart:async';
 
 import '../models/ride_model.dart';
 import '../screens/active_ride_map_screen.dart';
@@ -39,18 +40,24 @@ Future<void> transporterAcceptRideOpenMap(
   }
   try {
     // Offers are optional for commit; rules may deny subcollection writes — never block accept.
-    try {
-      await rideService.createOrUpdateOffer(
-        ride.id!,
-        tid,
-        priceOffer: ride.finalPrice ?? ride.counterOffer ?? ride.price,
-      );
-    } catch (e, st) {
-      debugPrint('transporterAcceptRideOpenMap: createOrUpdateOffer skipped: $e\n$st');
-    }
+    unawaited(
+      rideService
+          .createOrUpdateOffer(
+            ride.id!,
+            tid,
+            priceOffer: ride.finalPrice ?? ride.counterOffer ?? ride.price,
+          )
+          .catchError((Object e, StackTrace st) {
+        debugPrint(
+          'transporterAcceptRideOpenMap: createOrUpdateOffer skipped: $e\n$st',
+        );
+      }),
+    );
     final wroteNewCommit = await rideService.acceptRide(ride.id!, tid);
     if (!context.mounted) return;
-    final latestRide = await rideService.getRideById(ride.id!);
+    final latestRide = await rideService
+        .getRideById(ride.id!)
+        .timeout(const Duration(milliseconds: 900), onTimeout: () => null);
     if (!context.mounted) return;
     final r = latestRide ?? ride;
     final onMap = r.driverId?.trim() == tid &&

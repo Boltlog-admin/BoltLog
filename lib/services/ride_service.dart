@@ -904,7 +904,7 @@ class RideService {
     try {
       final callable = FirebaseFunctions.instance.httpsCallable(
         'transporterCommitRide',
-        options: HttpsCallableOptions(timeout: const Duration(seconds: 8)),
+        options: HttpsCallableOptions(timeout: const Duration(seconds: 5)),
       );
       final result = await callable.call(<String, dynamic>{
         'rideId': rideId,
@@ -918,23 +918,24 @@ class RideService {
     } on FirebaseFunctionsException catch (e, st) {
       debugPrint(
         'transporterCommitRide callable failed (${e.code}): ${e.message} '
-        '— trying queue first\n$st',
+        '— trying direct fallbacks\n$st',
       );
       try {
-        return await _transporterCommitRideViaQueue(
+        // Fast fallback: explicit HTTPS call with auth token.
+        return await _transporterCommitRideViaHttps(
           rideId: rideId,
           transporterId: transporterId,
         );
       } catch (_) {
         try {
-          // If queue worker path is unavailable, try explicit HTTPS call.
-          return await _transporterCommitRideViaHttps(
+          // Fast local fallback when callable/HTTPS path is blocked.
+          return await _transporterCommitRideViaClientTransaction(
             rideId: rideId,
             transporterId: transporterId,
           );
         } catch (_) {
-          // Final fallback for environments where callable/HTTPS/queue workers are blocked.
-          return _transporterCommitRideViaClientTransaction(
+          // Last fallback: queue worker path (can be slower due to polling).
+          return _transporterCommitRideViaQueue(
             rideId: rideId,
             transporterId: transporterId,
           );
@@ -1125,7 +1126,7 @@ class RideService {
     }
 
     // Keep queue fallback responsive: long waits make accept feel stuck.
-    final end = DateTime.now().add(const Duration(seconds: 18));
+    final end = DateTime.now().add(const Duration(seconds: 8));
     var tick = 0;
     while (DateTime.now().isBefore(end)) {
       final snap = await reqRef.get();

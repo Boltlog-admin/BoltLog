@@ -15,6 +15,7 @@ import '../widgets/active_deliveries_map.dart';
 import 'request_detail_screen.dart';
 import 'driver_account_edit_screen.dart';
 import 'main_navigation.dart';
+import 'auth_entry_screen.dart';
 import 'wallet_topup_screen.dart';
 import '../widgets/storage_image.dart';
 import '../utils/ride_distance_utils.dart';
@@ -181,6 +182,16 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                     case 'support':
                       _showContactSupportDialog(context);
                       break;
+                    case 'logout':
+                      await FirebaseAuth.instance.signOut();
+                      if (!context.mounted) return;
+                      Navigator.of(context).pushAndRemoveUntil(
+                        MaterialPageRoute(
+                          builder: (_) => const AuthEntryScreen(),
+                        ),
+                        (route) => false,
+                      );
+                      break;
                   }
                 },
                 itemBuilder: (context) => const [
@@ -246,6 +257,14 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                       dense: true,
                       leading: Icon(Icons.contact_support_outlined),
                       title: Text('Contact support'),
+                    ),
+                  ),
+                  PopupMenuItem(
+                    value: 'logout',
+                    child: ListTile(
+                      dense: true,
+                      leading: Icon(Icons.logout_rounded),
+                      title: Text('Log out'),
                     ),
                   ),
                 ],
@@ -382,8 +401,9 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                                       MediaQuery.of(context).size.height * 0.5,
                                   currentLat: userModel?.currentLat,
                                   currentLng: userModel?.currentLng,
-                                  showPickupGuidesFromCurrent: true,
+                                  showPickupGuidesFromCurrent: false,
                                   quickLoad: true,
+                                  pickupOnly: true,
                                   onRequestTap: (ride) {
                                     Navigator.push(
                                       context,

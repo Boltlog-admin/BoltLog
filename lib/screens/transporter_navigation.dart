@@ -11,6 +11,7 @@ import '../services/notification_service.dart';
 import '../services/ride_service.dart';
 import 'request_detail_screen.dart';
 import '../theme/app_theme.dart';
+import 'auth_entry_screen.dart';
 
 class TransporterNavigation extends StatefulWidget {
   final bool showWelcomeMessage;
@@ -173,6 +174,20 @@ class _TransporterNavigationState extends State<TransporterNavigation>
     _persistShell();
   }
 
+  Future<void> _handleMenuSelection(int value) async {
+    if (value == 99) {
+      await AppResumeService.instance.clear();
+      await FirebaseAuth.instance.signOut();
+      if (!mounted) return;
+      Navigator.of(context).pushAndRemoveUntil(
+        MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
+        (route) => false,
+      );
+      return;
+    }
+    _selectTab(value);
+  }
+
   @override
   Widget build(BuildContext context) {
     final uid = FirebaseAuth.instance.currentUser?.uid;
@@ -215,7 +230,9 @@ class _TransporterNavigationState extends State<TransporterNavigation>
                         borderRadius: BorderRadius.circular(AppRadii.md),
                         side: BorderSide(color: Colors.grey.shade200),
                       ),
-                      onSelected: _selectTab,
+                      onSelected: (value) {
+                        _handleMenuSelection(value);
+                      },
                       itemBuilder: (context) => const [
                         PopupMenuItem<int>(
                           value: 0,
@@ -239,6 +256,14 @@ class _TransporterNavigationState extends State<TransporterNavigation>
                             dense: true,
                             leading: Icon(Icons.person_outline_rounded),
                             title: Text('Profile'),
+                          ),
+                        ),
+                        PopupMenuItem<int>(
+                          value: 99,
+                          child: ListTile(
+                            dense: true,
+                            leading: Icon(Icons.logout_rounded),
+                            title: Text('Log out'),
                           ),
                         ),
                       ],

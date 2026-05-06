@@ -14,6 +14,7 @@ class ActiveDeliveriesMapWidget extends StatefulWidget {
   final bool showPickupGuidesFromCurrent;
   final ValueChanged<RideModel>? onRequestTap;
   final bool quickLoad;
+  final bool pickupOnly;
 
   const ActiveDeliveriesMapWidget({
     super.key,
@@ -24,6 +25,7 @@ class ActiveDeliveriesMapWidget extends StatefulWidget {
     this.showPickupGuidesFromCurrent = false,
     this.onRequestTap,
     this.quickLoad = false,
+    this.pickupOnly = false,
   });
 
   @override
@@ -165,7 +167,7 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
           ),
         ),
       );
-      if (dropoffLat != null && dropoffLng != null) {
+      if (!widget.pickupOnly && dropoffLat != null && dropoffLng != null) {
         markers.add(
           Marker(
             markerId: MarkerId('dropoff_${ride.id}_$i'),
@@ -177,7 +179,9 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
         );
       }
 
-      if (widget.showPickupGuidesFromCurrent && hasCurrentLocation) {
+      if (!widget.pickupOnly &&
+          widget.showPickupGuidesFromCurrent &&
+          hasCurrentLocation) {
         polylines.add(
           Polyline(
             polylineId: PolylineId('you_to_pickup_${ride.id}_$i'),
@@ -192,7 +196,7 @@ class _ActiveDeliveriesMapWidgetState extends State<ActiveDeliveriesMapWidget> {
         );
       }
 
-      if (dropoffLat != null && dropoffLng != null) {
+      if (!widget.pickupOnly && dropoffLat != null && dropoffLng != null) {
         if (widget.quickLoad) {
           polylines.add(
             Polyline(

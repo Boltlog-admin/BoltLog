@@ -209,10 +209,13 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
 
                 final filteredRides =
                     _isMapView ? filteredRidesForMap : filteredRidesForList;
-                _rides = filteredRides;
+                final openOnlyRides = filteredRides
+                    .where((ride) => ride.status.toLowerCase() == 'open')
+                    .toList();
+                _rides = openOnlyRides;
 
                 Widget content;
-                if (filteredRides.isEmpty) {
+                if (openOnlyRides.isEmpty) {
                   content = Center(
                     child: Column(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -247,7 +250,7 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                       if (!mounted) return;
                       _updateMapMarkers(
                         context,
-                        filteredRides,
+                        openOnlyRides,
                         user?.uid ?? '',
                         driverLat: userModel?.currentLat,
                         driverLng: userModel?.currentLng,
@@ -255,14 +258,14 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                     });
                     content = _buildMapView(
                       context,
-                      filteredRides,
+                      openOnlyRides,
                       user?.uid ?? '',
                       driverLat: userModel?.currentLat,
                       driverLng: userModel?.currentLng,
                     );
                   } else {
                     content = _buildListView(
-                      filteredRides,
+                      openOnlyRides,
                       user?.uid ?? '',
                       driverLat: userModel?.currentLat,
                       driverLng: userModel?.currentLng,
@@ -431,18 +434,7 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                     Icon(Icons.location_on, color: const Color(0xFF2563EB), size: 16),
                     const SizedBox(width: 8),
                     Text(
-                      'Pickup',
-                      style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade700),
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  children: [
-                    Icon(Icons.location_on, color: Colors.red.shade400, size: 16),
-                    const SizedBox(width: 8),
-                    Text(
-                      'Dropoff',
+                      'Pickup points',
                       style: GoogleFonts.inter(fontSize: 12, color: Colors.grey.shade700),
                     ),
                   ],
@@ -679,10 +671,7 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
       final ride = rides[i];
       final pickupLat = ride.pickupLat;
       final pickupLng = ride.pickupLng;
-      final dropoffLat = ride.dropoffLat;
-      final dropoffLng = ride.dropoffLng;
       final hasPickup = pickupLat != null && pickupLng != null;
-      final hasDropoff = dropoffLat != null && dropoffLng != null;
 
       double? toPickupKmVal;
       if (driverLat != null && driverLng != null && hasPickup) {
@@ -692,12 +681,7 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
           ? '~${toPickupKmVal.toStringAsFixed(1)} km from you'
           : 'Enable location for distance';
 
-      if (hasPickup && hasDropoff) {
-        final legKm = pickupToDropoffKm(ride);
-        final legSnippet = legKm != null
-            ? '~${legKm.toStringAsFixed(1)} km from pickup'
-            : 'Open details for address';
-
+      if (hasPickup) {
         markers.add(
           Marker(
             markerId: MarkerId('pickup_${ride.id}_$i'),
@@ -706,71 +690,6 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
             infoWindow: InfoWindow(
               title: 'Pickup point',
               snippet: pickupDistanceSnippet,
-            ),
-            onTap: () => openSheet(ride),
-          ),
-        );
-
-        markers.add(
-          Marker(
-            markerId: MarkerId('dropoff_${ride.id}_$i'),
-            position: LatLng(dropoffLat!, dropoffLng!),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueRed),
-            infoWindow: InfoWindow(
-              title: 'Drop-off point',
-              snippet: legSnippet,
-            ),
-            onTap: () => openSheet(ride),
-          ),
-        );
-
-        try {
-          final routingService = RoutingService();
-          final route = await routingService.getRoute(
-            originLat: pickupLat!,
-            originLng: pickupLng!,
-            destLat: dropoffLat!,
-            destLng: dropoffLng!,
-          );
-          if (!mounted || generation != _mapMarkersGeneration) {
-            return;
-          }
-          if (route != null) {
-            polylines.add(
-              Polyline(
-                polylineId: PolylineId('route_${ride.id}_$i'),
-                points: route.points,
-                color: const Color(0xFF2563EB),
-                width: 3,
-              ),
-            );
-          }
-        } catch (e) {
-          // If routing fails, skip drawing the route for this ride
-        }
-      } else if (hasPickup) {
-        final snippet = '$pickupDistanceSnippet · Drop-off pin when coords available';
-        markers.add(
-          Marker(
-            markerId: MarkerId('pickup_${ride.id}_$i'),
-            position: LatLng(pickupLat!, pickupLng!),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueBlue),
-            infoWindow: InfoWindow(
-              title: 'Pickup point',
-              snippet: snippet,
-            ),
-            onTap: () => openSheet(ride),
-          ),
-        );
-      } else if (hasDropoff) {
-        markers.add(
-          Marker(
-            markerId: MarkerId('dropoff_${ride.id}_$i'),
-            position: LatLng(dropoffLat!, dropoffLng!),
-            icon: BitmapDescriptor.defaultMarkerWithHue(BitmapDescriptor.hueOrange),
-            infoWindow: InfoWindow(
-              title: 'Drop-off point',
-              snippet: 'Pickup coordinates missing — open details',
             ),
             onTap: () => openSheet(ride),
           ),
@@ -826,17 +745,10 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
     double? driverLng,
   }) {
     final legKm = pickupToDropoffKm(ride);
-    final toPickup = (driverLat != null && driverLng != null)
-        ? distanceToPickupKm(ride, driverLat, driverLng)
-        : null;
 
     final legText = legKm != null
         ? 'Trip distance: ${legKm.toStringAsFixed(1)} km'
         : 'Trip distance: --';
-
-    final youText = toPickup != null
-        ? 'Distance to pickup: ${toPickup.toStringAsFixed(1)} km'
-        : 'Distance to pickup: calculating...';
 
     return Container(
       width: double.infinity,
@@ -862,24 +774,6 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                     height: 1.35,
                     color: const Color(0xFF1E40AF),
                     fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-            ],
-          ),
-          const SizedBox(height: 8),
-          Row(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Icon(Icons.near_me_outlined, size: 16, color: Colors.grey.shade700),
-              const SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  youText,
-                  style: GoogleFonts.inter(
-                    fontSize: 12,
-                    height: 1.35,
-                    color: Colors.grey.shade800,
                   ),
                 ),
               ),
@@ -1100,7 +994,7 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 2),
                               decoration: BoxDecoration(
-                                color: Colors.green.withOpacity(0.12),
+                                color: const Color(0xFF2563EB).withOpacity(0.16),
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
@@ -1108,7 +1002,7 @@ class _TransporterDashboardScreenState extends State<TransporterDashboardScreen>
                                 style: GoogleFonts.inter(
                                   fontSize: 10,
                                   fontWeight: FontWeight.w700,
-                                  color: Colors.green.shade800,
+                                  color: const Color(0xFF1E40AF),
                                 ),
                               ),
                             ),
