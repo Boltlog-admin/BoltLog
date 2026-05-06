@@ -170,7 +170,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                   borderRadius: BorderRadius.circular(AppRadii.md),
                   side: BorderSide(color: Colors.grey.shade200),
                 ),
-                onSelected: (value) {
+                onSelected: (value) async {
                   switch (value) {
                     case 'requests':
                       Navigator.push(
