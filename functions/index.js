@@ -388,6 +388,88 @@ exports.transporterCommitRide = functions.https.onCall(async (data, context) => 
   }
 });
 
+function readBearerTokenFromHeaders(headers) {
+  const authHeader = headers.authorization || headers.Authorization || '';
+  if (typeof authHeader !== 'string') return null;
+  const parts = authHeader.split(' ');
+  if (parts.length !== 2) return null;
+  if (parts[0].toLowerCase() !== 'bearer') return null;
+  const token = parts[1].trim();
+  return token || null;
+}
+
+// HTTP endpoint fallback for Android builds where callable auth channel may fail.
+exports.transporterCommitRideHttp = functions.https.onRequest(async (req, res) => {
+  res.set('Access-Control-Allow-Origin', '*');
+  res.set('Access-Control-Allow-Headers', 'Content-Type, Authorization');
+  res.set('Access-Control-Allow-Methods', 'POST, OPTIONS');
+
+  if (req.method === 'OPTIONS') {
+    res.status(204).send('');
+    return;
+  }
+  if (req.method !== 'POST') {
+    res.status(405).json({error: 'method-not-allowed'});
+    return;
+  }
+
+  try {
+    const token = readBearerTokenFromHeaders(req.headers);
+    if (!token) {
+      res.status(401).json({error: 'missing-auth-token'});
+      return;
+    }
+    const decoded = await admin.auth().verifyIdToken(token, true);
+    const authUid = (decoded && decoded.uid) || '';
+    if (!authUid) {
+      res.status(401).json({error: 'invalid-auth-token'});
+      return;
+    }
+
+    const body = req.body || {};
+    const rideId = typeof body.rideId === 'string' ? body.rideId.trim() : '';
+    const transporterId =
+      typeof body.transporterId === 'string' ? body.transporterId.trim() : '';
+    if (!rideId || !transporterId) {
+      res.status(400).json({error: 'rideId and transporterId are required'});
+      return;
+    }
+    if (authUid !== transporterId) {
+      res.status(403).json({error: 'Caller must match transporterId'});
+      return;
+    }
+
+    const db = admin.firestore();
+    const out = await commitTransporterRideInternal(db, rideId, transporterId);
+    if (out.wroteCommit) {
+      try {
+        await createTransporterCommitNotifications(
+          db,
+          rideId,
+          transporterId,
+          out.senderUserId,
+        );
+      } catch (notifyErr) {
+        console.error('transporterCommitRideHttp notifications failed', notifyErr);
+      }
+    }
+
+    res.status(200).json({
+      ok: true,
+      wroteCommit: !!out.wroteCommit,
+      senderUserId: out.senderUserId || null,
+    });
+  } catch (e) {
+    const code = e instanceof functions.https.HttpsError ? e.code : 'internal';
+    const message =
+      (e instanceof functions.https.HttpsError ? e.message : null) ||
+      e.message ||
+      'Transaction failed';
+    console.error('transporterCommitRideHttp', e);
+    res.status(500).json({error: code, message: String(message)});
+  }
+});
+
 async function commitTransporterRideInternal(db, rideId, transporterId) {
   await assertTransporterFreeForAcceptance(db, transporterId, rideId);
   const rideRef = db.collection('rides').doc(rideId);

@@ -901,8 +901,17 @@ class RideService {
     required String rideId,
     required String transporterId,
   }) async {
-    try {
-      final callable = FirebaseFunctions.instance.httpsCallable(
+    Future<Map<String, dynamic>> callCallable() async {
+      final app = Firebase.app();
+      final currentUser = FirebaseAuth.instanceFor(app: app).currentUser;
+      if (currentUser != null) {
+        // Force-refresh token before callable to avoid stale auth on some Android builds.
+        await currentUser.getIdToken(true);
+      }
+      final callable = FirebaseFunctions.instanceFor(
+        app: app,
+        region: 'us-central1',
+      ).httpsCallable(
         'transporterCommitRide',
         options: HttpsCallableOptions(timeout: const Duration(seconds: 5)),
       );
@@ -915,21 +924,44 @@ class RideService {
         return Map<String, dynamic>.from(data as Map);
       }
       throw Exception('Invalid server response from transporterCommitRide');
+    }
+
+    try {
+      return await callCallable();
     } on FirebaseFunctionsException catch (e, st) {
+      final code = e.code.toLowerCase().replaceAll('_', '-');
+      if (code == 'unauthenticated') {
+        debugPrint(
+          'transporterCommitRide callable unauthenticated; '
+          'retrying once after token refresh',
+        );
+        try {
+          return await callCallable();
+        } on FirebaseFunctionsException catch (retryErr) {
+          debugPrint(
+            'transporterCommitRide callable retry failed '
+            '(${retryErr.code}): ${retryErr.message}',
+          );
+        } catch (retryErr, retrySt) {
+          debugPrint(
+            'transporterCommitRide callable retry error: $retryErr\n$retrySt',
+          );
+        }
+      }
       debugPrint(
         'transporterCommitRide callable failed (${e.code}): ${e.message} '
         '— trying direct fallbacks\n$st',
       );
       try {
-        // Fast fallback: explicit HTTPS call with auth token.
-        return await _transporterCommitRideViaHttps(
+        // Fastest reliable fallback on mobile: local Firestore transaction.
+        return await _transporterCommitRideViaClientTransaction(
           rideId: rideId,
           transporterId: transporterId,
         );
       } catch (_) {
         try {
-          // Fast local fallback when callable/HTTPS path is blocked.
-          return await _transporterCommitRideViaClientTransaction(
+          // If transaction is blocked by rules/state, try HTTPS callable endpoint.
+          return await _transporterCommitRideViaHttps(
             rideId: rideId,
             transporterId: transporterId,
           );
@@ -1019,7 +1051,7 @@ class RideService {
       throw Exception('Could not refresh sign-in. Please sign in again.');
     }
     final uri = Uri.parse(
-      'https://us-central1-$projectId.cloudfunctions.net/transporterCommitRide',
+      'https://us-central1-$projectId.cloudfunctions.net/transporterCommitRideHttp',
     );
     final resp = await http
         .post(
@@ -1029,10 +1061,8 @@ class RideService {
             'Authorization': 'Bearer $token',
           },
           body: jsonEncode({
-            'data': {
-              'rideId': rideId,
-              'transporterId': transporterId,
-            },
+            'rideId': rideId,
+            'transporterId': transporterId,
           }),
         )
         .timeout(const Duration(seconds: 15));
@@ -1066,19 +1096,16 @@ class RideService {
       throw Exception('Invalid server response.');
     }
     final envelope = Map<String, dynamic>.from(decoded as Map);
-    if (envelope.containsKey('error')) {
-      final err = envelope['error'];
-      if (err is Map) {
-        final errMap = Map<String, dynamic>.from(err as Map);
-        final status = (errMap['status'] as String?) ?? 'INTERNAL';
-        final message = errMap['message'] as String?;
-        _throwTransporterCommitCallableFailure(status, message);
-      }
-      _throwTransporterCommitCallableFailure('internal', 'Request failed');
+    if (resp.statusCode >= 400 || envelope.containsKey('error')) {
+      final status = (envelope['error'] as String?) ?? 'internal';
+      final message = envelope['message'] as String?;
+      _throwTransporterCommitCallableFailure(status, message);
     }
-    final result = envelope['result'];
-    if (result is Map) {
-      return Map<String, dynamic>.from(result);
+    if (envelope['ok'] == true) {
+      return <String, dynamic>{
+        'wroteCommit': envelope['wroteCommit'],
+        'senderUserId': envelope['senderUserId'],
+      };
     }
     throw Exception('Invalid server response.');
   }
