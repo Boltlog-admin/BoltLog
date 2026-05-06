@@ -174,15 +174,40 @@ class _TransporterNavigationState extends State<TransporterNavigation>
     _persistShell();
   }
 
+  Future<void> _confirmAndSignOut() async {
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: const Text('Sign out'),
+        content: const Text(
+          'Are you sure you want to log out? This will clear your Firebase authentication session.',
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: const Text('Cancel'),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            child: const Text('Sign out'),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSignOut != true || !mounted) return;
+    await AppResumeService.instance.clear();
+    await FirebaseAuth.instance.signOut();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
+      (route) => false,
+    );
+  }
+
   Future<void> _handleMenuSelection(int value) async {
     if (value == 99) {
-      await AppResumeService.instance.clear();
-      await FirebaseAuth.instance.signOut();
-      if (!mounted) return;
-      Navigator.of(context).pushAndRemoveUntil(
-        MaterialPageRoute(builder: (_) => const AuthEntryScreen()),
-        (route) => false,
-      );
+      await _confirmAndSignOut();
       return;
     }
     _selectTab(value);

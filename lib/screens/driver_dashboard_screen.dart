@@ -37,6 +37,50 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
   /// Home preview card: accept → map in progress.
   String? _busyPreviewRideId;
 
+  Future<void> _confirmAndSignOut() async {
+    final shouldSignOut = await showDialog<bool>(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        title: Text(
+          'Sign out',
+          style: GoogleFonts.inter(
+            fontWeight: FontWeight.w700,
+            color: const Color(0xFF1E40AF),
+          ),
+        ),
+        content: Text(
+          'Are you sure you want to log out? You will need to sign in again.',
+          style: GoogleFonts.inter(),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(false),
+            child: Text('Cancel', style: GoogleFonts.inter()),
+          ),
+          ElevatedButton(
+            onPressed: () => Navigator.of(ctx).pop(true),
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF2563EB),
+              foregroundColor: Colors.white,
+            ),
+            child: Text('Sign out', style: GoogleFonts.inter()),
+          ),
+        ],
+      ),
+    );
+
+    if (shouldSignOut != true || !mounted) return;
+
+    await FirebaseAuth.instance.signOut();
+    if (!mounted) return;
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (_) => const AuthEntryScreen(),
+      ),
+      (route) => false,
+    );
+  }
+
   @override
   void initState() {
     super.initState();
@@ -183,14 +227,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                       _showContactSupportDialog(context);
                       break;
                     case 'logout':
-                      await FirebaseAuth.instance.signOut();
-                      if (!context.mounted) return;
-                      Navigator.of(context).pushAndRemoveUntil(
-                        MaterialPageRoute(
-                          builder: (_) => const AuthEntryScreen(),
-                        ),
-                        (route) => false,
-                      );
+                      await _confirmAndSignOut();
                       break;
                   }
                 },
@@ -264,7 +301,7 @@ class _DriverDashboardScreenState extends State<DriverDashboardScreen> {
                     child: ListTile(
                       dense: true,
                       leading: Icon(Icons.logout_rounded),
-                      title: Text('Log out'),
+                      title: Text('Sign out'),
                     ),
                   ),
                 ],
